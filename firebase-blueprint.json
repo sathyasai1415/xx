@@ -1,0 +1,112 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "A user of the application",
+      "type": "object",
+      "properties": {
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "created_at": { "type": "string" },
+        "last_login": { "type": "string" }
+      },
+      "required": ["email", "created_at"]
+    },
+    "Store": {
+      "title": "Store",
+      "description": "A pizza store managed by a partner",
+      "type": "object",
+      "properties": {
+        "unique_store_id": { "type": "string" },
+        "store_name": { "type": "string" },
+        "owner_name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "is_active": { "type": "boolean" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["unique_store_id", "store_name", "created_at"]
+    },
+    "MenuPrice": {
+      "title": "Menu Price",
+      "description": "Pizza menu items and prices for a store",
+      "type": "object",
+      "properties": {
+        "store_id": { "type": "string" },
+        "item_name": { "type": "string" },
+        "size": { "type": "string" },
+        "crust": { "type": "string" },
+        "base_price": { "type": "number" },
+        "topping_price": { "type": "number" },
+        "is_available": { "type": "boolean" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["store_id", "item_name", "base_price"]
+    },
+    "Deal": {
+      "title": "Deal",
+      "description": "A local deal created by a store",
+      "type": "object",
+      "properties": {
+        "store_id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "original_price": { "type": "number" },
+        "discounted_price": { "type": "number" },
+        "image_url": { "type": "string" },
+        "start_date": { "type": "string" },
+        "end_date": { "type": "string" },
+        "is_active": { "type": "boolean" },
+        "delivery_type": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["store_id", "title", "discounted_price"]
+    },
+    "PizzaConfiguration": {
+      "title": "Saved Pizza Configuration",
+      "description": "A pizza built and saved by a user",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "pizza_name": { "type": "string" },
+        "size": { "type": "string" },
+        "crust": { "type": "string" },
+        "sauce": { "type": "string" },
+        "cheese": { "type": "array" },
+        "toppings": { "type": "array" },
+        "extras": { "type": "array" },
+        "estimated_price": { "type": "number" },
+        "preferred_store_id": { "type": "string" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      },
+      "required": ["user_id", "pizza_name", "size"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "User profiles"
+    },
+    "stores/{storeId}": {
+      "schema": { "$ref": "Store" },
+      "description": "Store profiles"
+    },
+    "stores/{storeId}/menu_prices/{priceId}": {
+      "schema": { "$ref": "MenuPrice" },
+      "description": "Menu prices belonging to a store"
+    },
+    "deals/{dealId}": {
+      "schema": { "$ref": "Deal" },
+      "description": "Deals"
+    },
+    "pizza_configurations/{configId}": {
+      "schema": { "$ref": "PizzaConfiguration" },
+      "description": "Saved pizza configs by user"
+    }
+  }
+}
