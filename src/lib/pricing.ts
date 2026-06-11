@@ -1,4 +1,4 @@
-import { PizzaConfig, ChainPricingData, Quote, DeliveryType, PriceBreakdown, Review } from '../types';
+import { PizzaConfig, ChainPricingData, Quote, DeliveryType, PriceBreakdown, Review, DeliveryProviderOption, Coupon } from '../types';
 
 export const mockChains: ChainPricingData[] = [
   {
@@ -14,11 +14,11 @@ export const mockChains: ChainPricingData[] = [
       { id: '1', user: 'Alex', rating: 4, text: 'Fast delivery, good crust.' },
       { id: '2', user: 'Jamie', rating: 5, text: 'Always my go-to!' }
     ],
-    deliveryOptions: { store: true, pickup: true, doordash: false, ubereats: true, grubhub: false },
+    deliveryOptions: { store: true, pickup: true, doordash: false, ubereats: false, grubhub: false },
     distance: "1.2 miles"
   },
   {
-    id: "papajohns",
+    id: "papa-johns",
     name: "Papa Johns",
     color: "bg-green-700",
     defaultDeliveryType: "store-delivery",
@@ -29,11 +29,11 @@ export const mockChains: ChainPricingData[] = [
     reviews: [
       { id: '3', user: 'Chris', rating: 4, text: 'Love the garlic sauce.' }
     ],
-    deliveryOptions: { store: true, pickup: true, doordash: true, ubereats: false, grubhub: true },
+    deliveryOptions: { store: true, pickup: true, doordash: true, ubereats: false, grubhub: false },
     distance: "2.5 miles"
   },
   {
-    id: "pizzahut",
+    id: "pizza-hut",
     name: "Pizza Hut",
     color: "bg-red-600",
     defaultDeliveryType: "store-delivery",
@@ -42,139 +42,192 @@ export const mockChains: ChainPricingData[] = [
     toppingPrice: 1.25,
     storeDeliveryFee: 4.50,
     reviews: [
-      { id: '4', user: 'Sam', rating: 3, text: 'Pizza was okay, delivery tool a bit long.' },
+      { id: '4', user: 'Sam', rating: 3, text: 'Pizza was okay, delivery time a bit long.' },
       { id: '5', user: 'Taylor', rating: 4, text: 'Stuffed crust is legendary.' }
     ],
-    deliveryOptions: { store: true, pickup: true, doordash: true, ubereats: true, grubhub: true },
+    deliveryOptions: { store: true, pickup: true, doordash: true, ubereats: true, grubhub: false },
     distance: "1.8 miles"
   },
   {
-    id: "littlecaesars",
-    name: "Little Caesars",
-    color: "bg-orange-500",
-    defaultDeliveryType: "third-party", // DoorDash/UberEats
-    basePrices: { "Small": 6.00, "Medium": 7.99, "Large": 9.99, "Extra Large": 11.99 },
-    crustPremium: { "Hand Tossed": 0, "Handmade Pan": 0, "Crunchy Thin Crust": 1.0, "Brooklyn Style": 0, "New York Style": 0, "Parmesan Stuffed Crust": 3.00, "Gluten Free Crust": 1.50 },
-    toppingPrice: 2.00, // Third party usually marks up toppings too
+    id: "jets-pizza",
+    name: "Jet's Pizza",
+    color: "bg-red-700",
+    defaultDeliveryType: "third-party", // Removed direct delivery
+    basePrices: { "Small": 12.99, "Medium": 16.99, "Large": 20.99, "Extra Large": 24.99 },
+    crustPremium: { "Hand Tossed": 0, "Handmade Pan": 0, "Crunchy Thin Crust": 0, "Brooklyn Style": 0, "New York Style": 0, "Parmesan Stuffed Crust": 0, "Gluten Free Crust": 2.50 },
+    toppingPrice: 2.00,
+    storeDeliveryFee: 0,
     reviews: [
-      { id: '6', user: 'Jordan', rating: 5, text: 'Super cheap and fast!' }
+      { id: '6', user: 'Jordan', rating: 5, text: 'Detroit style deep dish is unbeatable!' }
     ],
     deliveryOptions: { store: false, pickup: true, doordash: true, ubereats: true, grubhub: false },
     distance: "0.8 miles"
   },
   {
-    id: "localpizza",
-    name: "Local Pizza Shop",
-    color: "bg-stone-600",
-    defaultDeliveryType: "pickup", 
+    id: "marcos-pizza",
+    name: "Marco's Pizza",
+    color: "bg-red-800",
+    defaultDeliveryType: "third-party", 
     basePrices: { "Small": 11.99, "Medium": 14.99, "Large": 18.99, "Extra Large": 21.99 },
-    crustPremium: { "Hand Tossed": 0, "Handmade Pan": 2.0, "Crunchy Thin Crust": 0, "Brooklyn Style": 0, "New York Style": 0, "Parmesan Stuffed Crust": 0, "Gluten Free Crust": 4.00 },
-    toppingPrice: 2.00, 
+    crustPremium: { "Hand Tossed": 0, "Handmade Pan": 0, "Crunchy Thin Crust": 0, "Brooklyn Style": 0, "New York Style": 0, "Parmesan Stuffed Crust": 0, "Gluten Free Crust": 3.00 },
+    toppingPrice: 1.75, 
+    storeDeliveryFee: 0,
     reviews: [],
-    deliveryOptions: { store: false, pickup: true, doordash: false, ubereats: false, grubhub: false },
+    deliveryOptions: { store: false, pickup: true, doordash: true, ubereats: true, grubhub: false },
     distance: "3.2 miles"
   }
 ];
 
+const mockCoupons: Record<string, Coupon[]> = {
+  doordash: [
+    { code: 'DASH10', description: '10% off delivery', discountType: 'percentage', discountValue: 10 }
+  ],
+  ubereats: [
+    { code: 'SAVE5', description: 'Save $5 on orders', discountType: 'fixed', discountValue: 5 }
+  ],
+  store: [
+    { code: 'FREEDEL', description: 'Free delivery today', discountType: 'free_delivery', discountValue: 0 }
+  ]
+};
+
 export function calculateQuotes(config: PizzaConfig, deliveryPreference: DeliveryType | 'auto', userReviews: Record<string, Review[]> = {}): Quote[] {
   const sorted = mockChains.map(chain => {
-    // 1. Determine Delivery Type
-    const deliveryType = deliveryPreference === 'auto' ? chain.defaultDeliveryType : deliveryPreference;
-    
     // 2. Base Math
-    let basePrice = (chain.basePrices[config.size] || 15.99) + (chain.crustPremium[config.crust] || 0);
-    // Extra elements are counted as toppings
+    let basePriceInternal = (chain.basePrices[config.size] || 15.99) + (chain.crustPremium[config.crust] || 0);
     let totalToppingsCount = config.cheese.length + config.meats.length + config.veggies.length + config.extras.length;
-    // Assume first cheese is free
     if (config.cheese.length > 0) totalToppingsCount -= 1;
+    let toppingsCostInternal = Math.max(0, totalToppingsCount) * chain.toppingPrice;
     
-    let toppingsCost = Math.max(0, totalToppingsCount) * chain.toppingPrice;
-    
-    // Third-party markup
-    if (deliveryType === 'third-party') {
-      basePrice *= 1.20; // 20% markup
-      toppingsCost *= 1.20;
-    }
+    const quantity = config.quantity || 1;
+    basePriceInternal *= quantity;
+    toppingsCostInternal *= quantity;
 
-    const subtotal = basePrice + toppingsCost;
-    let deliveryFee = 0;
-    let serviceFee = 0;
-    
-    if (deliveryType === 'store-delivery') {
-      deliveryFee = chain.storeDeliveryFee || 4.99;
-    } else if (deliveryType === 'third-party') {
-      deliveryFee = 2.99; // 3rd party delivery fee mock
-      serviceFee = subtotal * 0.15; // 15% platform fee
-    }
+    const createOption = (providerId: string, providerName: string, isThirdParty: boolean): DeliveryProviderOption => {
+      let markupPrice = basePriceInternal;
+      let markupToppings = toppingsCostInternal;
+      
+      if (isThirdParty) {
+        markupPrice *= 1.20; // 20% markup
+        markupToppings *= 1.20;
+      }
+      
+      const subtotal = markupPrice + markupToppings;
+      let deliveryFee = 0;
+      let serviceFee = 0;
+      
+      let estMin = 15;
+      let estMax = 25;
 
-    const tax = subtotal * 0.0825;
-    
-    // Tip only on delivery
-    const tip = deliveryType === 'pickup' ? 0 : subtotal * 0.15;
+      if (providerId === 'pickup') {
+         // pickup 
+      } else if (!isThirdParty) {
+         deliveryFee = chain.storeDeliveryFee || 4.99;
+         estMin = 25; estMax = 35;
+      } else {
+         if (providerId === 'doordash') {
+           deliveryFee = 4.00;
+           estMin = 22; estMax = 32;
+         } else if (providerId === 'ubereats') {
+           deliveryFee = 5.00;
+           estMin = 28; estMax = 38;
+         }
+         serviceFee = subtotal * 0.15;
+      }
 
-    const grandTotal = subtotal + deliveryFee + serviceFee + tax + tip;
-    
-    const breakdown: PriceBreakdown = {
-      subtotal,
-      deliveryFee,
-      serviceFee,
-      tax,
-      tip,
-      grandTotal
+      const tax = subtotal * 0.0825;
+      const tip = providerId === 'pickup' ? 0 : subtotal * 0.15;
+      
+      let grandTotal = subtotal + deliveryFee + serviceFee + tax + tip;
+      let discount = 0;
+
+      const optionCoupons = mockCoupons[providerId] || [];
+
+      // We'll calculate the best total cost here for the sake of the badges, 
+      // but users can select it in the UI. We return availableCoupons.
+      return {
+        providerId,
+        providerName,
+        priceBreakdown: {
+           subtotal,
+           deliveryFee,
+           serviceFee,
+           tax,
+           tip,
+           discount,
+           grandTotal
+        },
+        estimatedTimeMin: estMin,
+        estimatedTimeMax: estMax,
+        badges: [],
+        availableCoupons: optionCoupons
+      }
     };
 
-    // 3. Time estimation
-    let timeMin = 15;
-    let timeMax = 25;
-    if (deliveryType === 'store-delivery') {
-      timeMin = 30;
-      timeMax = 45;
-    } else if (deliveryType === 'third-party') {
-      timeMin = 45;
-      timeMax = 60;
+    const deliveryOptions: DeliveryProviderOption[] = [];
+    
+    // Add explicitly filtered options based on deliveryPreference if applicable
+    if (deliveryPreference === 'pickup' && chain.deliveryOptions.pickup) {
+       deliveryOptions.push(createOption('pickup', 'Pickup', false));
+    } else {
+       if (chain.deliveryOptions.store) deliveryOptions.push(createOption('store', 'Store Delivery', false));
+       if (chain.deliveryOptions.ubereats) deliveryOptions.push(createOption('ubereats', 'Uber Eats', true));
+       if (chain.deliveryOptions.doordash) deliveryOptions.push(createOption('doordash', 'DoorDash', true));
+    }
+    
+    // Evaluate options to find cheapest/fastest
+    let cheapestOptionId: string | undefined;
+    let fastestOptionId: string | undefined;
+    
+    let minPrice = Infinity;
+    let minTime = Infinity;
+
+    deliveryOptions.forEach(opt => {
+        if (opt.priceBreakdown.grandTotal < minPrice) { minPrice = opt.priceBreakdown.grandTotal; cheapestOptionId = opt.providerId; }
+        if (opt.estimatedTimeMin < minTime) { minTime = opt.estimatedTimeMin; fastestOptionId = opt.providerId; }
+    });
+
+    if (cheapestOptionId) {
+       const cheapOpt = deliveryOptions.find(o => o.providerId === cheapestOptionId);
+       if (cheapOpt) cheapOpt.badges.push('🏆 Cheapest Delivery');
+    }
+    if (fastestOptionId && fastestOptionId !== cheapestOptionId) {
+       const fastOpt = deliveryOptions.find(o => o.providerId === fastestOptionId);
+       if (fastOpt) fastOpt.badges.push('⚡ Fastest Arrival');
     }
 
-    // Combine mock reviews and user reviews
     const combinedReviews = [...chain.reviews, ...(userReviews[chain.id] || [])];
     const avgRating = combinedReviews.length > 0 ? combinedReviews.reduce((sum, r) => sum + r.rating, 0) / combinedReviews.length : 0;
 
-    let deliveryStatus: 'Store Delivery Available' | 'Third-Party Delivery Available' | 'Pickup Only' = 'Pickup Only';
-    if (chain.deliveryOptions.store) {
-      deliveryStatus = 'Store Delivery Available';
-    } else if (chain.deliveryOptions.doordash || chain.deliveryOptions.ubereats || chain.deliveryOptions.grubhub) {
-      deliveryStatus = 'Third-Party Delivery Available';
-    }
-
-    const thirdPartyPrices: any = {};
-    if (chain.deliveryOptions.doordash) thirdPartyPrices.doordash = grandTotal * 1.05; // mock higher price
-    if (chain.deliveryOptions.ubereats) thirdPartyPrices.ubereats = grandTotal * 1.08;
-
-    return {
+    const itemToReturn: Quote = {
       chainId: chain.id,
       chainName: chain.name,
       logoColor: chain.color,
-      deliveryType,
-      deliveryStatus,
-      basePrice: basePrice * (config.quantity || 1),
-      toppingsCost: toppingsCost * (config.quantity || 1),
-      estimatedTimeMin: timeMin,
-      estimatedTimeMax: timeMax,
-      breakdown: {
-        subtotal: subtotal * (config.quantity || 1),
-        deliveryFee,
-        serviceFee,
-        tax: tax * (config.quantity || 1),
-        tip: tip * (config.quantity || 1),
-        grandTotal: grandTotal * (config.quantity || 1)
-      },
+      basePrice: basePriceInternal,
+      toppingsCost: toppingsCostInternal,
       rating: avgRating,
       reviews: combinedReviews,
       distance: chain.distance,
-      thirdPartyPrices,
-      badges: []
+      badges: [],
+      deliveryOptions,
+      cheapestOptionId,
+      fastestOptionId,
+      bestValueOptionId: undefined
     };
-  }).sort((a, b) => a.breakdown.grandTotal - b.breakdown.grandTotal);
+    return itemToReturn;
+  }).sort((a, b) => {
+     // Sort primarily by the cheapest available delivery option
+     const getMinPrice = (q: Quote) => {
+        if (q.deliveryOptions.length === 0) return Infinity;
+        return Math.min(...q.deliveryOptions.map(o => o.priceBreakdown.grandTotal));
+     };
+     return getMinPrice(a) - getMinPrice(b);
+  });
 
-  if (sorted.length > 0) sorted[0].badges.push('Best Value');
+  if (sorted.length > 0) {
+    sorted[0].badges.push('Best Value');
+    if (sorted[0].deliveryOptions.length > 0 && sorted[0].cheapestOptionId) {
+       sorted[0].bestValueOptionId = sorted[0].cheapestOptionId;
+    }
+  }
   return sorted;
 }

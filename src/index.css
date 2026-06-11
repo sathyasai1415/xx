@@ -10,3 +10,93 @@ body {
   overscroll-behavior: none;
 }
 
+.pizza-universe {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.floating-ingredient {
+  position: absolute;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  user-select: none;
+}
+
+.glowing-particle {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.hero-pizza-glow {
+  filter: drop-shadow(0 0 35px rgba(255, 100, 20, 0.5)) drop-shadow(0 0 90px rgba(255, 40, 100, 0.25));
+}
+
+@keyframes float {
+  0% { transform: translateY(0px) rotate(15deg); }
+  50% { transform: translateY(-20px) rotate(15deg); }
+  100% { transform: translateY(0px) rotate(15deg); }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+.light-theme {
+  --tw-bg-opacity: 1;
+  background-color: rgb(245 245 244 / var(--tw-bg-opacity)) !important;
+  color: rgb(28 25 23 / var(--tw-bg-opacity)) !important;
+}
+
+.light-theme .text-white {
+  color: rgb(28 25 23) !important;
+}
+
+.light-theme .text-stone-100, .light-theme .text-stone-200 {
+  color: rgb(41 37 36) !important;
+}
+
+.light-theme .text-stone-300, .light-theme .text-stone-400 {
+  color: rgb(68 64 60) !important;
+}
+
+.light-theme .bg-black {
+  background-color: #ffffff !important;
+}
+
+.light-theme .bg-black\/60, .light-theme .bg-black\/40, .light-theme .bg-black\/80, .light-theme .bg-black\/90 {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.light-theme .bg-stone-900\/90, .light-theme .bg-stone-950\/80 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.light-theme .border-white\/10, .light-theme .border-white\/20, .light-theme .border-stone-800\/50 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.light-theme .bg-white\/5, .light-theme .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.light-theme .bg-[#111118] {
+  background-color: #ffffff !important;
+}
+
+.light-theme .from-black {
+  --tw-gradient-from: #ffffff var(--tw-gradient-from-position);
+}
+.light-theme .via-black\/40 {
+  --tw-gradient-via: rgba(255, 255, 255, 0.4) var(--tw-gradient-via-position);
+}
+

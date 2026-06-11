@@ -2,8 +2,16 @@ import React from 'react';
 import { CartItem, PizzaConfig } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { Trash2, ShoppingBag, Plus, Minus, CreditCard, ShoppingCart, Edit2 } from 'lucide-react';
+import { StoreLogo } from './StoreLogo';
+import { STORES } from '../lib/storeData';
+import { getPizzaImage } from '../utils/images';
 
 import { getNonFunctionalProps, SHOW_NON_FUNCTIONAL_MARKERS } from '../utils/debug';
+
+function getStoreDetails(storeId: string, storeName: string) {
+  const store = STORES.find(s => s.id === storeId || s.name === storeName);
+  return store ? { logoUrl: store.logoUrl, brandColor: store.brandColor } : {};
+}
 
 interface CartProps {
   items: CartItem[];
@@ -15,11 +23,15 @@ interface CartProps {
 }
 
 export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onContinueShopping, onEditItem }: CartProps) {
-  const subtotal = items.reduce((sum, item) => sum + (item.price_per_item * item.quantity), 0);
-  const deliveryFee = items.reduce((sum, item) => sum + (item.delivery_type === 'pickup' ? 0 : 4.99), 0); // Simplified mock
-  const serviceFee = items.length > 0 ? 3.50 : 0;
-  const tax = subtotal * 0.0825;
-  const total = subtotal + deliveryFee + serviceFee + tax;
+  const subtotal = items.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.subtotal : (item.price_per_item * item.quantity)), 0);
+  const deliveryFee = items.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.deliveryFee * item.quantity : 0), 0);
+  const providerServiceFee = items.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.serviceFee * item.quantity : 0), 0);
+  const platformServiceFee = items.length > 0 ? 1.99 : 0;
+  const tax = items.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.tax * item.quantity : ((item.price_per_item * item.quantity) * 0.0825)), 0);
+  const discountTotal = items.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.discount * item.quantity : 0), 0);
+  const tipTotal = items.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.tip * item.quantity : 0), 0);
+
+  const total = subtotal + deliveryFee + providerServiceFee + platformServiceFee + tax + tipTotal - discountTotal;
 
   if (items.length === 0) {
     return (
@@ -45,6 +57,21 @@ export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onCont
         <div className="lg:col-span-2 space-y-4">
            {items.map(item => (
              <motion.div key={item.id} layout className="bg-white p-5 rounded-3xl shadow-sm border border-stone-200 flex flex-col sm:flex-row gap-4">
+               {/* Cart Item Thumbnail */}
+               <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-stone-100 flex-shrink-0 overflow-hidden relative shadow-sm border border-stone-200/50">
+                 <img src={getPizzaImage(item.config || undefined)} alt={item.item_name} className="w-full h-full object-cover" />
+                 <div className="absolute top-1 left-1 z-10">
+                   <StoreLogo 
+                     storeName={item.store_name}
+                     logoUrl={getStoreDetails(item.store_id || '', item.store_name).logoUrl}
+                     brandColor={getStoreDetails(item.store_id || '', item.store_name).brandColor || 
+                       (item.store_id === 'dominos' ? 'blue' : item.store_id === 'pizza-hut' ? 'red' : item.store_id === 'papa-johns' ? 'green' : 'orange')
+                     }
+                     className="w-6 h-6 border-stone-700"
+                   />
+                 </div>
+               </div>
+
                <div className="flex-1">
                  <div className="flex justify-between items-start">
                    <div>
@@ -70,11 +97,12 @@ export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onCont
                  <div className="mt-4 p-3 bg-stone-50 rounded-xl border border-stone-200/60 flex flex-col gap-1">
                    <div className="text-xs font-bold text-stone-900 flex justify-between">
                      <span>Fulfillment:</span>
-                     <span className="capitalize">{item.delivery_type.replace('-', ' ')}</span>
+                     <span className="capitalize">{(item.delivery_type || '').replace('-', ' ')}</span>
                    </div>
                    {item.delivery_type !== 'store-delivery' && item.delivery_type !== 'pickup' && (
                      <div className="text-[10px] text-stone-500 font-medium">
-                       This store does not offer direct delivery. Third-party delivery may be available through DoorDash, Uber Eats, or Grubhub.
+                        {item.delivery_type === 'third-party' && "This store does not offer direct delivery. Third-party delivery fees may apply."}
+                        {(item.delivery_type === 'uber-direct' || item.delivery_type === 'doordash-drive') && "White-label delivery powered by a third-party driver at a fixed price per mile."}
                      </div>
                    )}
                  </div>
@@ -103,24 +131,46 @@ export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onCont
 
         <div>
           <div className="bg-stone-900 rounded-3xl p-6 text-white sticky top-6 shadow-xl shadow-stone-300">
-            <h3 className="text-xl font-black mb-6">Payment Summary</h3>
+            <h3 className="text-xl font-black mb-6">Order Summary</h3>
             <div className="space-y-3 text-sm font-medium text-stone-400">
               <div className="flex justify-between">
-                <span>Subtotal</span>
+                <span>Pizza Subtotal</span>
                 <span className="text-white">${subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between border-t border-stone-800 pt-3">
-                <span>Estimated Delivery Fee</span>
-                <span className="text-white">${deliveryFee.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between border-t border-stone-800 pt-3">
-                <span>Service Fee</span>
-                <span className="text-white">${serviceFee.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between border-t border-stone-800 pt-3">
-                <span>Estimated Tax</span>
+                <span>Tax</span>
                 <span className="text-white">${tax.toFixed(2)}</span>
               </div>
+              {platformServiceFee > 0 && (
+                <div className="flex justify-between border-t border-stone-800 pt-3">
+                  <span>Platform Service Fee</span>
+                  <span className="text-white">${platformServiceFee.toFixed(2)}</span>
+                </div>
+              )}
+              {deliveryFee > 0 && (
+                <div className="flex justify-between border-t border-stone-800 pt-3">
+                  <span>Delivery Provider Fee</span>
+                  <span className="text-white">${deliveryFee.toFixed(2)}</span>
+                </div>
+              )}
+              {providerServiceFee > 0 && (
+                <div className="flex justify-between border-t border-stone-800 pt-3">
+                  <span>Delivery Service Fee</span>
+                  <span className="text-white">${providerServiceFee.toFixed(2)}</span>
+                </div>
+              )}
+              {tipTotal > 0 && (
+                <div className="flex justify-between border-t border-stone-800 pt-3">
+                  <span>Courier Tip</span>
+                  <span className="text-white">${tipTotal.toFixed(2)}</span>
+                </div>
+              )}
+              {discountTotal > 0 && (
+                <div className="flex justify-between border-t border-stone-800 pt-3 text-green-400">
+                  <span>Coupon Discount</span>
+                  <span>-${discountTotal.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex justify-between border-t border-stone-800 pt-4 mt-2">
                 <span className="text-lg font-black text-white">Final Total</span>
                 <span className="text-lg font-black text-green-400">${total.toFixed(2)}</span>
@@ -128,15 +178,14 @@ export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onCont
             </div>
             
             <p className="text-[10px] text-stone-500 mt-4 leading-tight italic">
-              Final delivery fees and taxes may vary by platform.
+              Final delivery fees and taxes are calculated based on your address and selected provider.
             </p>
 
             <button 
               onClick={onCheckout} 
-              className={`w-full font-bold py-3.5 rounded-xl mt-6 transition-colors shadow-lg flex items-center justify-center gap-2 ${SHOW_NON_FUNCTIONAL_MARKERS ? '' : 'bg-red-600 hover:bg-red-700 text-white'}`}
-              {...getNonFunctionalProps('Checkout Payment')}
+              className="w-full font-bold py-3.5 rounded-xl mt-6 shadow-lg flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white transition-all transform hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:shadow-md"
             >
-              <CreditCard className="w-5 h-5" /> Continue to Order
+              <CreditCard className="w-5 h-5" /> Pay ${total.toFixed(2)}
             </button>
           </div>
         </div>

@@ -1,0 +1,105 @@
+export interface StoreMenuItem {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  description: string;
+}
+
+export interface StoreData {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  brandColor?: string;
+  backgroundColor?: string;
+  address: string;
+  distance: string;
+  deliveryAvailable: boolean;
+  deliveryProvider: string;
+  rating: number;
+  openNow: boolean;
+  menuItems: StoreMenuItem[];
+}
+
+export const STORES: StoreData[] = [
+  {
+    id: "dominos",
+    name: "Domino's",
+    logoUrl: "/images/stores/white-horses-in-a-lush-forest.jpg",
+    brandColor: "blue",
+    backgroundColor: "red",
+    address: "123 Main St",
+    distance: "1.2 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 4.2,
+    openNow: true,
+    menuItems: [
+      { id: "dominos-pepperoni", name: "Classic Pepperoni", image: "/images/pizzas/pepperoni.jpg", price: 17.49, description: "Classic pepperoni with robust tomato sauce." }
+    ]
+  },
+  {
+    id: "pizza-hut",
+    name: "Pizza Hut",
+    logoUrl: "/images/stores/white-horses-in-a-lush-forest.jpg",
+    brandColor: "red",
+    backgroundColor: "red",
+    address: "456 Elm St",
+    distance: "1.8 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 3.8,
+    openNow: true,
+    menuItems: [
+      { id: "ph-stuffed", name: "Stuffed Crust Veggie", image: "/images/pizzas/veggie.jpg", price: 18.49, description: "Stuffed crust topped with fresh veggies." }
+    ]
+  },
+  {
+    id: "papa-johns",
+    name: "Papa Johns",
+    logoUrl: "/images/stores/white-horses-in-a-lush-forest.jpg",
+    brandColor: "green",
+    backgroundColor: "green",
+    address: "789 Oak Ave",
+    distance: "2.5 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 4.0,
+    openNow: true,
+    menuItems: [
+      { id: "pj-bbq", name: "BBQ Chicken Fiesta", image: "/images/pizzas/bbq-chicken.jpg", price: 19.99, description: "Grilled chicken, bacon, and BBQ sauce." }
+    ]
+  },
+  {
+    id: "jets-pizza",
+    name: "Jet's Pizza",
+    logoUrl: "/images/stores/white-horses-in-a-lush-forest.jpg",
+    brandColor: "red",
+    backgroundColor: "blue",
+    address: "321 Pine Rd",
+    distance: "0.8 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 4.8,
+    openNow: true,
+    menuItems: [
+      { id: "jets-detroit", name: "Detroit-Style Deep Dish", image: "/images/pizzas/meat-lovers.jpg", price: 22.99, description: "Original thick crust deep dish." }
+    ]
+  },
+  {
+    id: "marcos-pizza",
+    name: "Marco's Pizza",
+    logoUrl: "/images/stores/white-horses-in-a-lush-forest.jpg",
+    brandColor: "red",
+    backgroundColor: "green",
+    address: "654 Birch Blvd",
+    distance: "3.2 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 4.6,
+    openNow: true,
+    menuItems: [
+      { id: "marcos-hawaiian", name: "Hawaiian", image: "/images/pizzas/hawaiian.jpg", price: 18.99, description: "Ham, pineapple, and extra cheese." }
+    ]
+  }
+];

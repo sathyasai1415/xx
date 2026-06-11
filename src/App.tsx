@@ -1,33 +1,47 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ParallaxBackground } from './components/ParallaxBackground';
+import { FloatingPizzaUniverse } from './components/FloatingPizzaUniverse';
 import './utils/debug'; // Trigger the debug console output
 import { PizzaInput } from './components/PizzaInput';
 import { ComparisonCards } from './components/ComparisonCards';
-import { Recommendations } from './components/Recommendations';
+import { HomeView } from './components/HomeView';
 import { AuthModal } from './components/AuthModal';
+import { HowItWorksView } from './components/HowItWorksView';
 import { LocalDeals } from './components/LocalDeals';
 import { AdminDashboard } from './components/AdminDashboard';
-import { PizzaConfig, DeliveryType, FavoriteConfig, Review } from './types';
+import { PizzaConfig, DeliveryType, FavoriteConfig, Review, Order, OrderItem } from './types';
 import { calculateQuotes } from './lib/pricing';
-import { Heart, Search, Star, UserCircle, Store } from 'lucide-react';
+import { Heart, Search, Star, UserCircle, Store, ShoppingBag } from 'lucide-react';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, updateDoc, getDocs, getDoc } from 'firebase/firestore';
+import { calculateOrderFinancials } from './utils/financials';
 
+import { SidebarNavigation, ViewState } from './components/SidebarNavigation';
 import { Cart } from './components/Cart';
+import { Checkout } from './components/Checkout';
+import { OrdersManager } from './components/OrdersManager';
 import { CartItem } from './types';
-import { ShoppingCart } from 'lucide-react';
 
-type ViewState = 'home' | 'local-deals' | 'admin-dashboard' | 'saved-pizzas' | 'cart';
+import { TopNav } from './components/TopNav';
+import { DietaryModal } from './components/DietaryModal';
 
 export default function App() {
   const [pizzaConfig, setPizzaConfig] = useState<PizzaConfig | null>(null);
   const [deliveryType, setDeliveryType] = useState<DeliveryType | 'auto'>('auto');
   const [view, setView] = useState<ViewState>('home');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   
+  // Theme state
+  const [isLight, setIsLight] = useState(false);
+
   // Auth state
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [dietaryModalOpen, setDietaryModalOpen] = useState(false);
+  
+  // Dietary Preferences
+  const [userPreferences, setUserPreferences] = useState<{ isVegetarian: boolean; allowedMeats: string[] } | null>(null);
   
   // Cart state
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -40,8 +54,32 @@ export default function App() {
   const [userReviews, setUserReviews] = useState<Record<string, Review[]>>({});
 
   useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (user) => {
+    // Request geolocation on website open as requested by user
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log("Location accessed successfully on startup:", position);
+        },
+        (error) => {
+          console.error("Location access denied or failed on startup:", error);
+        }
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    const unsubAuth = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      if (user && localStorage.getItem('miSlice_isPartner') !== 'true') {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists() && userDoc.data().dietary_preferences) {
+          setUserPreferences(userDoc.data().dietary_preferences);
+        } else {
+          setDietaryModalOpen(true);
+        }
+      } else {
+        setUserPreferences(null);
+      }
     });
     return () => unsubAuth();
   }, []);
@@ -67,6 +105,8 @@ export default function App() {
            } as PizzaConfig
          }));
          setFavorites(favs);
+       }, (error) => {
+         console.error('Error fetching pizza_configurations:', error);
        });
        return () => unsub();
     } else {
@@ -79,8 +119,7 @@ export default function App() {
       setAuthModalOpen(true);
       return;
     }
-    const configName = prompt("Give this pizza a name (e.g. Movie Night Special):", "My Favorite Pizza");
-    if (!configName) return;
+    const configName = `${config.size || 'Medium'} ${config.crust || 'Custom'} Pizza`;
     
     try {
       await addDoc(collection(db, 'pizza_configurations'), {
@@ -96,10 +135,9 @@ export default function App() {
         quantity: config.quantity,
         created_at: new Date().toISOString()
       });
-      alert('Pizza saved successfully!');
+      setView('saved-pizzas');
     } catch (err) {
-      console.error(err);
-      alert('Failed to save pizza.');
+      console.error('Failed to save pizza.', err);
     }
   };
   
@@ -124,15 +162,15 @@ export default function App() {
 
   const handleCustomize = (config: PizzaConfig) => {
     setPizzaConfig(config);
-    setView('home');
-    setTimeout(() => window.scrollTo({ top: 300, behavior: 'smooth' }), 100);
+    setView('pizza-builder');
+    setTimeout(() => window.scrollTo({ top: 100, behavior: 'smooth' }), 100);
   };
 
   const handleCompare = (config: PizzaConfig) => {
     setPizzaConfig(config);
-    setView('home');
+    setView('compare');
     setTimeout(() => {
-       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 100);
   };
 
@@ -148,6 +186,8 @@ export default function App() {
        const unsub = onSnapshot(q, (snapshot) => {
          const items = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CartItem));
          setCart(items);
+       }, (error) => {
+         console.error('Error fetching cart_items:', error);
        });
        return () => unsub();
     } else {
@@ -156,16 +196,129 @@ export default function App() {
     }
   }, [currentUser]);
 
+  const placeOrder = async (address: string, notes: string) => {
+    if (!currentUser) return;
+    try {
+      const subtotal = cart.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.subtotal : (item.price_per_item * item.quantity)), 0);
+      const deliveryFee = cart.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.deliveryFee * item.quantity : 0), 0);
+      const providerServiceFee = cart.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.serviceFee * item.quantity : 0), 0);
+      const platformServiceFee = cart.length > 0 ? 1.99 : 0;
+      const discountTotal = cart.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.discount * item.quantity : 0), 0);
+      const tipTotal = cart.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.tip * item.quantity : 0), 0);
+      
+      const baseStoreId = cart[0]?.store_id || 'unknown';
+      let taxRate = 0.0825;
+      let taxHandlingMode = 'restaurant';
+      if (baseStoreId !== 'unknown') {
+         const storeSnap = await getDoc(doc(db, 'stores', baseStoreId));
+         if (storeSnap.exists() && storeSnap.data().settings) {
+            taxRate = (storeSnap.data().settings.tax_rate || 8.25) / 100;
+            taxHandlingMode = storeSnap.data().settings.tax_handling_mode || 'restaurant';
+         }
+      }
+
+      const financials = calculateOrderFinancials(
+         subtotal, taxRate, deliveryFee, providerServiceFee, platformServiceFee, tipTotal, discountTotal, 0.20, taxHandlingMode
+      );
+
+      const baseStoreName = cart[0]?.store_name || 'Unknown Store';
+      const primaryProvider = cart[0]?.deliveryOption?.providerName || 'Store Delivery';
+      const primaryProviderId = cart[0]?.deliveryOption?.providerId || 'store_delivery';
+      
+      const items: OrderItem[] = cart.map((item: CartItem) => ({
+         id: item.id || Date.now().toString(),
+         orderId: '',
+         pizzaName: item.item_name,
+         pizzaImage: item.config ? '' : '',
+         size: item.config?.size || '',
+         crust: item.config?.crust || '',
+         sauce: item.config?.sauce || '',
+         cheese: item.config?.cheese || [],
+         toppings: [...(item.config?.meats || []), ...(item.config?.veggies || [])],
+         quantity: item.quantity,
+         basePrice: item.deliveryOption ? item.deliveryOption.priceBreakdown.subtotal / item.quantity : item.price_per_item,
+         toppingsTotal: 0,
+         itemTotal: item.deliveryOption ? item.deliveryOption.priceBreakdown.subtotal : (item.price_per_item * item.quantity)
+      }));
+
+      const newOrder = {
+        userId: currentUser.uid,
+        storeId: baseStoreId,
+        storeName: baseStoreName,
+        storeLogo: '',
+        orderStatus: 'placed',
+        selectedDeliveryProvider: primaryProvider,
+        selectedDeliveryProviderId: primaryProviderId,
+        deliveryType: cart[0]?.delivery_type || 'store',
+        deliveryFee,
+        providerServiceFee: providerServiceFee,
+        estimatedDeliveryTime: cart[0]?.deliveryOption ? `${cart[0].deliveryOption.estimatedTimeMin}-${cart[0].deliveryOption.estimatedTimeMax} min` : '45 min',
+        itemSubtotal: subtotal,
+        subtotal: subtotal,
+        taxAmount: financials.taxAmount,
+        tax: financials.taxAmount,
+        platformServiceFee,
+        tipAmount: tipTotal,
+        couponCode: cart[0]?.deliveryOption?.appliedCoupon?.code || '',
+        couponDiscount: discountTotal,
+        platformFeePercent: 0.20,
+        platformFeeAmount: financials.platformFeeAmt,
+        restaurantFoodPayout: financials.restaurantPayout,
+        taxHandlingMode: taxHandlingMode,
+        storeSettlement: financials.storeSettlement,
+        payoutStatus: 'pending',
+        customerFinalTotal: financials.customerTotal,
+        finalTotal: financials.customerTotal,
+        paymentStatus: 'paid_demo',
+        createdAt: new Date().toISOString(),
+        items,
+        deliveryAddress: address,
+        deliveryNotes: notes
+      };
+
+      const docRef = await addDoc(collection(db, 'orders'), newOrder);
+      const savedOrder = { ...newOrder, id: docRef.id } as Order;
+      
+      setCurrentOrder(savedOrder);
+
+      for (const item of cart) {
+        if (item.id) {
+          await deleteDoc(doc(db, 'cart_items', item.id));
+        }
+      }
+      setCart([]);
+      setView('order-confirmation');
+    } catch (e) {
+      console.error("Failed to place order:", e);
+      alert("Order could not be placed. Please try again.");
+    }
+  };
+
   const addToCart = async (item: Omit<CartItem, 'id'>, redirect: boolean = false, showAlert: boolean = true) => {
+    let currentCartId = null;
+
+    if (redirect) {
+       // "Buy Now" behavior: Clear the cart first
+       if (currentUser) {
+          const cartSnap = await getDocs(query(collection(db, 'cart_items'), where('user_id', '==', currentUser.uid)));
+          const deletePromises = cartSnap.docs.map(docSnapshot => deleteDoc(doc(db, 'cart_items', docSnapshot.id)));
+          await Promise.all(deletePromises);
+       } else {
+          setCart([]);
+          localStorage.removeItem('miSliceCart');
+       }
+    }
+
     if (currentUser) {
-       await addDoc(collection(db, 'cart_items'), {
+       const docRef = await addDoc(collection(db, 'cart_items'), {
          ...item,
          user_id: currentUser.uid,
          created_at: new Date().toISOString()
        });
+       currentCartId = docRef.id;
     } else {
        const newItem = { ...item, id: Date.now().toString() } as CartItem;
-       const newCart = [...cart, newItem];
+       const newCart = redirect ? [newItem] : [...cart, newItem];
        setCart(newCart);
        localStorage.setItem('miSliceCart', JSON.stringify(newCart));
     }
@@ -173,7 +326,7 @@ export default function App() {
     if (redirect) {
        setView('cart');
     } else if (showAlert) {
-       // alert("Added to cart"); // Usually handled by inline UI now
+       alert("Added to cart");
     }
   };
 
@@ -200,63 +353,49 @@ export default function App() {
   const isPartner = !!currentUser && localStorage.getItem('miSlice_isPartner') === 'true';
 
   return (
-    <div className="relative min-h-screen font-sans text-stone-800 flex flex-col items-center">
+    <div className={`relative min-h-screen font-sans flex transition-colors duration-500 overflow-x-hidden ${isLight ? 'bg-stone-100 text-stone-900 light-theme' : 'bg-[#080808] text-stone-100'}`}>
       <AuthModal isOpen={authModalOpen} onClose={() => setAuthModalOpen(false)} />
-      <ParallaxBackground />
+      <DietaryModal 
+        isOpen={dietaryModalOpen} 
+        onClose={() => setDietaryModalOpen(false)} 
+        currentUser={currentUser}
+        onSave={setUserPreferences}
+        canClose={!!userPreferences}
+      />
+      <TopNav 
+        currentUser={currentUser} 
+        onOpenAuth={() => setAuthModalOpen(true)} 
+        onOpenSettings={() => setDietaryModalOpen(true)}
+        isLight={isLight}
+        setIsLight={setIsLight}
+      />
+      <FloatingPizzaUniverse />
       
-      {/* Header Navigation */}
-      <header className="relative w-full z-10 flex flex-col sm:flex-row items-center justify-between px-6 sm:px-10 py-6 max-w-6xl mx-auto gap-4">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
-          <div className="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-red-200">MI</div>
-          <span className="text-xl font-bold tracking-tight text-stone-900 hidden sm:inline">slice.online</span>
-        </div>
-        <nav className="flex flex-wrap justify-center gap-4 sm:gap-8 text-sm font-bold text-stone-500">
-          <button onClick={() => setView('home')} className={`hover:text-stone-900 transition-colors ${view === 'home' ? 'text-stone-900 font-bold' : ''}`}>Comparison</button>
-          <button onClick={() => setView('local-deals')} className={`hover:text-stone-900 transition-colors ${view === 'local-deals' ? 'text-red-600 font-bold' : ''}`}>Local Deals</button>
-          
-          {currentUser && !isPartner && (
-            <button onClick={() => setView('saved-pizzas')} className={`flex items-center gap-1.5 hover:text-stone-900 transition-colors ${view === 'saved-pizzas' ? 'text-stone-900 font-bold' : ''}`}>
-              <Heart className="w-4 h-4" /> 
-              Saved Pizzas
-            </button>
-          )}
+      <SidebarNavigation 
+        currentView={view} 
+        onNavigate={setView} 
+        cartItemCount={cart.length} 
+        isOpen={sidebarOpen} 
+        setIsOpen={setSidebarOpen} 
+        isPartner={isPartner} 
+        currentUser={currentUser}
+        onOpenAuth={() => setAuthModalOpen(true)}
+      />
 
-          {isPartner && (
-            <button onClick={() => setView('admin-dashboard')} className={`flex items-center gap-1.5 text-red-600 hover:text-red-700 transition-colors ${view === 'admin-dashboard' ? 'font-black' : ''}`}>
-              <Store className="w-4 h-4" /> 
-              Dashboard
-            </button>
-          )}
-
-          {!isPartner && (
-            <button onClick={() => setView('cart')} className={`flex items-center gap-1.5 hover:text-stone-900 transition-colors ${view === 'cart' ? 'text-stone-900 font-bold' : ''}`}>
-              <ShoppingCart className="w-4 h-4" /> 
-              Cart
-              {cart.length > 0 && (
-                <span className="bg-red-600 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center -ml-1">
-                  {cart.length}
-                </span>
-              )}
-            </button>
-          )}
-        </nav>
-        <div>
-           {currentUser ? (
-             <button onClick={() => auth.signOut()} className="px-5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-full text-sm font-bold shadow-sm transition-colors flex items-center gap-2">
-               <UserCircle className="w-4 h-4" />
-               Sign Out
-             </button>
-           ) : (
-             <button onClick={() => setAuthModalOpen(true)} className="px-5 py-2 bg-stone-900 hover:bg-stone-800 text-white rounded-full text-sm font-bold shadow-xl shadow-stone-200 transition-colors">Sign In</button>
-           )}
-        </div>
-      </header>
-
-      <main className="px-4 pt-8 pb-24 max-w-6xl mx-auto flex flex-col items-center w-full z-10 flex-1">
-        
-        {view === 'local-deals' && <LocalDeals onAddToCart={addToCart} />}
+      <main className="flex-1 lg:pl-64 flex flex-col min-h-screen transition-all duration-300 relative z-10">
+         <div className="w-full px-4 pt-16 lg:pt-8 pb-24 max-w-6xl mx-auto flex-1 flex flex-col items-center">
         
         {view === 'admin-dashboard' && <AdminDashboard />}
+
+        {view === 'local-deals' && (
+          <div className="w-full">
+             <div className="mb-8 text-center pt-8">
+                <h1 className="text-3xl font-black text-white mb-2">Local Deals</h1>
+                <p className="text-stone-300">Discover handpicked deals from pizza shops near you.</p>
+             </div>
+             <LocalDeals onAddToCart={addToCart} />
+          </div>
+        )}
 
         {view === 'cart' && (
           <Cart 
@@ -267,16 +406,25 @@ export default function App() {
               if (!currentUser) {
                  setAuthModalOpen(true);
               } else {
-                 alert("Redirecting to payment/order fulfillment...");
+                 setView('checkout');
               }
-            }} 
-            onContinueShopping={() => setView('home')}
+            }}  
+            onContinueShopping={() => setView('pizza-builder')}
             onEditItem={(item) => {
               if (item.config) {
                 setPizzaConfig(item.config);
-                setView('home');
+                setView('pizza-builder');
               }
             }}
+          />
+        )}
+
+        {view === 'checkout' && (
+          <Checkout 
+            cart={cart}
+            totalToCharge={cart.reduce((sum, item) => sum + (item.deliveryOption ? item.deliveryOption.priceBreakdown.grandTotal : (item.price_per_item * item.quantity)), 0) + (cart.length > 0 ? 1.99 : 0)}
+            onCancel={() => setView('cart')}
+            onConfirmOrder={placeOrder}
           />
         )}
 
@@ -287,7 +435,7 @@ export default function App() {
               <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-stone-200 border-dashed">
                 <Heart className="w-8 h-8 mx-auto text-stone-300 mb-4" />
                 <p className="text-stone-500 font-bold">You haven't saved any pizzas yet.</p>
-                <button onClick={() => setView('home')} className="mt-4 text-red-600 font-bold text-sm hover:underline">Build one now</button>
+                <button onClick={() => setView('pizza-builder')} className="mt-4 text-red-600 font-bold text-sm hover:underline">Build one now</button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -307,7 +455,7 @@ export default function App() {
                       ))}
                     </div>
                     <button onClick={() => handleCompare(fav.config)} className="w-full bg-stone-900 text-white font-bold py-2.5 rounded-xl shadow-md hover:bg-stone-800 flex items-center justify-center gap-2">
-                      <Search className="w-4 h-4" /> Compare Prices
+                      <Search className="w-4 h-4" /> Order & Compare Prices
                     </button>
                   </div>
                 ))}
@@ -316,32 +464,178 @@ export default function App() {
           </div>
         )}
 
-        {view === 'home' && (
-          <>
-            {/* Hero */}
-            <div className="text-center mb-10 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <h1 className="text-center text-3xl sm:text-5xl font-light mb-4 sm:mb-6 text-stone-400">
-                The <span className="text-stone-900 font-semibold">smartest way</span> to slice the bill.
-              </h1>
-              <p className="text-base sm:text-lg text-stone-500 font-medium max-w-2xl mx-auto">
-                Describe your craving naturally, or build it manually. We'll compare real ingredients across the top chains.
-              </p>
-            </div>
+        {view === 'how-it-works' && (
+          <HowItWorksView />
+        )}
 
-            {/* Input */}
-            <PizzaInput 
-              currentConfig={pizzaConfig || { size: '', crust: '', sauce: '', cheese: [], meats: [], veggies: [], extras: [], quantity: 1 }} 
-              onConfigChange={setPizzaConfig}
-              onSaveFavorite={saveFavorite}
-              onAddToCart={addToCart}
+        {view === 'order-confirmation' && currentOrder && (
+          <div className="w-full max-w-3xl mx-auto py-12 text-center relative z-10">
+             <div className="w-24 h-24 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(74,222,128,0.3)] border border-green-400/50 relative">
+               <div className="absolute inset-0 bg-green-400 blur-xl opacity-20 rounded-full"></div>
+               <svg className="w-12 h-12 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+             </div>
+             <h2 className="text-4xl font-black text-white mb-4 tracking-tight drop-shadow-lg">Order Placed Successfully</h2>
+             
+             <div className="bg-black/40 backdrop-blur-2xl rounded-[2rem] p-8 shadow-[0_15px_40px_rgba(0,0,0,0.5)] border border-white/10 text-left mt-8 mb-8 space-y-6 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent pointer-events-none"></div>
+                
+                <div className="relative z-10">
+                   <p className="text-xs font-black uppercase text-stone-500 tracking-widest mb-1">Store</p>
+                   <p className="text-xl font-black text-white drop-shadow-sm">{currentOrder.storeName}</p>
+                </div>
+                {currentOrder.items.length > 0 && (
+                  <div className="relative z-10">
+                     <p className="text-xs font-black uppercase text-stone-500 tracking-widest mb-1">Items</p>
+                     <p className="text-lg font-bold text-stone-300">{currentOrder.items[0].pizzaName} {currentOrder.items.length > 1 ? `+ ${currentOrder.items.length - 1} more` : ''}</p>
+                  </div>
+                )}
+                <div className="relative z-10">
+                   <p className="text-xs font-black uppercase text-stone-500 tracking-widest mb-1">Delivery Info</p>
+                   <p className="text-lg font-bold text-stone-300 flex items-center gap-2">
+                     <span className="capitalize">{currentOrder.selectedDeliveryProvider}</span> 
+                     <span className="text-white/20">•</span> 
+                     <span className="text-green-400 font-black drop-shadow-[0_0_10px_rgba(74,222,128,0.4)]">ETA: {currentOrder.estimatedDeliveryTime}</span>
+                   </p>
+                </div>
+                <div className="relative z-10">
+                   <p className="text-xs font-black uppercase text-stone-500 tracking-widest mb-1">Final Charged Total</p>
+                   <p className="text-3xl font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">${currentOrder.finalTotal.toFixed(2)}</p>
+                </div>
+             </div>
+             
+             <div className="flex gap-4 justify-center">
+                <button onClick={() => setView('orders')} className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black py-4 px-8 rounded-2xl shadow-[0_0_30px_rgba(255,50,0,0.4)] hover:shadow-[0_0_40px_rgba(255,50,0,0.6)] transition-all hover:scale-[1.02] flex items-center gap-2 border border-orange-400/50">
+                  <ShoppingBag className="w-5 h-5" /> Track Order & View Receipt
+                </button>
+             </div>
+          </div>
+        )}
+
+        {view === 'orders' && (
+          currentUser ? (
+            <OrdersManager 
+              userId={currentUser.uid} 
+              onNavigate={setView}
+              onReorder={async (order) => {
+                let currentTotal = 0;
+                let oldTotal = order.finalTotal;
+                
+                for (const item of order.items) {
+                   const configToPrice: PizzaConfig = {
+                      size: item.size as any,
+                      crust: item.crust as any,
+                      sauce: item.sauce as any,
+                      cheese: item.cheese,
+                      meats: item.toppings,
+                      veggies: [],
+                      extras: [],
+                      quantity: item.quantity,
+                   };
+                   
+                   // Recalculate using current prices via calculateQuotes
+                   const quotesData = calculateQuotes(configToPrice, 'auto', {});
+                   const storeQuote = quotesData.find(q => q.chainId === order.storeId);
+                   
+                   const newBasePrice = storeQuote ? storeQuote.basePrice : item.basePrice;
+                   const newToppingsTotal = storeQuote ? storeQuote.toppingsCost : item.toppingsTotal;
+                   
+                   // Try to get updated delivery option pricing
+                   const matchingOption = storeQuote?.deliveryOptions.find(opt => opt.providerId === order.selectedDeliveryProviderId) || storeQuote?.deliveryOptions[0];
+                   
+                   let deliveryTotal = matchingOption ? matchingOption.priceBreakdown.grandTotal : (newBasePrice + newToppingsTotal) * item.quantity;
+                   currentTotal += deliveryTotal;
+
+                   const newItem: Omit<CartItem, 'id'> = {
+                      store_id: order.storeId || '',
+                      store_name: order.storeName || '',
+                      item_name: item.pizzaName,
+                      quantity: item.quantity,
+                      price_per_item: newBasePrice + newToppingsTotal,
+                      total_price: deliveryTotal,
+                      delivery_type: order.deliveryType as any || 'store',
+                      config: configToPrice,
+                      deliveryOption: matchingOption
+                   };
+                   
+                   await addToCart(newItem, false, false);
+                }
+
+                if (Math.abs(currentTotal - oldTotal) > 0.01) {
+                   alert(`Prices have changed since your last order.\n\nPrevious Total: $${oldTotal.toFixed(2)}\nCurrent Total: $${currentTotal.toFixed(2)}`);
+                }
+                
+                setView('cart');
+              }} 
             />
+          ) : (
+            <div className="w-full max-w-5xl mx-auto py-8">
+              <h2 className="text-3xl font-black text-stone-900 mb-8">My Orders</h2>
+              <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-stone-200 border-dashed">
+                <UserCircle className="w-8 h-8 mx-auto text-stone-300 mb-4" />
+                <p className="text-stone-500 font-bold">Please sign in to view your orders.</p>
+                <button onClick={() => setAuthModalOpen(true)} className="mt-4 text-red-600 font-bold text-sm hover:underline">Sign In</button>
+              </div>
+            </div>
+          )
+        )}
 
-            {/* Recommendations */}
-            <Recommendations onCustomize={handleCustomize} onCompare={handleCompare} />
+        {view === 'home' && (
+          <HomeView 
+             onCustomize={handleCustomize} 
+             onCompare={(config) => {
+               setPizzaConfig(config);
+               setTimeout(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, 50);
+             }} 
+             onNavigate={setView}
+             currentConfig={pizzaConfig}
+             quotes={quotes}
+             favoriteStores={favoriteStores}
+             onToggleFavoriteStore={toggleFavoriteStore}
+             onAddReview={handleAddReview}
+             onAddToCart={addToCart}
+          />
+        )}
+
+        {view === 'pizza-builder' && (
+          <div className="w-full max-w-4xl mx-auto pt-4">
+             <div className="mb-8 text-center">
+                <h1 className="text-3xl font-black text-stone-900 mb-2">Build Your Pizza</h1>
+                <p className="text-stone-500">Customize your perfect slice and see real-time price estimates.</p>
+             </div>
+             <PizzaInput 
+               currentConfig={pizzaConfig || { size: '', crust: '', sauce: '', cheese: [], meats: [], veggies: [], extras: [], quantity: 1 }} 
+               onConfigChange={setPizzaConfig}
+               onSaveFavorite={saveFavorite}
+               onAddToCart={addToCart}
+               defaultOpen={true}
+               userPreferences={userPreferences}
+             />
+             <div className="mt-12 flex justify-center">
+                <button 
+                   onClick={() => setView('compare')}
+                   disabled={!(pizzaConfig?.crust)}
+                   className={`px-8 py-4 rounded-2xl text-lg font-black shadow-xl transition-all ${pizzaConfig?.crust ? 'bg-stone-900 text-white hover:bg-stone-800 hover:-translate-y-1' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}
+                >
+                   Compare Prices Now
+                </button>
+             </div>
+          </div>
+        )}
+
+        {view === 'compare' && (
+          <div className="w-full pt-4">
+             <div className="mb-8 text-center flex flex-col items-center">
+                <h1 className="text-3xl font-black text-stone-900 mb-2">Compare Deals</h1>
+                <p className="text-stone-500 mb-6">See how your custom creation prices out across top stores.</p>
+                
+                <button onClick={() => setView('pizza-builder')} className="text-sm font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors">
+                   ← Edit pizza configuration
+                </button>
+             </div>
 
             {/* Delivery Options */}
             {pizzaConfig && (
-              <div className="mt-8 z-10 flex justify-center w-full animate-in fade-in duration-500">
+              <div className="mb-8 z-10 flex justify-center w-full animate-in fade-in duration-500">
                 <div className="inline-flex bg-white/80 backdrop-blur-md rounded-2xl p-1 shadow-sm border border-stone-200">
                   <button
                     onClick={() => setDeliveryType('auto')}
@@ -366,16 +660,25 @@ export default function App() {
             )}
 
             {/* Results */}
-            <ComparisonCards 
-               quotes={quotes} 
-               favoriteStores={favoriteStores} 
-               onToggleFavoriteStore={toggleFavoriteStore} 
-               onAddReview={handleAddReview} 
-               onAddToCart={addToCart}
-               currentConfig={pizzaConfig}
-            />
-          </>
+            {pizzaConfig && quotes.length > 0 ? (
+              <ComparisonCards 
+                 quotes={quotes} 
+                 favoriteStores={favoriteStores} 
+                 onToggleFavoriteStore={toggleFavoriteStore} 
+                 onAddReview={handleAddReview} 
+                 onAddToCart={addToCart}
+                 currentConfig={pizzaConfig}
+              />
+            ) : (
+              <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-stone-200 border-dashed max-w-2xl mx-auto">
+                 <Search className="w-8 h-8 mx-auto text-stone-300 mb-4" />
+                 <p className="text-stone-500 font-bold mb-4">You need to build a pizza first.</p>
+                 <button onClick={() => setView('pizza-builder')} className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-colors">Start Building</button>
+              </div>
+            )}
+          </div>
         )}
+        </div>
       </main>
     </div>
   );

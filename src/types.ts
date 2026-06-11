@@ -13,8 +13,15 @@ export interface PizzaConfig {
   quantity: number;
 }
 
-export type DeliveryType = 'store-delivery' | 'third-party' | 'pickup';
+export type DeliveryType = 'store-delivery' | 'third-party' | 'pickup' | 'doordash-drive' | 'uber-direct';
 export type DeliveryStatus = 'Store Delivery Available' | 'Third-Party Delivery Available' | 'Pickup Only';
+
+export interface Coupon {
+  code: string;
+  description: string;
+  discountType: 'fixed' | 'percentage' | 'free_delivery';
+  discountValue: number;
+}
 
 export interface PriceBreakdown {
   subtotal: number;
@@ -22,9 +29,60 @@ export interface PriceBreakdown {
   serviceFee: number; // For platform/third-party
   tax: number; // typically 8.25%
   tip: number; // 15% courier tip if delivered
+  discount: number; // Applied discount from coupon
   grandTotal: number;
 }
 
+export interface DeliveryProviderOption {
+  providerId: string; // 'store', 'ubereats', 'doordash', 'pickup'
+  providerName: string;
+  priceBreakdown: PriceBreakdown;
+  estimatedTimeMin: number;
+  estimatedTimeMax: number;
+  badges: string[];
+  availableCoupons: Coupon[];
+  appliedCoupon?: Coupon;
+}
+
+export interface OrderItem {
+  id: string;
+  orderId: string;
+  pizzaName: string;
+  pizzaImage: string;
+  size: string;
+  crust: string;
+  sauce: string;
+  cheese: string[];
+  toppings: string[];
+  quantity: number;
+  basePrice: number;
+  toppingsTotal: number;
+  itemTotal: number;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  storeId: string;
+  storeName: string;
+  storeLogo: string;
+  orderStatus: 'placed' | 'pending' | 'confirmed' | 'preparing' | 'ready_for_pickup' | 'out_for_delivery' | 'delivered' | 'cancelled' | 'refunded';
+  selectedDeliveryProvider: string;
+  selectedDeliveryProviderId?: string;
+  deliveryType: string;
+  deliveryFee: number;
+  providerServiceFee: number;
+  estimatedDeliveryTime: string;
+  subtotal: number;
+  tax: number;
+  platformServiceFee: number;
+  couponCode?: string;
+  couponDiscount: number;
+  finalTotal: number;
+  paymentStatus: "pending" | "paid" | "failed";
+  createdAt: string;
+  items: OrderItem[];
+}
 export interface Review {
   id: string;
   user: string;
@@ -32,28 +90,22 @@ export interface Review {
   text: string;
 }
 
-export interface ThirdPartyPrices {
-  doordash?: number | 'varies';
-  ubereats?: number | 'varies';
-  grubhub?: number | 'varies';
-}
-
 export interface Quote {
   chainId: string;
   chainName: string;
   logoColor: string; // e.g. Tailwind class or hex
-  deliveryType: DeliveryType;
-  deliveryStatus: DeliveryStatus;
   basePrice: number;
   toppingsCost: number;
-  estimatedTimeMin: number;
-  estimatedTimeMax: number;
-  breakdown: PriceBreakdown;
   rating: number;
   reviews: Review[];
   distance: string;
-  thirdPartyPrices?: ThirdPartyPrices;
   badges: string[];
+  
+  // New features for delivery options
+  deliveryOptions: DeliveryProviderOption[];
+  cheapestOptionId?: string;
+  fastestOptionId?: string;
+  bestValueOptionId?: string;
 }
 
 export interface ChainPricingData {
@@ -89,6 +141,8 @@ export interface CartItem {
   delivery_type: DeliveryType;
   platform?: string; // e.g., 'store-delivery', 'doordash', 'ubereats'
   estimatedTime?: string;
+  custom_delivery_fee?: number;
+  deliveryOption?: DeliveryProviderOption;
 }
 
 export interface FavoriteConfig {

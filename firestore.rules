@@ -6,72 +6,66 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    function incoming() { return request.resource.data; }
-    function existing() { return resource.data; }
     function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isStoreAdmin(storeId) { return isSignedIn() && request.auth.uid == storeId; }
+    function isPlatformAdmin() { return isSignedIn() && request.auth.token.email == 'sathyasai1415@gmail.com'; }
 
-    function isValidUser(data) {
-      return data.keys().hasAny(['email', 'created_at']) &&
-             data.email is string;
-    }
-
-    function isValidStore(data) {
-      return data.keys().hasAny(['unique_store_id', 'store_name', 'created_at']) &&
-             data.unique_store_id is string &&
-             data.store_name is string;
-    }
-
-    function isValidMenuPrice(data) {
-      return data.keys().hasAny(['store_id', 'item_name', 'base_price']) &&
-             data.store_id is string &&
-             data.item_name is string &&
-             data.base_price is number;
-    }
-
-    function isValidDeal(data) {
-      return data.keys().hasAny(['store_id', 'title', 'discounted_price']) &&
-             data.store_id is string &&
-             data.title is string &&
-             data.discounted_price is number;
-    }
-
-    function isValidPizzaConfig(data) {
-      return data.keys().hasAny(['user_id', 'pizza_name', 'size']) &&
-             data.user_id is string &&
-             data.pizza_name is string &&
-             data.size is string;
-    }
-    
     match /users/{userId} {
-      allow read, update, delete: if isSignedIn() && request.auth.uid == userId;
-      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming());
+      allow read, update, delete: if isOwner(userId) || isPlatformAdmin();
+      allow create: if isOwner(userId) || isPlatformAdmin();
     }
 
     match /stores/{storeId} {
       allow read: if true;
-      allow update: if isSignedIn() && request.auth.uid == storeId && isValidStore(incoming());
-      allow create: if isSignedIn() && request.auth.uid == storeId && isValidStore(incoming());
+      allow write: if isStoreAdmin(storeId) || isPlatformAdmin();
     }
 
+    match /menus/{menuId} {
+      allow read: if true;
+      allow write: if isStoreAdmin(request.resource.data.storeId) || (resource != null && isStoreAdmin(resource.data.storeId)) || isPlatformAdmin();
+    }
+    
     match /stores/{storeId}/menu_prices/{priceId} {
       allow read: if true;
-      allow write: if isSignedIn() && request.auth.uid == storeId && isValidMenuPrice(incoming());
+      allow write: if isStoreAdmin(storeId) || isPlatformAdmin();
+    }
+    
+    match /stores/{storeId}/settings/{settingId} {
+      allow read: if true;
+      allow write: if isStoreAdmin(storeId) || isPlatformAdmin();
+    }
+
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
     }
 
     match /deals/{dealId} {
       allow read: if true;
-      allow create: if isSignedIn() && incoming().store_id == request.auth.uid && isValidDeal(incoming());
-      allow update, delete: if isSignedIn() && existing().store_id == request.auth.uid;
+      allow write: if isStoreAdmin(request.resource.data.store_id) || (resource != null && isStoreAdmin(resource.data.store_id)) || isPlatformAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow create: if isOwner(request.resource.data.userId) || isPlatformAdmin();
+      allow read, update: if isOwner(resource.data.userId) || isStoreAdmin(resource.data.storeId) || isPlatformAdmin();
+      allow delete: if isPlatformAdmin();
+    }
+
+    match /order_items/{itemId} {
+      allow create: if isSignedIn();
+      allow read: if isSignedIn(); // We could constrain this by join but simple for MVP
     }
 
     match /pizza_configurations/{configId} {
-      allow read, update, delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid && isValidPizzaConfig(request.resource.data);
+      allow read, update, delete: if 'user_id' in resource.data && isOwner(resource.data.user_id);
+      allow create: if isOwner(request.resource.data.user_id);
     }
 
     match /cart_items/{itemId} {
-      allow read, update, delete: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow create: if isSignedIn() && request.resource.data.user_id == request.auth.uid;
+      allow read, update, delete: if 'user_id' in resource.data && isOwner(resource.data.user_id);
+      allow create: if isOwner(request.resource.data.user_id);
     }
   }
 }
+

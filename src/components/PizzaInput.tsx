@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Loader2, Search, SlidersHorizontal, Settings2, Heart, ShoppingCart } from 'lucide-react';
 import { PizzaConfig, Size, Crust, Sauce, CartItem } from '../types';
-import { Pizza3DPreview } from './Pizza3DPreview';
+import { Pizza3DBuilder } from './Pizza3DBuilder';
 
 interface PizzaInputProps {
   onConfigChange: (config: PizzaConfig) => void;
   currentConfig: PizzaConfig;
   onSaveFavorite: (config: PizzaConfig) => void;
   onAddToCart?: (item: Omit<CartItem, 'id'>, redirect: boolean) => void;
+  defaultOpen?: boolean;
+  userPreferences?: { isVegetarian: boolean; allowedMeats: string[] } | null;
 }
 
 const OPTIONS = {
@@ -52,11 +54,15 @@ function getToppingIcon(topping: string): string | null {
   return null;
 }
 
-export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAddToCart }: PizzaInputProps) {
+export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAddToCart, defaultOpen = false, userPreferences = null }: PizzaInputProps) {
   const [aiQuery, setAiQuery] = useState('');
   const [isParsing, setIsParsing] = useState(false);
-  const [showBuilder, setShowBuilder] = useState(false);
+  const [showBuilder, setShowBuilder] = useState(defaultOpen);
   const [savedMessage, setSavedMessage] = useState('');
+
+  const availableMeats = userPreferences 
+    ? (userPreferences.isVegetarian ? [] : userPreferences.allowedMeats) 
+    : OPTIONS.meats;
 
   const handleAiSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +93,7 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
       setShowBuilder(true);
     } catch (err) {
       console.error(err);
-      alert('AI failed to parse. Opening manual builder instead.');
+      // AI failed to parse, falling back to manual builder silently
       setShowBuilder(true);
     } finally {
       setIsParsing(false);
@@ -134,19 +140,19 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
 
   return (
     <div className="w-full max-w-2xl mx-auto z-10 relative">
-      <div className="bg-white/60 backdrop-blur-md rounded-3xl shadow-xl shadow-stone-200/50 border border-white overflow-hidden">
+      <div className="bg-black/60 backdrop-blur-2xl rounded-3xl shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-white/10 overflow-hidden">
         
         {/* AI Input Section */}
-        <div className="p-6 sm:p-8">
+        <div className="p-6 sm:p-8 border-b border-white/5">
           <form onSubmit={handleAiSubmit} className="relative flex items-center group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-orange-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
-            <div className="relative flex items-center bg-white border border-stone-200 rounded-2xl w-full">
+            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-orange-400/20 rounded-2xl blur opacity-50 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative flex items-center bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl w-full transition-all focus-within:border-white/30">
               <div className="pl-4 pr-2 text-stone-400">
                 <Sparkles className="w-6 h-6" />
               </div>
               <input
                 type="text"
-                className="w-full bg-transparent border-none py-4 text-lg sm:text-xl text-stone-700 placeholder:text-stone-400 focus:outline-none focus:ring-0"
+                className="w-full bg-transparent border-none py-4 text-lg sm:text-xl text-white placeholder:text-stone-500 font-bold tracking-tight focus:outline-none focus:ring-0"
                 placeholder="I'm craving a large thin crust with..."
                 value={aiQuery}
                 onChange={(e) => setAiQuery(e.target.value)}
@@ -156,7 +162,7 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
                 <button 
                   type="button"
                   onClick={() => setShowBuilder(!showBuilder)}
-                  className="p-3 text-stone-400 hover:text-red-600 hover:bg-stone-50 rounded-xl transition-colors hidden sm:block"
+                  className="p-3 text-stone-400 hover:text-white hover:bg-white/10 rounded-xl transition-colors hidden sm:block"
                   title="Manual Builder"
                 >
                   <SlidersHorizontal className="w-5 h-5" />
@@ -164,7 +170,7 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
                 <button
                   type="submit"
                   disabled={isParsing || !aiQuery.trim()}
-                  className="bg-red-600 hover:bg-red-700 disabled:bg-stone-300 text-white px-6 py-3 rounded-xl transition-colors font-bold"
+                  className="bg-red-600 border border-red-500/50 hover:bg-red-700 disabled:bg-white/10 disabled:text-stone-500 text-white px-6 py-3 rounded-xl transition-colors font-bold shadow-[0_0_15px_rgba(255,30,30,0.3)] disabled:shadow-none"
                 >
                   {isParsing ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Analyze</span>}
                 </button>
@@ -175,7 +181,7 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
           <button 
             type="button"
             onClick={() => setShowBuilder(!showBuilder)}
-            className="mt-4 flex items-center justify-center gap-2 w-full text-sm font-medium text-stone-500 hover:text-red-600 sm:hidden"
+            className="mt-4 flex items-center justify-center gap-2 w-full text-sm font-bold text-stone-500 hover:text-white sm:hidden"
           >
             <Settings2 className="w-4 h-4" />
             Manual Builder
@@ -189,9 +195,9 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="border-t border-slate-100 bg-slate-50/50"
+              className="bg-transparent"
             >
-              <div className="p-6 sm:p-8 space-y-8 bg-white/80">
+              <div className="p-6 sm:p-8 space-y-8">
                 <div className="flex items-center justify-between">
                    <h3 className="text-xs font-bold uppercase tracking-widest text-stone-400">Pizza Builder</h3>
                    <button 
@@ -208,7 +214,7 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
                    <div className="absolute top-0 right-0 w-64 h-64 bg-stone-800 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/4"></div>
                    
                    <div className="w-48 h-48 sm:w-64 sm:h-64 flex-shrink-0 relative">
-                     <Pizza3DPreview config={currentConfig} />
+                     <Pizza3DBuilder config={currentConfig} />
                    </div>
                    
                    <div className="flex-1 relative z-10 w-full">
@@ -332,11 +338,13 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
                      <div className="space-y-3">
                         <label className="block text-[11px] font-bold tracking-widest text-stone-500 uppercase">Meats</label>
                         <div className="flex flex-wrap gap-1.5">
-                           {OPTIONS.meats.map(m => (
+                           {availableMeats.length > 0 ? availableMeats.map(m => (
                              <button key={m} onClick={() => handleArrayToggle('meats', m)} className={`px-2.5 py-1 text-[10px] font-bold uppercase rounded-md transition-all ${currentConfig.meats.includes(m) ? 'bg-red-100 text-red-800' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}>
                                {m} {currentConfig.meats.includes(m) ? '×' : '+'}
                              </button>
-                           ))}
+                           )) : (
+                             <span className="text-xs text-stone-400 italic">No meats selected in your dietary preferences.</span>
+                           )}
                         </div>
                      </div>
                      <div className="space-y-3">

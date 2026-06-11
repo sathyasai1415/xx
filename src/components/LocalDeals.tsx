@@ -4,6 +4,13 @@ import { MapPin, Search, Clock, Navigation, Plus, Minus, ShoppingCart } from 'lu
 import { motion, AnimatePresence } from 'motion/react';
 import { db } from '../lib/firebase';
 import { collection, query, where, onSnapshot, getDocs } from 'firebase/firestore';
+import { StoreLogo } from './StoreLogo';
+import { STORES } from '../lib/storeData';
+
+function getStoreDetails(storeId: string, storeName: string) {
+  const store = STORES.find(s => s.id === storeId || s.name === storeName);
+  return store ? { logoUrl: store.logoUrl, brandColor: store.brandColor } : {};
+}
 
 interface LocalDeal {
   id: string;
@@ -20,6 +27,8 @@ interface LocalDeal {
   updated_at: string;
   // Merged store data
   store_name?: string;
+  logo_url?: string;
+  brand_color?: string;
   distance?: number;
 }
 
@@ -57,6 +66,8 @@ export function LocalDeals({ onAddToCart }: { onAddToCart: (item: Omit<CartItem,
              return {
                ...d,
                store_name: store?.store_name || "Unknown Store",
+               logo_url: store?.logo_url,
+               brand_color: store?.brand_color,
                distance: dist
              };
            }).sort((a,b) => (a.distance || 0) - (b.distance || 0));
@@ -95,11 +106,11 @@ export function LocalDeals({ onAddToCart }: { onAddToCart: (item: Omit<CartItem,
     <div className="w-full max-w-5xl mx-auto z-10 relative pt-8 pb-16">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h2 className="text-3xl font-black text-stone-900 tracking-tight flex items-center gap-3">
+          <h2 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
             <MapPin className="w-8 h-8 text-red-500" />
             Local Deals
           </h2>
-          <p className="text-stone-500 font-medium mt-1">Real-time discounts from stores near you.</p>
+          <p className="text-stone-300 font-medium mt-1">Real-time discounts from stores near you.</p>
         </div>
       </div>
 
@@ -141,18 +152,27 @@ function DealCard({ deal, i, onAddToCart }: { key?: string | number, deal: Local
          transition={{ delay: i * 0.05 }}
          className="bg-white rounded-3xl overflow-hidden shadow-lg border border-stone-100 flex flex-col group bg-gradient-to-b from-white to-stone-50"
       >
-          <div className="h-40 bg-stone-200 relative overflow-hidden flex items-center justify-center">
+          <div className="pizza-card-media bg-stone-200">
             {deal.image_url ? (
-               <img src={deal.image_url} alt={deal.title} className="w-full h-full object-cover" loading="lazy" />
+               <img src={deal.image_url} alt={deal.title} className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.src='/images/stores/white-horses-in-a-lush-forest.jpg'; }} />
             ) : (
-               <div className="text-stone-400 font-black text-2xl uppercase opacity-20 tracking-widest">{deal.store_name}</div>
+               <img src="/images/stores/white-horses-in-a-lush-forest.jpg" alt={deal.title} className="w-full h-full object-cover" loading="lazy" />
             )}
-            <div className="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute top-3 right-3 bg-red-600 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-sm z-20">
               SAVE ${ (deal.original_price - deal.discounted_price).toFixed(2) }
             </div>
-            <div className="absolute bottom-3 left-3 flex gap-1">
-               <span className="bg-black/60 backdrop-blur-sm text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded capitalize">
-                 {deal.delivery_type.replace('-', ' ')}
+            <div className="absolute top-3 left-3 flex gap-1 z-20">
+               <StoreLogo 
+                 storeName={deal.store_name || "Unknown Store"}
+                 logoUrl={'/images/stores/white-horses-in-a-lush-forest.jpg'}
+                 brandColor={deal.brand_color || getStoreDetails(deal.store_id || '', deal.store_name || '').brandColor || 'stone'}
+                 className="w-10 h-10 border-stone-800 shadow"
+               />
+            </div>
+            <div className="absolute bottom-3 left-3 flex gap-1 z-20">
+               <span className="bg-black/80 backdrop-blur-sm text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded capitalize">
+                 {(deal.delivery_type || '').replace('-', ' ')}
                </span>
             </div>
           </div>
