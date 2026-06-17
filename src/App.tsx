@@ -27,6 +27,12 @@ import { RewardsView } from './components/RewardsView';
 import { NotificationsView } from './components/NotificationsView';
 import { OrderTracking } from './components/OrderTracking';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { useAuth } from './store/AuthContext';
+import { Loader2 } from 'lucide-react';
+import {
+  getUserData, saveUserCart, saveUserSavedPizzas,
+  saveCustomerOrder, getCustomerOrders,
+} from './lib/db';
 
 export default function App() {
   const [pizzaConfig, setPizzaConfig] = useState<PizzaConfig | null>(null);
@@ -34,6 +40,7 @@ export default function App() {
   const [view, setView] = useState<ViewState>('home');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
+  const [pastOrders, setPastOrders] = useState<Order[]>([]);
 
   // Theme state
   const [isLight, setIsLight] = useState(false);
@@ -56,6 +63,7 @@ export default function App() {
   const saveCart = (newCart: CartItem[]) => {
     setCart(newCart);
     localStorage.setItem('miSliceCart', JSON.stringify(newCart));
+    if (uid) saveUserCart(uid, newCart).catch(e => console.error('saveUserCart failed', e));
   };
 
   // Saved pizzas — all local/localStorage
@@ -69,6 +77,7 @@ export default function App() {
   const saveFavoritesToStorage = (favs: typeof favorites) => {
     setFavorites(favs);
     localStorage.setItem('miSliceFavorites', JSON.stringify(favs));
+    if (uid) saveUserSavedPizzas(uid, favs).catch(e => console.error('saveUserSavedPizzas failed', e));
   };
 
   // Favorite stores
@@ -79,47 +88,36 @@ export default function App() {
     } catch { return []; }
   });
 
-  // Store owner state
-  const [isStoreOwner, setIsStoreOwner] = useState<boolean>(() => !!localStorage.getItem('storeOwnerName'));
-  const [storeOwnerName, setStoreOwnerName] = useState<string>(() => localStorage.getItem('storeOwnerName') || '');
-  const [storeOwnerModalOpen, setStoreOwnerModalOpen] = useState(false);
+  // Authentication (Firebase) — drives role-based routing
+  const { profile, loading: authLoading, isAuthenticated, isStoreOwner, logout } = useAuth();
+  const uid = profile?.uid ?? null;
+  const customerName = profile?.fullName || '';
+  const storeOwnerName = profile?.storeName || profile?.fullName || '';
 
-  // Customer session — gates the customer interface behind a role choice
-  const [customerName, setCustomerName] = useState<string>(() => localStorage.getItem('miSliceCustomerName') || '');
-  const [isCustomer, setIsCustomer] = useState<boolean>(() => localStorage.getItem('miSliceRole') === 'customer');
-
-  const handleCustomerSignIn = (name: string) => {
-    setIsCustomer(true);
-    setCustomerName(name);
-    localStorage.setItem('miSliceRole', 'customer');
-    localStorage.setItem('miSliceCustomerName', name);
+  const handleSignOut = async () => {
+    await logout();
+    setCart([]);
     setView('home');
-    showToast(`Welcome${name && name !== 'Guest' ? `, ${name}` : ''}!`);
+    showToast('Signed out.');
   };
 
-  const handleCustomerSignOut = () => {
-    setIsCustomer(false);
-    setCustomerName('');
-    localStorage.removeItem('miSliceRole');
-    localStorage.removeItem('miSliceCustomerName');
-    setView('home');
-  };
-
-  const handleStoreOwnerLogin = (name: string) => {
-    setIsStoreOwner(true);
-    setStoreOwnerName(name);
-    localStorage.setItem('storeOwnerName', name);
-    setView('admin-dashboard');
-    showToast(`Welcome back, ${name}!`);
-  };
-
-  const handleStoreOwnerLogout = () => {
-    setIsStoreOwner(false);
-    setStoreOwnerName('');
-    localStorage.removeItem('storeOwnerName');
-    setView('home');
-    showToast('Signed out of store dashboard.');
-  };
+  // On login, hydrate cart, saved pizzas and order history from Firestore.
+  useEffect(() => {
+    if (!uid) return;
+    let active = true;
+    (async () => {
+      try {
+        const [data, orders] = await Promise.all([getUserData(uid), getCustomerOrders(uid)]);
+        if (!active) return;
+        if (Array.isArray(data.cart)) setCart(data.cart as CartItem[]);
+        if (Array.isArray(data.savedPizzas)) setFavorites(data.savedPizzas as typeof favorites);
+        setPastOrders(orders as Order[]);
+      } catch (e) {
+        console.error('Failed to load user data from Firestore', e);
+      }
+    })();
+    return () => { active = false; };
+  }, [uid]);
 
   // Reviews
   const [userReviews, setUserReviews] = useState<Record<string, Review[]>>({});
@@ -195,7 +193,7 @@ export default function App() {
 
     const order: Order = {
       id: `order-${Date.now()}`,
-      userId: 'local',
+      userId: uid || 'local',
       storeId: cart[0]?.store_id || 'unknown',
       storeName: cart[0]?.store_name || 'Unknown Store',
       storeLogo: '',
@@ -234,7 +232,19 @@ export default function App() {
       deliveryNotes: notes,
     } as Order;
 
+    // Persist the order to Firestore (so it survives, shows in history, and is
+    // visible to the store owner). Falls back gracefully if offline.
+    if (uid) {
+      try {
+        const id = await saveCustomerOrder(order);
+        order.id = id;
+      } catch (e) {
+        console.error('Failed to persist order to Firestore', e);
+      }
+    }
+
     setCurrentOrder(order);
+    setPastOrders(prev => [order, ...prev.filter(o => o.id !== order.id)].slice(0, 50));
     saveCart([]);
     setView('order-tracking');
   };
@@ -264,50 +274,31 @@ export default function App() {
     setView('cart');
   };
 
-  // Past orders stored locally
-  const [pastOrders, setPastOrders] = useState<Order[]>(() => {
-    try {
-      const saved = localStorage.getItem('miSliceOrders');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  // Past orders — hydrated from Firestore on login and prepended on checkout.
 
-  // Save order to history when confirmed
-  useEffect(() => {
-    if (currentOrder) {
-      const updated = [currentOrder, ...pastOrders].slice(0, 20);
-      setPastOrders(updated);
-      localStorage.setItem('miSliceOrders', JSON.stringify(updated));
-    }
-  }, [currentOrder]);
+  // ── Auth loading splash ───────────────────────────────────────────────────
+  if (authLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#080808]">
+        <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
+      </div>
+    );
+  }
 
-  // ── Store owner: render dedicated portal, no customer UI ──────────────────
-  if (isStoreOwner) {
+  // ── Not signed in: Firebase login/signup gate ─────────────────────────────
+  if (!isAuthenticated) {
     return (
       <AppProvider>
-        <StoreOwnerModal
-          isOpen={storeOwnerModalOpen}
-          onClose={() => setStoreOwnerModalOpen(false)}
-          onLogin={handleStoreOwnerLogin}
-        />
-        <StoreOwnerDashboard storeName={storeOwnerName} onLogout={handleStoreOwnerLogout} />
+        <WelcomeScreen />
       </AppProvider>
     );
   }
 
-  // ── Role gate: shown on landing until a role is chosen ────────────────────
-  if (!isCustomer) {
+  // ── Store owner: dedicated portal, no customer UI ─────────────────────────
+  if (isStoreOwner) {
     return (
       <AppProvider>
-        <StoreOwnerModal
-          isOpen={storeOwnerModalOpen}
-          onClose={() => setStoreOwnerModalOpen(false)}
-          onLogin={handleStoreOwnerLogin}
-        />
-        <WelcomeScreen
-          onCustomerSignIn={handleCustomerSignIn}
-          onStoreOwnerSignIn={() => setStoreOwnerModalOpen(true)}
-        />
+        <StoreOwnerDashboard storeName={storeOwnerName} onLogout={handleSignOut} />
       </AppProvider>
     );
   }
@@ -321,12 +312,6 @@ export default function App() {
           {toast}
         </div>
       )}
-
-      <StoreOwnerModal
-        isOpen={storeOwnerModalOpen}
-        onClose={() => setStoreOwnerModalOpen(false)}
-        onLogin={handleStoreOwnerLogin}
-      />
 
       <TopNav
         isLight={isLight}
@@ -346,10 +331,10 @@ export default function App() {
         setIsOpen={setSidebarOpen}
         isStoreOwner={isStoreOwner}
         storeOwnerName={storeOwnerName}
-        onStoreOwnerLogin={() => setStoreOwnerModalOpen(true)}
-        onStoreOwnerLogout={handleStoreOwnerLogout}
+        onStoreOwnerLogin={handleSignOut}
+        onStoreOwnerLogout={handleSignOut}
         customerName={customerName}
-        onCustomerLogout={handleCustomerSignOut}
+        onCustomerLogout={handleSignOut}
       />
 
       <main className="flex-1 lg:pl-64 flex flex-col min-h-screen transition-all duration-300 relative z-10">

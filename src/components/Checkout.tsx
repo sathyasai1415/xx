@@ -25,10 +25,19 @@ export function Checkout({ cart, totalToCharge, onCancel, onConfirmOrder }: Chec
     setError('');
     setIsProcessing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create the payment server-side (real Stripe when configured, else demo).
+      const resp = await fetch('/api/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: Math.round(totalToCharge * 100), currency: 'usd' }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err?.error || 'Payment failed');
+      }
       await onConfirmOrder(address, notes);
-    } catch (e) {
-      setError("Payment failed. Please try again.");
+    } catch (e: any) {
+      setError(e?.message || 'Payment failed. Please try again.');
     } finally {
       setIsProcessing(false);
     }

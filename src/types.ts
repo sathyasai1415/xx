@@ -82,6 +82,8 @@ export interface Order {
   paymentStatus: "pending" | "paid" | "failed";
   createdAt: string;
   items: OrderItem[];
+  deliveryAddress?: string;
+  deliveryNotes?: string;
 }
 export interface Review {
   id: string;

@@ -2,70 +2,70 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isSelf(uid) { return isSignedIn() && request.auth.uid == uid; }
+    // A store document's id equals its owner's uid (set at store-owner signup).
+    function isStoreOwner(storeId) { return isSignedIn() && request.auth.uid == storeId; }
+
+    // ── User profiles ─────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read: if isSelf(userId);
+      allow create: if isSelf(userId);
+      allow update, delete: if isSelf(userId);
+    }
+
+    // ── Stores (public catalog) ───────────────────────────────────────────
+    match /stores/{storeId} {
+      allow read: if true;
+      allow create: if isStoreOwner(storeId);
+      allow update, delete: if isStoreOwner(storeId);
+
+      // Menu items live under each store; public read, owner-only writes.
+      match /menu/{itemId} {
+        allow read: if true;
+        allow write: if isStoreOwner(storeId);
+      }
+      match /settings/{settingId} {
+        allow read: if true;
+        allow write: if isStoreOwner(storeId);
+      }
+    }
+
+    // ── Deals (public read; owner of the referenced store writes) ──────────
+    match /deals/{dealId} {
+      allow read: if true;
+      allow create: if isStoreOwner(request.resource.data.store_id);
+      allow update, delete: if resource != null && isStoreOwner(resource.data.store_id);
+    }
+
+    // ── Coupons (public read; owner/admin writes via console/functions) ────
+    match /coupons/{couponId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ── Orders ────────────────────────────────────────────────────────────
+    match /orders/{orderId} {
+      allow create: if isSignedIn() && isSelf(request.resource.data.userId);
+      allow read: if isSignedIn() &&
+        (isSelf(resource.data.userId) || isStoreOwner(resource.data.storeId));
+      // Customer may cancel their own; store owner may advance status.
+      allow update: if isSignedIn() &&
+        (isSelf(resource.data.userId) || isStoreOwner(resource.data.storeId));
+      allow delete: if false;
+    }
+
+    // ── Reviews ───────────────────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && isSelf(request.resource.data.userId);
+      allow update, delete: if isSignedIn() && isSelf(resource.data.userId);
+    }
+
+    // Default deny.
     match /{document=**} {
       allow read, write: if false;
     }
-
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isStoreAdmin(storeId) { return isSignedIn() && request.auth.uid == storeId; }
-    function isPlatformAdmin() { return isSignedIn() && request.auth.token.email == 'sathyasai1415@gmail.com'; }
-
-    match /users/{userId} {
-      allow read, update, delete: if isOwner(userId) || isPlatformAdmin();
-      allow create: if isOwner(userId) || isPlatformAdmin();
-    }
-
-    match /stores/{storeId} {
-      allow read: if true;
-      allow write: if isStoreAdmin(storeId) || isPlatformAdmin();
-    }
-
-    match /menus/{menuId} {
-      allow read: if true;
-      allow write: if isStoreAdmin(request.resource.data.storeId) || (resource != null && isStoreAdmin(resource.data.storeId)) || isPlatformAdmin();
-    }
-    
-    match /stores/{storeId}/menu_prices/{priceId} {
-      allow read: if true;
-      allow write: if isStoreAdmin(storeId) || isPlatformAdmin();
-    }
-    
-    match /stores/{storeId}/settings/{settingId} {
-      allow read: if true;
-      allow write: if isStoreAdmin(storeId) || isPlatformAdmin();
-    }
-
-    match /coupons/{couponId} {
-      allow read: if true;
-      allow write: if isPlatformAdmin();
-    }
-
-    match /deals/{dealId} {
-      allow read: if true;
-      allow write: if isStoreAdmin(request.resource.data.store_id) || (resource != null && isStoreAdmin(resource.data.store_id)) || isPlatformAdmin();
-    }
-
-    match /orders/{orderId} {
-      allow create: if isOwner(request.resource.data.userId) || isPlatformAdmin();
-      allow read, update: if isOwner(resource.data.userId) || isStoreAdmin(resource.data.storeId) || isPlatformAdmin();
-      allow delete: if isPlatformAdmin();
-    }
-
-    match /order_items/{itemId} {
-      allow create: if isSignedIn();
-      allow read: if isSignedIn(); // We could constrain this by join but simple for MVP
-    }
-
-    match /pizza_configurations/{configId} {
-      allow read, update, delete: if 'user_id' in resource.data && isOwner(resource.data.user_id);
-      allow create: if isOwner(request.resource.data.user_id);
-    }
-
-    match /cart_items/{itemId} {
-      allow read, update, delete: if 'user_id' in resource.data && isOwner(resource.data.user_id);
-      allow create: if isOwner(request.resource.data.user_id);
-    }
   }
 }
-
