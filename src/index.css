@@ -295,6 +295,18 @@ body {
 /* Light-up dark borders */
 .clay-page [class*="border-white/"] { border-color: rgba(120, 130, 160, 0.16) !important; }
 
+/* Hero text sitting on the background video — white + legible shadow.
+   Uses dedicated classes so the light-theme safety net above never recolors it. */
+.hero-on-video { color: #ffffff !important; text-shadow: 0 2px 22px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.5); }
+.hero-sub-on-video { color: rgba(255,255,255,0.94) !important; text-shadow: 0 1px 12px rgba(0,0,0,0.55); }
+.hero-badge-on-video {
+  background: rgba(20, 20, 28, 0.4) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,0.28) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
 .light-theme {
   --tw-bg-opacity: 1;
   background-color: rgb(245 245 244 / var(--tw-bg-opacity)) !important;

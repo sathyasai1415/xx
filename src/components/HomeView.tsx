@@ -107,8 +107,8 @@ function HeroVideo() {
       raf = requestAnimationFrame(() => {
         const y = window.scrollY || 0;
         if (wrapRef.current) {
-          const fade = Math.max(0, 1 - y / 520);
-          wrapRef.current.style.opacity = String(0.6 * fade);
+          const fade = Math.max(0, 1 - y / 600);
+          wrapRef.current.style.opacity = String(fade);
           wrapRef.current.style.transform = `translateY(${y * 0.35}px) scale(${1 + Math.min(y, 600) * 0.0004})`;
         }
       });
@@ -131,7 +131,7 @@ function HeroVideo() {
   return (
     <>
       {/* Video layer — behind all hero content, never blocks the UI */}
-      <div ref={wrapRef} className="pointer-events-none absolute top-0 left-0 right-0 h-[92vh] z-0 overflow-hidden" style={{ opacity: 0.6 }}>
+      <div ref={wrapRef} className="pointer-events-none absolute top-0 left-0 right-0 h-[78vh] sm:h-[88vh] z-0 overflow-hidden" style={{ opacity: 1 }}>
         <video
           ref={videoRef}
           src="/hero-bg.mp4"
@@ -142,8 +142,8 @@ function HeroVideo() {
           onError={() => setReady(false)}
           className="w-full h-full object-cover"
         />
-        {/* Soft white wash so dark clay text + search stay readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/45 via-white/55 to-[#f3f5fb]" />
+        {/* Light scrim: darken slightly for white hero text, fade to page at the bottom */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-[#f3f5fb]" />
       </div>
 
       {/* Floating controls — clear of the top nav, don't block search */}
@@ -231,13 +231,13 @@ export function HomeView({
       </button>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section className="relative z-10 w-full max-w-3xl mx-auto px-5 pt-16 pb-10 text-center">
+      <section className="relative z-10 w-full max-w-3xl mx-auto px-4 sm:px-5 pt-14 sm:pt-20 pb-10 text-center">
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 clay-soft bg-white text-stone-500 text-[10px] font-black px-4 py-2 rounded-full mb-8"
+          className="hero-badge-on-video inline-flex items-center gap-2 text-[10px] font-black px-4 py-2 rounded-full mb-7"
         >
-          <Sparkles className="w-3 h-3 text-amber-500" />
+          <Sparkles className="w-3 h-3 text-amber-300" />
           Michigan's Pizza Price Comparison · {RECOMMENDATION_SLICES.mostOrdered().length} stores live
         </motion.div>
 
@@ -245,10 +245,10 @@ export function HomeView({
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.06 }}
-          className="text-5xl sm:text-6xl font-black text-stone-800 tracking-tight leading-[1.05] mb-5"
+          className="hero-on-video text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.07] mb-5"
         >
           The Cheapest{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-400">
             Pizza
           </span>
           <br />in Michigan
@@ -258,7 +258,7 @@ export function HomeView({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.1 }}
-          className="text-stone-500 text-base max-w-md mx-auto mb-10 leading-relaxed"
+          className="hero-sub-on-video text-sm sm:text-base max-w-md mx-auto mb-9 leading-relaxed"
         >
           Compare live prices, delivery fees, and deals from every pizza shop near you.
         </motion.p>
