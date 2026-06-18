@@ -54,20 +54,20 @@ const BUDGET_OPTIONS = [
 ] as const;
 
 const DIETARY_OPTIONS = [
-  { key: 'vegetarian' as const, label: 'Vegetarian', icon: Leaf, color: 'text-green-400 border-green-500/40 bg-green-500/10' },
-  { key: 'vegan' as const, label: 'Vegan', icon: Leaf, color: 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10' },
-  { key: 'glutenFree' as const, label: 'Gluten Free', icon: Wheat, color: 'text-amber-400 border-amber-500/40 bg-amber-500/10' },
-  { key: 'halal' as const, label: 'Halal', icon: Star, color: 'text-blue-400 border-blue-500/40 bg-blue-500/10' },
-  { key: 'spicy' as const, label: 'Love Spicy', icon: Flame, color: 'text-red-400 border-red-500/40 bg-red-500/10' },
+  { key: 'vegetarian' as const, label: 'Vegetarian', icon: Leaf, color: 'text-green-700 border-green-200 bg-green-50' },
+  { key: 'vegan' as const, label: 'Vegan', icon: Leaf, color: 'text-emerald-700 border-emerald-200 bg-emerald-50' },
+  { key: 'glutenFree' as const, label: 'Gluten Free', icon: Wheat, color: 'text-amber-700 border-amber-200 bg-amber-50' },
+  { key: 'halal' as const, label: 'Halal', icon: Star, color: 'text-blue-700 border-blue-200 bg-blue-50' },
+  { key: 'spicy' as const, label: 'Love Spicy', icon: Flame, color: 'text-red-700 border-red-200 bg-red-50' },
 ];
 
-const INPUT = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-stone-600 focus:outline-none focus:border-red-500/50 transition-colors";
-const LABEL = "text-[10px] font-black uppercase tracking-widest text-stone-500 block mb-2";
-const SECTION = "bg-white/4 border border-white/8 rounded-2xl p-5";
+const INPUT = "w-full clay-inset px-4 py-3 text-stone-800 text-sm placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-300/60 transition-all";
+const LABEL = "text-[10px] font-black uppercase tracking-widest text-stone-400 block mb-2";
+const SECTION = "clay bg-white rounded-3xl p-5";
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
-    <button onClick={onChange} className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${on ? 'bg-red-600' : 'bg-stone-700'}`}>
+    <button onClick={onChange} className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${on ? 'bg-amber-500' : 'bg-stone-300'}`}>
       <div className={`w-4 h-4 bg-white rounded-full absolute top-1 transition-all shadow ${on ? 'left-6' : 'left-1'}`} />
     </button>
   );
@@ -126,16 +126,14 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <h1 className="text-2xl font-black text-white">My Profile</h1>
-          <p className="text-stone-500 text-sm mt-0.5">Personalize your MiSlice experience</p>
+          <h1 className="text-2xl font-black text-stone-800">My Profile</h1>
+          <p className="text-stone-400 text-sm mt-0.5">Personalize your MiSlice experience</p>
         </div>
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={saveProfile}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm transition-all ${
-            saved
-              ? 'bg-green-600 text-white'
-              : 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-[0_0_15px_rgba(255,80,0,0.3)]'
+          className={`clay-btn flex items-center gap-2 px-5 py-2.5 font-black text-sm ${
+            saved ? 'bg-green-500 text-white' : 'clay-accent text-stone-900'
           }`}
         >
           {saved ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-4 h-4" /> Save Profile</>}
@@ -145,13 +143,13 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
       {/* Avatar + quick stats */}
       <div className={SECTION + " flex items-center gap-5"}>
         <div className="relative">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center text-white font-black text-xl shadow-[0_0_20px_rgba(255,80,0,0.3)]">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white font-black text-xl">
             {initials}
           </div>
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-white font-black text-base">{profile.name || 'Pizza Lover'}</p>
-          <p className="text-stone-500 text-xs">{profile.email || 'Add your email below'}</p>
+          <p className="text-stone-800 font-black text-base">{profile.name || 'Pizza Lover'}</p>
+          <p className="text-stone-400 text-xs">{profile.email || 'Add your email below'}</p>
         </div>
         {/* Quick stats */}
         <div className="hidden sm:flex items-center gap-4">
@@ -160,8 +158,8 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
             { icon: Heart, val: favCount, label: 'Saved' },
           ].map(s => (
             <div key={s.label} className="text-center">
-              <p className="text-lg font-black text-white">{s.val}</p>
-              <p className="text-[9px] font-bold text-stone-500 uppercase tracking-wider">{s.label}</p>
+              <p className="text-lg font-black text-stone-800">{s.val}</p>
+              <p className="text-[9px] font-bold text-stone-400 uppercase tracking-wider">{s.label}</p>
             </div>
           ))}
         </div>
@@ -169,7 +167,7 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
 
       {/* Basic info */}
       <div className={SECTION + " space-y-4"}>
-        <h3 className="font-black text-white text-sm uppercase tracking-widest">Personal Info</h3>
+        <h3 className="font-black text-stone-800 text-sm uppercase tracking-widest">Personal Info</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className={LABEL}>Full Name</label>
@@ -189,32 +187,32 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
       {/* Delivery addresses */}
       <div className={SECTION + " space-y-4"}>
         <div className="flex items-center justify-between">
-          <h3 className="font-black text-white text-sm uppercase tracking-widest">Delivery Addresses</h3>
+          <h3 className="font-black text-stone-800 text-sm uppercase tracking-widest">Delivery Addresses</h3>
           {!addressForm && (
             <button onClick={() => setAddressForm({ label: 'Home', address: '' })}
-              className="flex items-center gap-1.5 text-xs font-bold text-orange-400 hover:text-orange-300 bg-orange-500/10 border border-orange-500/20 px-3 py-1.5 rounded-xl transition-colors">
+              className="flex items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 border border-amber-100 px-3 py-1.5 rounded-xl transition-colors">
               <Plus className="w-3 h-3" /> Add Address
             </button>
           )}
         </div>
 
         {profile.addresses.map(addr => (
-          <div key={addr.id} className="flex items-start gap-3 py-3 px-3 rounded-xl bg-white/4 border border-white/8">
-            <div className="w-8 h-8 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-              <MapPin className="w-4 h-4 text-red-400" />
+          <div key={addr.id} className="flex items-start gap-3 py-3 px-3 rounded-xl clay-inset">
+            <div className="w-8 h-8 bg-amber-50 border border-amber-100 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+              <MapPin className="w-4 h-4 text-amber-500" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <p className="text-sm font-bold text-white">{addr.label}</p>
-                {addr.isDefault && <span className="text-[8px] font-black text-green-400 bg-green-500/10 border border-green-500/20 px-1.5 py-0.5 rounded-full">DEFAULT</span>}
+                <p className="text-sm font-bold text-stone-800">{addr.label}</p>
+                {addr.isDefault && <span className="text-[8px] font-black text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full">DEFAULT</span>}
               </div>
-              <p className="text-xs text-stone-500">{addr.address}</p>
+              <p className="text-xs text-stone-400">{addr.address}</p>
             </div>
             <div className="flex gap-1 shrink-0">
               {!addr.isDefault && (
-                <button onClick={() => setDefault(addr.id)} className="text-[9px] font-bold text-stone-500 hover:text-green-400 transition-colors px-2 py-1">Set default</button>
+                <button onClick={() => setDefault(addr.id)} className="text-[9px] font-bold text-stone-400 hover:text-green-600 transition-colors px-2 py-1">Set default</button>
               )}
-              <button onClick={() => removeAddress(addr.id)} className="text-stone-600 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/10 transition-colors">
+              <button onClick={() => removeAddress(addr.id)} className="text-stone-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -222,7 +220,7 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
         ))}
 
         {addressForm && (
-          <div className="bg-white/4 border border-red-500/25 rounded-xl p-4 space-y-3">
+          <div className="clay-inset border border-amber-200 rounded-xl p-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={LABEL}>Label</label>
@@ -236,8 +234,8 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
               </div>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setAddressForm(null)} className="px-4 py-2 rounded-xl text-xs font-bold text-stone-400 bg-white/5 border border-white/10">Cancel</button>
-              <button onClick={addAddress} className="px-4 py-2 rounded-xl text-xs font-bold bg-red-600 hover:bg-red-500 text-white flex items-center gap-1.5">
+              <button onClick={() => setAddressForm(null)} className="clay-btn px-4 py-2 text-xs font-bold text-stone-500 bg-white">Cancel</button>
+              <button onClick={addAddress} className="clay-accent px-4 py-2 text-xs font-bold text-stone-900 flex items-center gap-1.5">
                 <Plus className="w-3.5 h-3.5" /> Add Address
               </button>
             </div>
@@ -245,13 +243,13 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
         )}
 
         {profile.addresses.length === 0 && !addressForm && (
-          <p className="text-stone-600 text-xs text-center py-3">No saved addresses. Add one for faster checkout.</p>
+          <p className="text-stone-400 text-xs text-center py-3">No saved addresses. Add one for faster checkout.</p>
         )}
       </div>
 
       {/* Dietary preferences */}
       <div className={SECTION + " space-y-4"}>
-        <h3 className="font-black text-white text-sm uppercase tracking-widest">Dietary Preferences</h3>
+        <h3 className="font-black text-stone-800 text-sm uppercase tracking-widest">Dietary Preferences</h3>
         <p className="text-xs text-stone-500">We'll filter results and show compatible options first.</p>
         <div className="flex flex-wrap gap-2">
           {DIETARY_OPTIONS.map(d => {
@@ -262,7 +260,7 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
                 key={d.key}
                 onClick={() => toggleDietary(d.key)}
                 className={`flex items-center gap-2 px-3.5 py-2.5 rounded-2xl border text-xs font-bold transition-all ${
-                  on ? d.color : 'border-white/10 bg-white/4 text-stone-400 hover:border-white/20'
+                  on ? d.color : 'clay-inset text-stone-500 hover:text-stone-800'
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -276,7 +274,7 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
 
       {/* Favorite toppings */}
       <div className={SECTION + " space-y-4"}>
-        <h3 className="font-black text-white text-sm uppercase tracking-widest">Favourite Toppings</h3>
+        <h3 className="font-black text-stone-800 text-sm uppercase tracking-widest">Favourite Toppings</h3>
         <p className="text-xs text-stone-500">Pre-fills your pizza builder and powers recommendations.</p>
         <div className="flex flex-wrap gap-2">
           {TOPPING_OPTIONS.map(t => {
@@ -287,8 +285,8 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
                 onClick={() => toggleTopping(t.label)}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl border text-xs font-bold transition-all ${
                   on
-                    ? 'border-orange-500/50 bg-orange-500/12 text-orange-300 shadow-[0_0_10px_rgba(249,115,22,0.15)]'
-                    : 'border-white/10 bg-white/4 text-stone-400 hover:border-white/20 hover:text-stone-200'
+                    ? 'border-amber-200 bg-amber-50 text-amber-700'
+                    : 'clay-inset text-stone-500 hover:text-stone-800'
                 }`}
               >
                 <span className="text-sm">{t.emoji}</span>
@@ -307,7 +305,7 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
 
       {/* Crust preference */}
       <div className={SECTION + " space-y-4"}>
-        <h3 className="font-black text-white text-sm uppercase tracking-widest">Favourite Crust</h3>
+        <h3 className="font-black text-stone-800 text-sm uppercase tracking-widest">Favourite Crust</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {CRUST_OPTIONS.map(c => (
             <button
@@ -315,8 +313,8 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
               onClick={() => update({ favoriteCrustStyle: c })}
               className={`px-3 py-2.5 rounded-xl border text-xs font-bold transition-all text-left ${
                 profile.favoriteCrustStyle === c
-                  ? 'border-violet-500/50 bg-violet-500/12 text-violet-300'
-                  : 'border-white/10 bg-white/4 text-stone-400 hover:border-white/20'
+                  ? 'border-violet-200 bg-violet-50 text-violet-700'
+                  : 'clay-inset text-stone-500 hover:text-stone-800'
               }`}
             >
               {profile.favoriteCrustStyle === c && <Check className="w-3 h-3 inline mr-1" />}
@@ -328,7 +326,7 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
 
       {/* Budget range */}
       <div className={SECTION + " space-y-4"}>
-        <h3 className="font-black text-white text-sm uppercase tracking-widest">Budget Per Pizza</h3>
+        <h3 className="font-black text-stone-800 text-sm uppercase tracking-widest">Budget Per Pizza</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {BUDGET_OPTIONS.map(b => (
             <button
@@ -336,8 +334,8 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
               onClick={() => update({ budgetRange: b.value })}
               className={`py-3 px-3 rounded-xl border text-xs font-bold text-center transition-all ${
                 profile.budgetRange === b.value
-                  ? 'border-green-500/50 bg-green-500/10 text-green-300'
-                  : 'border-white/10 bg-white/4 text-stone-400 hover:border-white/20'
+                  ? 'border-green-200 bg-green-50 text-green-700'
+                  : 'clay-inset text-stone-500 hover:text-stone-800'
               }`}
             >
               <p className="font-black text-sm mb-0.5">{b.label}</p>
@@ -350,23 +348,23 @@ export function CustomerProfile({ onNavigate }: CustomerProfileProps) {
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-3">
         <button onClick={() => onNavigate('orders')}
-          className="flex items-center gap-3 p-4 bg-white/4 border border-white/8 rounded-2xl hover:border-white/15 transition-all group text-left">
-          <div className="w-9 h-9 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-center shrink-0">
-            <ShoppingBag className="w-4 h-4 text-blue-400" />
+          className="clay-btn flex items-center gap-3 p-4 bg-white rounded-2xl group text-left">
+          <div className="w-9 h-9 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center shrink-0">
+            <ShoppingBag className="w-4 h-4 text-blue-500" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">My Orders</p>
-            <p className="text-[10px] text-stone-600">{orderCount} order{orderCount !== 1 ? 's' : ''}</p>
+            <p className="text-sm font-bold text-stone-800 group-hover:text-blue-600 transition-colors">My Orders</p>
+            <p className="text-[10px] text-stone-400">{orderCount} order{orderCount !== 1 ? 's' : ''}</p>
           </div>
         </button>
         <button onClick={() => onNavigate('rewards')}
-          className="flex items-center gap-3 p-4 bg-white/4 border border-white/8 rounded-2xl hover:border-white/15 transition-all group text-left">
-          <div className="w-9 h-9 bg-yellow-500/10 border border-yellow-500/20 rounded-xl flex items-center justify-center shrink-0">
-            <Award className="w-4 h-4 text-yellow-400" />
+          className="clay-btn flex items-center gap-3 p-4 bg-white rounded-2xl group text-left">
+          <div className="w-9 h-9 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center shrink-0">
+            <Award className="w-4 h-4 text-amber-500" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white group-hover:text-yellow-300 transition-colors">My Rewards</p>
-            <p className="text-[10px] text-stone-600">250 points earned</p>
+            <p className="text-sm font-bold text-stone-800 group-hover:text-amber-600 transition-colors">My Rewards</p>
+            <p className="text-[10px] text-stone-400">250 points earned</p>
           </div>
         </button>
       </div>

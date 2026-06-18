@@ -22,7 +22,7 @@ function NavBadge({ count }: { count: number }) {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-          className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1 shadow-[0_0_8px_rgba(239,68,68,0.6)] border border-[#080808]"
+          className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-amber-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1 shadow-sm border-2 border-white"
         >
           {count > 99 ? '99+' : count}
         </motion.span>
@@ -41,12 +41,12 @@ export function TopNav({ isLight, setIsLight, cartItemCount, onCartClick, onFavo
         {/* Left — logo (mobile only, hidden on lg where sidebar shows) */}
         <button
           onClick={onLogoClick}
-          className="lg:hidden flex items-center gap-2 bg-black/50 backdrop-blur-xl border border-white/10 rounded-2xl px-3 py-2 hover:border-white/20 transition-colors"
+          className="lg:hidden clay-soft flex items-center gap-2 bg-white rounded-2xl px-3 py-2"
         >
-          <div className="w-7 h-7 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shadow-[0_0_12px_rgba(255,80,0,0.4)]">
+          <div className="w-7 h-7 bg-gradient-to-br from-amber-400 to-orange-500 rounded-lg flex items-center justify-center">
             <Pizza className="w-4 h-4 text-white" />
           </div>
-          <span className="text-white font-black text-sm tracking-tight">MiSlice</span>
+          <span className="text-stone-800 font-black text-sm tracking-tight">MiSlice</span>
         </button>
 
         {/* Desktop spacer (sidebar takes left side) */}
@@ -60,7 +60,7 @@ export function TopNav({ isLight, setIsLight, cartItemCount, onCartClick, onFavo
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.94 }}
             onClick={onFavoritesClick}
-            className="relative flex items-center gap-2 bg-black/50 backdrop-blur-xl border border-white/10 hover:border-red-500/40 rounded-2xl px-3.5 py-2.5 transition-all group"
+            className="clay-btn relative flex items-center gap-2 bg-white rounded-2xl px-3.5 py-2.5 group"
             title="Favourites"
           >
             <Heart className={`w-4 h-4 transition-colors ${favoriteCount > 0 ? 'fill-red-500 text-red-500' : 'text-stone-400 group-hover:text-red-400'}`} />
@@ -77,7 +77,7 @@ export function TopNav({ isLight, setIsLight, cartItemCount, onCartClick, onFavo
                 </motion.span>
               )}
             </AnimatePresence>
-            <span className="text-xs font-bold text-stone-400 group-hover:text-white transition-colors hidden sm:inline">
+            <span className="text-xs font-bold text-stone-500 group-hover:text-stone-800 transition-colors hidden sm:inline">
               Favourites
             </span>
             <NavBadge count={0} />
@@ -88,14 +88,12 @@ export function TopNav({ isLight, setIsLight, cartItemCount, onCartClick, onFavo
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.94 }}
             onClick={onCartClick}
-            className={`relative flex items-center gap-2 backdrop-blur-xl border rounded-2xl px-3.5 py-2.5 transition-all group ${
-              cartItemCount > 0
-                ? 'bg-red-600/20 border-red-500/50 hover:bg-red-600/30'
-                : 'bg-black/50 border-white/10 hover:border-orange-500/40'
+            className={`clay-btn relative flex items-center gap-2 rounded-2xl px-3.5 py-2.5 group ${
+              cartItemCount > 0 ? 'bg-amber-50' : 'bg-white'
             }`}
             title="Cart"
           >
-            <ShoppingCart className={`w-4 h-4 transition-colors ${cartItemCount > 0 ? 'text-red-400' : 'text-stone-400 group-hover:text-orange-400'}`} />
+            <ShoppingCart className={`w-4 h-4 transition-colors ${cartItemCount > 0 ? 'text-amber-600' : 'text-stone-400 group-hover:text-amber-500'}`} />
             <AnimatePresence mode="wait">
               {cartItemCount > 0 && (
                 <motion.span
@@ -103,13 +101,13 @@ export function TopNav({ isLight, setIsLight, cartItemCount, onCartClick, onFavo
                   initial={{ opacity: 0, scale: 0.7 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.7 }}
-                  className="text-xs font-black text-red-300"
+                  className="text-xs font-black text-amber-600"
                 >
                   {cartItemCount} item{cartItemCount !== 1 ? 's' : ''}
                 </motion.span>
               )}
             </AnimatePresence>
-            <span className={`text-xs font-bold transition-colors hidden sm:inline ${cartItemCount > 0 ? 'text-red-300' : 'text-stone-400 group-hover:text-white'}`}>
+            <span className={`text-xs font-bold transition-colors hidden sm:inline ${cartItemCount > 0 ? 'text-amber-600' : 'text-stone-500 group-hover:text-stone-800'}`}>
               Cart
             </span>
             <NavBadge count={cartItemCount} />
@@ -120,7 +118,7 @@ export function TopNav({ isLight, setIsLight, cartItemCount, onCartClick, onFavo
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.94 }}
             onClick={() => setIsLight(!isLight)}
-            className="w-10 h-10 rounded-2xl bg-black/50 backdrop-blur-xl border border-white/10 hover:border-white/25 flex items-center justify-center text-stone-400 hover:text-white transition-all"
+            className="clay-btn w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-stone-400 hover:text-amber-500"
             title="Toggle theme"
           >
             {isLight ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}

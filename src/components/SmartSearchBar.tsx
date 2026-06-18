@@ -224,10 +224,10 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
 
   return (
     <div ref={containerRef} className="relative w-full max-w-3xl mx-auto z-30">
-      {/* Glow */}
+      {/* Soft glow */}
       <motion.div
-        animate={{ opacity: expanded ? 0.9 : 0.35, scale: expanded ? 1.04 : 1 }}
-        className="absolute inset-0 bg-gradient-to-r from-orange-500/25 via-red-500/20 to-purple-500/20 rounded-3xl blur-2xl pointer-events-none"
+        animate={{ opacity: expanded ? 0.5 : 0.25 }}
+        className="absolute inset-0 bg-gradient-to-r from-amber-200/40 via-orange-200/30 to-amber-100/30 rounded-3xl blur-2xl pointer-events-none"
       />
 
       <form onSubmit={handleSubmit}>
@@ -235,17 +235,17 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
           layout
           animate={{ borderRadius: hasDropdown ? '20px 20px 0 0' : '9999px' }}
           transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-          className="flex items-center bg-black/55 backdrop-blur-2xl border border-white/20 relative z-10"
-          style={{ boxShadow: expanded ? '0 0 40px rgba(255,80,0,0.2), 0 20px 60px rgba(0,0,0,0.5)' : '0 4px 20px rgba(0,0,0,0.3)' }}
+          className="flex items-center bg-white relative z-10 border border-stone-100"
+          style={{ boxShadow: expanded ? '0 14px 44px -8px rgba(176,182,204,0.7), inset 0 1px 0 rgba(255,255,255,0.9)' : '8px 8px 24px rgba(176,182,204,0.45), -8px -8px 22px rgba(255,255,255,0.95)' }}
           onClick={() => { setExpanded(true); inputRef.current?.focus(); }}
         >
           {/* Location pill — desktop only */}
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); onLocationChange?.(location); }}
-            className="hidden md:flex items-center gap-1.5 pl-4 pr-3 py-2 border-r border-white/10 text-stone-300 hover:text-white transition-colors shrink-0 group"
+            className="hidden md:flex items-center gap-1.5 pl-4 pr-3 py-2 border-r border-stone-100 text-stone-600 hover:text-stone-900 transition-colors shrink-0 group"
           >
-            <MapPin className="w-4 h-4 text-red-400 group-hover:scale-110 transition-transform shrink-0" />
+            <MapPin className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform shrink-0" />
             <span className="text-sm font-bold whitespace-nowrap max-w-[120px] truncate">{location}</span>
           </button>
 
@@ -262,7 +262,7 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
                 onKeyDown={e => { if (e.key === 'Escape') { setExpanded(false); inputRef.current?.blur(); } }}
                 enterKeyHint="search"
                 aria-label="Search for pizza"
-                className="w-full bg-transparent text-white font-medium focus:outline-none py-3 sm:py-3.5 pr-7 text-sm sm:text-base"
+                className="w-full bg-transparent text-stone-800 font-medium focus:outline-none py-3 sm:py-3.5 pr-7 text-sm sm:text-base"
                 placeholder={micActive ? 'Listening…' : ''}
               />
               {!query && !micActive && (
@@ -281,7 +281,7 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
               )}
               {query && (
                 <button type="button" onClick={(e) => { e.stopPropagation(); setQuery(''); inputRef.current?.focus(); }}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-stone-500 hover:text-white p-1">
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-1">
                   <X className="w-4 h-4" />
                 </button>
               )}
@@ -294,7 +294,7 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
               type="button"
               onClick={(e) => { e.stopPropagation(); toggleMic(); }}
               aria-label="Voice search"
-              className={`p-2 sm:p-2.5 mx-0.5 sm:mx-1 transition-colors rounded-full hover:bg-white/10 shrink-0 ${micActive ? 'text-red-400' : 'text-stone-400 hover:text-white'}`}
+              className={`p-2 sm:p-2.5 mx-0.5 sm:mx-1 transition-colors rounded-full hover:bg-stone-100 shrink-0 ${micActive ? 'text-red-500' : 'text-stone-400 hover:text-stone-700'}`}
             >
               <motion.span animate={{ scale: micActive ? [1, 1.25, 1] : 1 }} transition={{ repeat: micActive ? Infinity : 0, duration: 0.8 }} className="block">
                 <Mic className="w-5 h-5" />
@@ -307,7 +307,7 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
             type="submit"
             onClick={(e) => e.stopPropagation()}
             aria-label="Search"
-            className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black rounded-full shadow-[0_0_20px_rgba(255,50,0,0.4)] transition-all mr-1 sm:mr-1.5 shrink-0 flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:py-3 sm:px-6 text-sm"
+            className="clay-accent text-stone-900 font-black rounded-full mr-1 sm:mr-1.5 shrink-0 flex items-center justify-center w-10 h-10 sm:w-auto sm:h-auto sm:py-3 sm:px-6 text-sm"
           >
             <Search className="w-4 h-4 sm:hidden" />
             <span className="hidden sm:inline">Search</span>
@@ -323,17 +323,17 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ type: 'spring', stiffness: 500, damping: 40 }}
-            className="absolute left-0 right-0 bg-black/80 backdrop-blur-3xl border border-white/15 border-t-0 rounded-b-2xl shadow-[0_20px_60px_rgba(0,0,0,0.7)] overflow-hidden z-20 max-h-[65vh] overflow-y-auto no-scrollbar"
+            className="absolute left-0 right-0 bg-white border border-stone-100 border-t-0 rounded-b-2xl shadow-[0_24px_60px_-12px_rgba(176,182,204,0.7)] overflow-hidden z-20 max-h-[65vh] overflow-y-auto no-scrollbar"
           >
             {/* AI insight */}
             {aiInsight && (
-              <div className="flex items-center gap-2.5 px-4 sm:px-5 py-3 bg-gradient-to-r from-violet-600/20 to-blue-600/10 border-b border-white/8">
-                <div className="w-6 h-6 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center shrink-0">
-                  <Bot className="w-3.5 h-3.5 text-violet-400" />
+              <div className="flex items-center gap-2.5 px-4 sm:px-5 py-3 bg-violet-50 border-b border-stone-100">
+                <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5 text-violet-500" />
                 </div>
-                <p className="text-violet-300 text-xs font-bold flex-1 min-w-0 truncate">{aiInsight}</p>
+                <p className="text-violet-600 text-xs font-bold flex-1 min-w-0 truncate">{aiInsight}</p>
                 <button type="button" onClick={() => doSearch(query)}
-                  className="flex items-center gap-1 text-[10px] font-black text-violet-300 bg-violet-500/10 border border-violet-500/20 px-2.5 py-1 rounded-full hover:bg-violet-500/20 transition-colors shrink-0">
+                  className="flex items-center gap-1 text-[10px] font-black text-violet-600 bg-violet-100 px-2.5 py-1 rounded-full hover:bg-violet-200 transition-colors shrink-0">
                   Apply <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
@@ -344,18 +344,18 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
               <div className="py-2">
                 {suggestions.map(s => (
                   <button key={s} type="button" onClick={() => doSearch(s)}
-                    className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-white/8 text-left transition-colors group">
-                    <Search className="w-4 h-4 text-stone-600 group-hover:text-stone-400 shrink-0" />
-                    <span className="text-sm text-stone-300 group-hover:text-white truncate">{s}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-stone-700 group-hover:text-stone-400 ml-auto shrink-0" />
+                    className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-stone-50 text-left transition-colors group">
+                    <Search className="w-4 h-4 text-stone-300 group-hover:text-stone-500 shrink-0" />
+                    <span className="text-sm text-stone-600 group-hover:text-stone-900 truncate">{s}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-stone-300 group-hover:text-stone-500 ml-auto shrink-0" />
                   </button>
                 ))}
                 <button type="button" onClick={() => doSearch(query)}
-                  className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-white/8 text-left transition-colors group border-t border-white/5">
-                  <div className="w-4 h-4 rounded-full bg-orange-500/20 flex items-center justify-center shrink-0">
-                    <Search className="w-2.5 h-2.5 text-orange-400" />
+                  className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-stone-50 text-left transition-colors group border-t border-stone-100">
+                  <div className="w-4 h-4 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                    <Search className="w-2.5 h-2.5 text-amber-600" />
                   </div>
-                  <span className="text-sm text-stone-300 group-hover:text-white truncate">Search for "<strong className="text-white">{query}</strong>"</span>
+                  <span className="text-sm text-stone-600 group-hover:text-stone-900 truncate">Search for "<strong className="text-stone-900">{query}</strong>"</span>
                 </button>
               </div>
             )}
@@ -364,15 +364,15 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
             {query.length === 0 && (
               <div className="py-2">
                 {/* Recommendations from previous searches */}
-                <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 px-4 sm:px-5 pt-2 pb-1 flex items-center gap-1.5">
-                  <Star className="w-3 h-3 text-orange-400" /> {recs.personalized ? 'Recommended for you' : 'Popular picks'}
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 px-4 sm:px-5 pt-2 pb-1 flex items-center gap-1.5">
+                  <Star className="w-3 h-3 text-amber-500" /> {recs.personalized ? 'Recommended for you' : 'Popular picks'}
                 </p>
                 {recs.items.map((r, i) => (
                   <button key={r} type="button" onClick={() => doSearch(r)}
-                    className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-white/8 text-left transition-colors group">
-                    <span className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/10 border border-orange-500/20 flex items-center justify-center text-[11px] font-black text-orange-300 shrink-0">{i + 1}</span>
-                    <span className="text-sm text-stone-200 group-hover:text-white font-bold truncate">{r}</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-stone-700 group-hover:text-stone-400 ml-auto shrink-0" />
+                    className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-stone-50 text-left transition-colors group">
+                    <span className="w-6 h-6 rounded-lg bg-amber-100 flex items-center justify-center text-[11px] font-black text-amber-600 shrink-0">{i + 1}</span>
+                    <span className="text-sm text-stone-700 group-hover:text-stone-900 font-bold truncate">{r}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-stone-300 group-hover:text-stone-500 ml-auto shrink-0" />
                   </button>
                 ))}
 
@@ -380,24 +380,24 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
                 {recentSearches.length > 0 && (
                   <>
                     <div className="flex items-center justify-between px-4 sm:px-5 pt-3 pb-1">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-500">Recent</p>
-                      <button type="button" onClick={clearRecent} className="text-[10px] font-bold text-stone-600 hover:text-red-400 transition-colors">Clear</button>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-stone-400">Recent</p>
+                      <button type="button" onClick={clearRecent} className="text-[10px] font-bold text-stone-400 hover:text-red-500 transition-colors">Clear</button>
                     </div>
                     {recentSearches.slice(0, 4).map((s, i) => (
                       <button key={i} type="button" onClick={() => doSearch(s)}
-                        className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-white/6 text-left transition-colors group">
-                        <Clock className="w-4 h-4 text-stone-600 group-hover:text-stone-400 shrink-0" />
-                        <span className="text-sm text-stone-400 group-hover:text-white truncate">{s}</span>
+                        className="w-full flex items-center gap-3 px-4 sm:px-5 py-2.5 hover:bg-stone-50 text-left transition-colors group">
+                        <Clock className="w-4 h-4 text-stone-300 group-hover:text-stone-500 shrink-0" />
+                        <span className="text-sm text-stone-500 group-hover:text-stone-900 truncate">{s}</span>
                       </button>
                     ))}
                   </>
                 )}
 
                 {/* AI hint */}
-                <div className="mx-3 sm:mx-4 mt-3 mb-1 p-3 bg-gradient-to-r from-violet-600/10 to-transparent border border-violet-500/15 rounded-xl flex items-center gap-2.5">
-                  <Sparkles className="w-4 h-4 text-violet-400 shrink-0" />
-                  <p className="text-[11px] sm:text-xs text-stone-400 leading-snug">
-                    Try <span className="text-violet-300 font-bold">"pizza for 6 under $50"</span> or <span className="text-violet-300 font-bold">"fastest vegan pizza"</span>
+                <div className="mx-3 sm:mx-4 mt-3 mb-1 p-3 bg-violet-50 rounded-xl flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-violet-500 shrink-0" />
+                  <p className="text-[11px] sm:text-xs text-stone-500 leading-snug">
+                    Try <span className="text-violet-600 font-bold">"pizza for 6 under $50"</span> or <span className="text-violet-600 font-bold">"fastest vegan pizza"</span>
                   </p>
                 </div>
               </div>

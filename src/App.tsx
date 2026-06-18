@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { FloatingPizzaUniverse } from './components/FloatingPizzaUniverse';
+import { MinionsBackground } from './components/MinionsBackground';
 import './utils/debug';
 import { AppProvider } from './store/AppContext';
 import { PremiumPizzaBuilder } from './components/PremiumPizzaBuilder';
@@ -301,10 +301,10 @@ export default function App() {
 
   return (
     <AppProvider>
-    <div className={`relative min-h-screen font-sans flex transition-colors duration-500 overflow-x-hidden ${isLight ? 'bg-stone-100 text-stone-900 light-theme' : 'bg-[#080808] text-stone-100'}`}>
+    <div className="relative min-h-screen font-sans flex overflow-x-hidden clay-page text-stone-800">
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] bg-stone-900 text-white text-sm font-bold px-6 py-3 rounded-2xl shadow-2xl border border-white/10 backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 duration-300 whitespace-nowrap">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] clay bg-white text-stone-800 text-sm font-bold px-6 py-3 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 whitespace-nowrap">
           {toast}
         </div>
       )}
@@ -317,7 +317,7 @@ export default function App() {
         onFavoritesClick={() => setView('saved-pizzas')}
         onLogoClick={() => setView('home')}
       />
-      <FloatingPizzaUniverse />
+      <MinionsBackground />
 
       <SidebarNavigation
         currentView={view}
