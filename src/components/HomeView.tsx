@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   MapPin, ChevronRight, ChevronDown, ChevronUp, Map, Navigation,
-  Pizza, BarChart3, Tag, X, Sparkles,
+  Pizza, BarChart3, Tag, X, Sparkles, Play, Pause, Volume2, VolumeX,
 } from 'lucide-react';
 import { SmartSearchBar, ParsedQuery } from './SmartSearchBar';
 import { StoreGrid } from './StoreGrid';
@@ -90,6 +90,83 @@ function QuickAction({ icon: Icon, title, sub, onClick }: {
   );
 }
 
+// ── Hero background video (autoplay, controls, scroll parallax) ───────────────
+
+function HeroVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [playing, setPlaying] = useState(true);
+  const [muted, setMuted] = useState(true);
+  const [ready, setReady] = useState(true);
+
+  // Scroll-driven parallax + fade so the video drifts/recedes as you scroll.
+  useEffect(() => {
+    let raf = 0;
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const y = window.scrollY || 0;
+        if (wrapRef.current) {
+          const fade = Math.max(0, 1 - y / 520);
+          wrapRef.current.style.opacity = String(0.6 * fade);
+          wrapRef.current.style.transform = `translateY(${y * 0.35}px) scale(${1 + Math.min(y, 600) * 0.0004})`;
+        }
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); cancelAnimationFrame(raf); };
+  }, []);
+
+  const togglePlay = () => {
+    const v = videoRef.current; if (!v) return;
+    if (v.paused) { v.play().catch(() => {}); setPlaying(true); } else { v.pause(); setPlaying(false); }
+  };
+  const toggleMute = () => {
+    const v = videoRef.current; if (!v) return;
+    v.muted = !v.muted; setMuted(v.muted);
+  };
+
+  if (!ready) return null;
+
+  return (
+    <>
+      {/* Video layer — behind all hero content, never blocks the UI */}
+      <div ref={wrapRef} className="pointer-events-none absolute top-0 left-0 right-0 h-[92vh] z-0 overflow-hidden" style={{ opacity: 0.6 }}>
+        <video
+          ref={videoRef}
+          src="/hero-bg.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          onError={() => setReady(false)}
+          className="w-full h-full object-cover"
+        />
+        {/* Soft white wash so dark clay text + search stay readable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/45 via-white/55 to-[#f3f5fb]" />
+      </div>
+
+      {/* Floating controls — clear of the top nav, don't block search */}
+      <div className="fixed bottom-5 right-5 z-40 flex items-center gap-2">
+        <button
+          onClick={togglePlay}
+          aria-label={playing ? 'Pause background video' : 'Play background video'}
+          className="clay-btn bg-white w-10 h-10 rounded-full flex items-center justify-center text-stone-600 hover:text-amber-500"
+        >
+          {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        </button>
+        <button
+          onClick={toggleMute}
+          aria-label={muted ? 'Unmute background video' : 'Mute background video'}
+          className="clay-btn bg-white w-10 h-10 rounded-full flex items-center justify-center text-stone-600 hover:text-amber-500"
+        >
+          {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+        </button>
+      </div>
+    </>
+  );
+}
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function HomeView({
@@ -122,6 +199,9 @@ export function HomeView({
 
   return (
     <div className="w-full flex-1 flex flex-col pb-28 relative overflow-x-hidden">
+
+      {/* ── Hero background video ──────────────────────────────────────────── */}
+      <HeroVideo />
 
       {/* ── Live deal ticker ───────────────────────────────────────────────── */}
       <button
