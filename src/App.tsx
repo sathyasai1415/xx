@@ -1,11 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { FloatingPizzaUniverse } from './components/FloatingPizzaUniverse';
 import './utils/debug';
-import { seedShamzPizza } from './utils/seedShamzPizza';
 import { AppProvider } from './store/AppContext';
-
-// Seed Shamz Pizza store data on load
-seedShamzPizza();
 import { PremiumPizzaBuilder } from './components/PremiumPizzaBuilder';
 import { ComparisonCards } from './components/ComparisonCards';
 import { HomeView } from './components/HomeView';
