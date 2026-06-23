@@ -37,7 +37,7 @@ interface LocalDeal {
 const ALERT_PREFS = [
   { key: 'priceDrops', label: 'Price Drop Alerts', desc: "When a pizza you've searched gets cheaper", icon: TrendingDown, color: 'text-green-400' },
   { key: 'flashDeals', label: 'Flash Deals', desc: 'Time-limited offers from nearby stores', icon: Zap, color: 'text-yellow-400' },
-  { key: 'weeklyDeals', label: 'Weekly Deal Digest', desc: 'Best deals every Monday morning', icon: Tag, color: 'text-orange-400' },
+  { key: 'weeklyDeals', label: 'Weekly Deal Digest', desc: 'Best deals every Monday morning', icon: Tag, color: 'text-red-400' },
   { key: 'rewardPoints', label: 'Reward Points', desc: 'When you earn or can redeem points', icon: Gift, color: 'text-pink-400' },
   { key: 'newStores', label: 'New Stores Near You', desc: 'When a new pizza shop joins MiSlice in Michigan', icon: MapPin, color: 'text-red-400' },
   { key: 'orderUpdates', label: 'Order Status Updates', desc: 'When your order is confirmed or delivered', icon: ShoppingCart, color: 'text-blue-400' },
@@ -71,7 +71,7 @@ function AlertPreferences() {
   return (
     <div className="w-full max-w-2xl mx-auto py-6 space-y-4">
       <div className="flex items-center gap-2 mb-2">
-        <Bell className="w-4 h-4 text-orange-400" />
+        <Bell className="w-4 h-4 text-red-400" />
         <p className="text-sm font-black text-white">My Deal Preferences</p>
       </div>
       <p className="text-xs text-stone-500 mb-4">Choose what kind of alerts you want. All preferences are saved locally.</p>
@@ -291,7 +291,7 @@ function DealCard({ deal, i, onAddToCart }: { key?: string | number, deal: Local
                    <MapPin className="w-3 h-3" />
                    {deal.distance ? deal.distance.toFixed(1) : '?'} mi
                  </div>
-                 <div className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded flex items-center gap-1">
+                 <div className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded flex items-center gap-1">
                    <Clock className="w-3 h-3" />
                    {deal.end_date ? new Date(deal.end_date).toLocaleDateString() : 'Limited Time'}
                  </div>

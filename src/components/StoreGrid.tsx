@@ -216,7 +216,7 @@ function StoreCard({ store, index, onAddToCart, onCompare, onNavigate, onOpenSto
           {store.badges.length > 0 && (
             <div className="flex gap-1 mt-1.5 flex-wrap">
               {store.badges.map(b => (
-                <span key={b} className="text-[8px] font-black text-orange-300 bg-orange-500/8 border border-orange-500/15 px-1.5 py-0.5 rounded-full">{b}</span>
+                <span key={b} className="text-[8px] font-black text-red-300 bg-red-500/8 border border-red-500/15 px-1.5 py-0.5 rounded-full">{b}</span>
               ))}
             </div>
           )}

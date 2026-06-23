@@ -5,11 +5,16 @@ export type Sauce = "Robust Inspired Tomato Sauce" | "Hearty Marinara" | "Garlic
 export interface PizzaConfig {
   size: Size;
   crust: Crust;
+  crustFlavor?: string;
   sauce: Sauce;
+  sauceAmount?: 'Light' | 'Normal' | 'Extra';
+  cheeseAmount?: 'None' | 'Light' | 'Normal' | 'Extra';
   cheese: string[];
   meats: string[];
   veggies: string[];
   extras: string[];
+  drizzles?: string[];
+  toppingPlacements?: Record<string, 'whole' | 'left' | 'right'>;
   quantity: number;
 }
 

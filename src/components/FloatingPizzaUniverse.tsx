@@ -126,7 +126,7 @@ export function FloatingPizzaUniverse() {
         p.style.top = `${Math.random() * 100}vh`;
         p.style.opacity = `${0.3 + Math.random() * 0.7}`;
         
-        // Colors: orange, red, yellow, white
+        // Colors: red, red, red, white
         const colors = [
           'rgba(255, 96, 32, 0.8)', 
           'rgba(255, 200, 50, 0.8)', 
@@ -243,7 +243,7 @@ export function FloatingPizzaUniverse() {
       <div className="absolute top-[15%] lg:top-[30%] left-1/2 lg:left-[70%] -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] lg:w-[600px] lg:h-[600px] flex items-center justify-center pointer-events-none z-10">
         
         {/* Glows behind pizza */}
-        <div className="absolute w-[90%] h-[90%] rounded-full bg-orange-600/40 blur-[80px]" />
+        <div className="absolute w-[90%] h-[90%] rounded-full bg-red-600/40 blur-[80px]" />
         <div className="absolute w-[60%] h-[60%] rounded-full bg-yellow-500/30 blur-[120px]" />
         
         {/* Realistic Pizza Image wrapper (simulated floating and mouse parallax) */}

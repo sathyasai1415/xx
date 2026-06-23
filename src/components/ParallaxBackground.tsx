@@ -29,7 +29,7 @@ export function ParallaxBackground() {
       {/* Immersive Theme bg and decor */}
       <div className="absolute inset-0 bg-[#F9F7F2]" />
       <div className="absolute top-10 left-10 w-24 h-24 bg-red-500/10 rounded-full blur-xl"></div>
-      <div className="absolute bottom-20 right-10 w-32 h-32 bg-orange-400/10 rounded-full blur-2xl"></div>
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-red-400/10 rounded-full blur-2xl"></div>
 
       {ingredients.map((item, i) => {
         const depth = (i % 2) + 1; 

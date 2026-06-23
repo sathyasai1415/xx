@@ -35,7 +35,7 @@ const PREF_SECTIONS = [
     prefs: [
       { key: 'priceDrops', label: 'Price Drop Alerts', desc: "When a pizza you've searched gets cheaper", icon: TrendingDown, color: 'text-green-400' },
       { key: 'flashDeals', label: 'Flash Deals', desc: 'Time-limited offers from nearby stores', icon: Zap, color: 'text-yellow-400' },
-      { key: 'weeklyDeals', label: 'Weekly Deal Digest', desc: 'Best deals every Monday morning', icon: Tag, color: 'text-orange-400' },
+      { key: 'weeklyDeals', label: 'Weekly Deal Digest', desc: 'Best deals every Monday morning', icon: Tag, color: 'text-red-400' },
     ],
   },
   {
@@ -83,7 +83,7 @@ export function NotificationsView({ onNavigate }: NotificationsViewProps) {
   const togglePref = (key: string) => setPrefs(p => ({ ...p, [key]: !p[key] }));
 
   const TYPE_ICON: Record<Notification['type'], { icon: React.FC<any>; color: string }> = {
-    deal: { icon: Tag, color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
+    deal: { icon: Tag, color: 'text-red-400 bg-red-500/10 border-red-500/20' },
     price_drop: { icon: TrendingDown, color: 'text-green-400 bg-green-500/10 border-green-500/20' },
     new_store: { icon: MapPin, color: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
     order: { icon: ShoppingBag, color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' },
@@ -96,11 +96,11 @@ export function NotificationsView({ onNavigate }: NotificationsViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Bell className="w-5 h-5 text-orange-400" />
+          <Bell className="w-5 h-5 text-red-400" />
           <div>
             <h1 className="text-2xl font-black text-white">Deal Alerts</h1>
             {unreadCount > 0 && (
-              <p className="text-xs text-orange-400 font-bold mt-0.5">{unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-red-400 font-bold mt-0.5">{unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}</p>
             )}
           </div>
         </div>
@@ -127,7 +127,7 @@ export function NotificationsView({ onNavigate }: NotificationsViewProps) {
           <Bell className="w-3.5 h-3.5" />
           Inbox
           {unreadCount > 0 && (
-            <span className="text-[8px] font-black bg-orange-500 text-white w-4 h-4 rounded-full flex items-center justify-center">
+            <span className="text-[8px] font-black bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center">
               {unreadCount}
             </span>
           )}
@@ -171,7 +171,7 @@ export function NotificationsView({ onNavigate }: NotificationsViewProps) {
                   >
                     {/* Unread dot */}
                     {!notif.read && (
-                      <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.6)]" />
+                      <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-red-500 shadow-[0_0_6px_rgba(220,38,38,0.6)]" />
                     )}
 
                     {/* Icon */}
@@ -191,7 +191,7 @@ export function NotificationsView({ onNavigate }: NotificationsViewProps) {
                         {notif.cta && (
                           <button
                             onClick={e => { e.stopPropagation(); markRead(notif.id); notif.ctaView && onNavigate(notif.ctaView); }}
-                            className="text-[10px] font-black text-orange-400 hover:text-orange-300 flex items-center gap-1 transition-colors"
+                            className="text-[10px] font-black text-red-400 hover:text-red-300 flex items-center gap-1 transition-colors"
                           >
                             {notif.cta} <ChevronRight className="w-2.5 h-2.5" />
                           </button>
@@ -251,7 +251,7 @@ export function NotificationsView({ onNavigate }: NotificationsViewProps) {
             </div>
           ))}
 
-          <div className="p-4 bg-orange-500/8 border border-orange-500/20 rounded-2xl text-center">
+          <div className="p-4 bg-red-500/8 border border-red-500/20 rounded-2xl text-center">
             <p className="text-xs text-stone-400">
               Notifications are stored locally on your device. No account required.
             </p>

@@ -42,7 +42,7 @@ function providerAccent(id?: string) {
   switch (id) {
     case 'doordash': return { text: 'text-red-400', dot: 'bg-red-500', label: 'DoorDash' };
     case 'ubereats': return { text: 'text-green-400', dot: 'bg-green-500', label: 'Uber Eats' };
-    case 'grubhub': return { text: 'text-orange-400', dot: 'bg-orange-500', label: 'Grubhub' };
+    case 'grubhub': return { text: 'text-red-400', dot: 'bg-red-500', label: 'Grubhub' };
     case 'pickup': return { text: 'text-stone-300', dot: 'bg-stone-500', label: 'Pickup' };
     default: return { text: 'text-blue-400', dot: 'bg-blue-500', label: 'Store Delivery' };
   }
@@ -118,7 +118,7 @@ export function OrderTracking({ order, onViewOrders, onHome, onReorder }: OrderT
           </svg>
           {/* store marker */}
           <div className="absolute left-[8%] bottom-[22%] flex flex-col items-center">
-            <div className="w-8 h-8 rounded-full glass flex items-center justify-center"><Store className="w-4 h-4 text-orange-300" /></div>
+            <div className="w-8 h-8 rounded-full glass flex items-center justify-center"><Store className="w-4 h-4 text-red-300" /></div>
           </div>
           {/* home marker */}
           <div className="absolute right-[8%] top-[18%] flex flex-col items-center">
@@ -152,7 +152,7 @@ export function OrderTracking({ order, onViewOrders, onHome, onReorder }: OrderT
               {isDelivered ? (
                 <span className="text-green-400">Complete</span>
               ) : (
-                <><Clock className="w-5 h-5 text-orange-300" /> {mins}:{secs.toString().padStart(2, '0')}</>
+                <><Clock className="w-5 h-5 text-red-300" /> {mins}:{secs.toString().padStart(2, '0')}</>
               )}
             </p>
           </div>
@@ -171,7 +171,7 @@ export function OrderTracking({ order, onViewOrders, onHome, onReorder }: OrderT
           {/* progress rail */}
           <div className="absolute left-[18px] top-3 bottom-3 w-0.5 bg-white/10" />
           <motion.div
-            className="absolute left-[18px] top-3 w-0.5 bg-gradient-to-b from-orange-400 to-red-500"
+            className="absolute left-[18px] top-3 w-0.5 bg-gradient-to-b from-red-400 to-red-500"
             initial={{ height: 0 }}
             animate={{ height: `${progressPct}%` }}
             transition={{ type: 'spring', stiffness: 60, damping: 18 }}
@@ -185,17 +185,17 @@ export function OrderTracking({ order, onViewOrders, onHome, onReorder }: OrderT
                 <div key={stage.key} className="flex items-center gap-4 relative">
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 z-10 transition-colors ${
                     done || active
-                      ? 'bg-gradient-to-br from-orange-500 to-red-600 text-white'
+                      ? 'bg-gradient-to-br from-red-600 to-red-700 text-white'
                       : 'glass-soft text-stone-600'
-                  } ${active ? 'ring-4 ring-orange-500/20' : ''}`}>
+                  } ${active ? 'ring-4 ring-red-500/20' : ''}`}>
                     {done ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                   </div>
                   <div className="min-w-0">
                     <p className={`text-sm font-black transition-colors ${done || active ? 'text-white' : 'text-stone-600'}`}>
                       {stage.label}
                       {active && !isDelivered && (
-                        <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-black text-orange-300 uppercase tracking-wider">
-                          <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" /> Now
+                        <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-black text-red-300 uppercase tracking-wider">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" /> Now
                         </span>
                       )}
                     </p>
@@ -236,7 +236,7 @@ export function OrderTracking({ order, onViewOrders, onHome, onReorder }: OrderT
       {/* Receipt summary */}
       <div className="glass rounded-3xl p-6 mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <Receipt className="w-4 h-4 text-orange-300" />
+          <Receipt className="w-4 h-4 text-red-300" />
           <p className="text-sm font-black text-white">Order Summary</p>
         </div>
         <div className="space-y-2.5 mb-4">
@@ -270,7 +270,7 @@ export function OrderTracking({ order, onViewOrders, onHome, onReorder }: OrderT
           <>
             <button
               onClick={() => onReorder(order)}
-              className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black py-4 rounded-2xl shadow-[0_10px_30px_-8px_rgba(220,38,38,0.5)]"
+              className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 text-white font-black py-4 rounded-2xl shadow-[0_10px_30px_-8px_rgba(220,38,38,0.5)]"
             >
               <RotateCcw className="w-4 h-4" /> Reorder
             </button>

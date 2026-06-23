@@ -16,7 +16,7 @@ interface RewardTier {
 }
 
 const TIERS: RewardTier[] = [
-  { name: 'Bronze', minPoints: 0, color: 'text-amber-700', bg: 'bg-amber-800/15', border: 'border-amber-700/30', perks: ['5% back on orders', 'Birthday deal'], icon: '🥉' },
+  { name: 'Bronze', minPoints: 0, color: 'text-red-700', bg: 'bg-red-800/15', border: 'border-red-700/30', perks: ['5% back on orders', 'Birthday deal'], icon: '🥉' },
   { name: 'Silver', minPoints: 500, color: 'text-stone-300', bg: 'bg-stone-400/10', border: 'border-stone-500/30', perks: ['7% back on orders', 'Free delivery once/month', 'Priority support'], icon: '🥈' },
   { name: 'Gold', minPoints: 1500, color: 'text-yellow-400', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30', perks: ['10% back on orders', 'Free delivery always', 'Exclusive deals', 'Early access'], icon: '🥇' },
   { name: 'Platinum', minPoints: 5000, color: 'text-violet-300', bg: 'bg-violet-500/10', border: 'border-violet-500/30', perks: ['15% back on orders', 'Free delivery always', 'VIP deals first', 'Store partner discounts', 'Personal pizza consultant'], icon: '💎' },
@@ -48,7 +48,7 @@ const HOW_TO_EARN = [
   { icon: Star, label: 'Leave a Review', pts: '+25 pts per review', color: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
   { icon: Heart, label: 'Save a Store', pts: '+5 pts per save', color: 'text-red-400 bg-red-500/10 border-red-500/20' },
   { icon: Users, label: 'Refer a Friend', pts: '+100 pts per referral', color: 'text-green-400 bg-green-500/10 border-green-500/20' },
-  { icon: Pizza, label: 'Build a Pizza', pts: '+2 pts per build', color: 'text-orange-400 bg-orange-500/10 border-orange-500/20' },
+  { icon: Pizza, label: 'Build a Pizza', pts: '+2 pts per build', color: 'text-red-400 bg-red-500/10 border-red-500/20' },
   { icon: TrendingUp, label: 'Streak Bonus', pts: '+50 pts / 5 orders', color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
 ];
 
@@ -94,7 +94,7 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <Gift className="w-5 h-5 text-orange-400" />
+          <Gift className="w-5 h-5 text-red-400" />
           <h1 className="text-2xl font-black text-white">Rewards</h1>
         </div>
         <p className="text-stone-500 text-sm">Earn points on every order and redeem for free food & discounts.</p>
@@ -104,15 +104,15 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl border border-orange-500/20 bg-gradient-to-br from-orange-600/20 via-red-600/12 to-transparent p-6 shadow-[0_0_40px_rgba(255,80,0,0.12)]"
+        className="relative overflow-hidden rounded-3xl border border-red-500/20 bg-gradient-to-br from-red-600/20 via-red-600/12 to-transparent p-6 shadow-[0_0_40px_rgba(220,38,38,0.12)]"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent pointer-events-none" />
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-orange-400 mb-1">Your Points Balance</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1">Your Points Balance</p>
             <div className="flex items-baseline gap-2">
               <span className="text-5xl font-black text-white">{points}</span>
-              <span className="text-orange-400 font-black text-sm">pts</span>
+              <span className="text-red-400 font-black text-sm">pts</span>
             </div>
             <div className="flex items-center gap-2 mt-2">
               <span className="text-lg">{currentTier.icon}</span>
@@ -120,8 +120,8 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
             </div>
           </div>
           <div className="text-right">
-            <div className="w-16 h-16 rounded-2xl bg-orange-500/15 border border-orange-500/25 flex items-center justify-center">
-              <Award className="w-8 h-8 text-orange-400" />
+            <div className="w-16 h-16 rounded-2xl bg-red-500/15 border border-red-500/25 flex items-center justify-center">
+              <Award className="w-8 h-8 text-red-400" />
             </div>
           </div>
         </div>
@@ -131,14 +131,14 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
           <div className="mt-5">
             <div className="flex justify-between mb-1.5">
               <span className="text-[10px] font-bold text-stone-400">Progress to {nextTier.icon} {nextTier.name}</span>
-              <span className="text-[10px] font-black text-orange-300">{nextTier.minPoints - points} pts to go</span>
+              <span className="text-[10px] font-black text-red-300">{nextTier.minPoints - points} pts to go</span>
             </div>
             <div className="h-2 bg-white/8 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progressToNext}%` }}
                 transition={{ duration: 1, ease: 'easeOut' }}
-                className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+                className="h-full bg-gradient-to-r from-red-500 to-red-600 rounded-full"
               />
             </div>
           </div>
@@ -152,7 +152,7 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
             key={tier.name}
             className={`rounded-2xl border p-3 text-center transition-all ${
               tier.name === currentTier.name
-                ? `${tier.bg} ${tier.border} ring-1 ring-orange-500/30`
+                ? `${tier.bg} ${tier.border} ring-1 ring-red-500/30`
                 : 'bg-white/3 border-white/6 opacity-50'
             }`}
           >
@@ -193,7 +193,7 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
                   !reward.available
                     ? 'bg-white/2 border-white/5 opacity-40'
                     : canAfford
-                    ? 'bg-white/4 border-white/10 hover:border-orange-500/30 cursor-pointer'
+                    ? 'bg-white/4 border-white/10 hover:border-red-500/30 cursor-pointer'
                     : 'bg-white/2 border-white/6'
                 }`}
                 onClick={() => reward.available && canAfford && redeem(reward)}
@@ -211,7 +211,7 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
                     </div>
                   ) : (
                     <>
-                      <p className={`text-sm font-black ${canAfford ? 'text-orange-400' : 'text-stone-600'}`}>{reward.points} pts</p>
+                      <p className={`text-sm font-black ${canAfford ? 'text-red-400' : 'text-stone-600'}`}>{reward.points} pts</p>
                       {!canAfford && reward.available && (
                         <div className="flex items-center gap-1 text-[9px] text-stone-600 mt-0.5">
                           <Lock className="w-2.5 h-2.5" /> Need {reward.points - points} more
@@ -256,15 +256,15 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
                 <div className="flex-1">
                   <p className="text-sm font-bold text-white">{item.label}</p>
                 </div>
-                <p className="text-sm font-black text-orange-400 shrink-0">{item.pts}</p>
+                <p className="text-sm font-black text-red-400 shrink-0">{item.pts}</p>
               </div>
             );
           })}
 
           {/* Referral CTA */}
-          <div className="mt-4 p-5 bg-gradient-to-r from-orange-600/15 to-red-600/10 border border-orange-500/20 rounded-2xl">
+          <div className="mt-4 p-5 bg-gradient-to-r from-red-600/15 to-red-600/10 border border-red-500/20 rounded-2xl">
             <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-orange-400" />
+              <Users className="w-4 h-4 text-red-400" />
               <p className="font-black text-white text-sm">Refer Friends · Earn 100 pts each</p>
             </div>
             <p className="text-xs text-stone-400 mb-4">Share your referral link. When they place their first order, you both get points.</p>
@@ -273,7 +273,7 @@ export function RewardsView({ onNavigate }: RewardsViewProps) {
                 mislice.online/ref/PIZZA{Math.random().toString(36).slice(2, 8).toUpperCase()}
               </div>
               <button
-                className="px-4 py-2 bg-orange-500 hover:bg-orange-400 text-white text-xs font-black rounded-xl flex items-center gap-1.5 transition-colors shrink-0"
+                className="px-4 py-2 bg-red-500 hover:bg-red-400 text-white text-xs font-black rounded-xl flex items-center gap-1.5 transition-colors shrink-0"
                 onClick={() => { navigator.clipboard?.writeText('mislice.online/ref/PIZZA123').catch(() => {}); }}
               >
                 <Copy className="w-3.5 h-3.5" /> Copy

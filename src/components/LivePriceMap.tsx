@@ -307,7 +307,7 @@ export function LivePriceMap({ config, onSelectStore, onCompare }: LivePriceMapP
 
               <button
                 onClick={() => { onSelectStore(selectedStore.id); config && onCompare(config); }}
-                className="w-full mt-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+                className="w-full mt-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-black py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
               >
                 Compare All Prices <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -377,7 +377,7 @@ export function LivePriceMap({ config, onSelectStore, onCompare }: LivePriceMapP
         <div className="p-4 border-t border-white/6">
           <button
             onClick={() => config && onCompare(config)}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white font-black py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,80,0,0.3)] transition-all hover:shadow-[0_0_30px_rgba(255,80,0,0.5)]"
+            className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-black py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(220,38,38,0.3)] transition-all hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]"
           >
             <Pizza className="w-4 h-4" />
             {config ? 'Full Price Comparison' : 'Build Pizza → See Live Prices'}

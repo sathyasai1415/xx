@@ -145,7 +145,7 @@ export function PizzaInput({ onConfigChange, currentConfig, onSaveFavorite, onAd
         {/* AI Input Section */}
         <div className="p-6 sm:p-8 border-b border-white/5">
           <form onSubmit={handleAiSubmit} className="relative flex items-center group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-orange-400/20 rounded-2xl blur opacity-50 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 to-red-400/20 rounded-2xl blur opacity-50 group-hover:opacity-100 transition-opacity"></div>
             <div className="relative flex items-center bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl w-full transition-all focus-within:border-white/30">
               <div className="pl-4 pr-2 text-stone-400">
                 <Sparkles className="w-6 h-6" />

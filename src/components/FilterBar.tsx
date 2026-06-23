@@ -201,7 +201,7 @@ export function FilterBar() {
       <div className="flex items-center justify-between px-1">
         <p className="text-xs text-stone-500 font-bold">
           <span className="text-white">{searchResults.length}</span> stores
-          {state.searchQuery && <> for "<span className="text-orange-400">{state.searchQuery}</span>"</>}
+          {state.searchQuery && <> for "<span className="text-red-400">{state.searchQuery}</span>"</>}
         </p>
         {activeCount > 0 && (
           <p className="text-[10px] text-stone-600 font-bold">{activeCount} filter{activeCount > 1 ? 's' : ''} active</p>

@@ -49,7 +49,7 @@ export function PayoutsTab({ storeData, orders }: { storeData: any, orders: any[
                    <td className="px-4 py-4 text-red-400">-${order.platformFeeAmount?.toFixed(2)}</td>
                    <td className="px-4 py-4 font-bold text-green-400">${order.storeSettlement?.toFixed(2)}</td>
                    <td className="px-4 py-4">
-                     <span className={`px-2 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold ${order.payoutStatus === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                     <span className={`px-2 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold ${order.payoutStatus === 'paid' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                        {order.payoutStatus || 'pending'}
                      </span>
                    </td>

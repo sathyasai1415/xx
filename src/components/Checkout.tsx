@@ -48,7 +48,7 @@ export function Checkout({ cart, totalToCharge, onCancel, onConfirmOrder }: Chec
       <h2 className="text-3xl font-black text-white mb-8 tracking-tight drop-shadow-md">Checkout</h2>
       
       <div className="bg-black/40 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_15px_30px_rgba(0,0,0,0.5)] border border-white/10 mb-6 relative overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-red-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-orange-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
         
         {error && (
           <div className="bg-red-950/40 border border-red-500/30 text-red-300 p-4 rounded-xl mb-4 text-sm font-medium relative z-10">
@@ -63,19 +63,19 @@ export function Checkout({ cart, totalToCharge, onCancel, onConfirmOrder }: Chec
         {isDelivery && (
           <div className="mb-8 relative z-10">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 drop-shadow-sm">
-              <MapPin className="w-5 h-5 text-orange-500" /> Delivery Address
+              <MapPin className="w-5 h-5 text-orange-400" /> Delivery Address
             </h3>
             <div className="space-y-4">
-              <input 
-                type="text" 
-                placeholder="Street Address, Apt/Unit" 
+              <input
+                type="text"
+                placeholder="Street Address, Apt/Unit"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-medium text-white placeholder-stone-500 outline-none focus:border-orange-500/50 focus:bg-white/10 transition-colors shadow-inner"
                 value={address}
                 onChange={e => setAddress(e.target.value)}
               />
-              <input 
-                type="text" 
-                placeholder="Delivery Instructions (e.g. Leave at door)" 
+              <input
+                type="text"
+                placeholder="Delivery Instructions (e.g. Leave at door)"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-medium text-white placeholder-stone-500 outline-none focus:border-orange-500/50 focus:bg-white/10 transition-colors shadow-inner"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
@@ -86,7 +86,7 @@ export function Checkout({ cart, totalToCharge, onCancel, onConfirmOrder }: Chec
 
         <div className="mb-8 relative z-10">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2 drop-shadow-sm">
-             <CreditCard className="w-5 h-5 text-red-500" /> Payment Method
+             <CreditCard className="w-5 h-5 text-orange-400" /> Payment Method
           </h3>
           <div className="bg-white/5 border border-white/10 rounded-xl px-4 py-4 font-medium flex items-center justify-between text-white shadow-inner">
             <div className="flex items-center gap-3">
@@ -98,15 +98,15 @@ export function Checkout({ cart, totalToCharge, onCancel, onConfirmOrder }: Chec
 
         <div className="border-t border-white/10 pt-6 mt-6 relative z-10">
            <div className="flex justify-between items-center mb-6">
-              <span className="text-lg font-bold text-stone-300">Total to Pay</span>
-              <span className="text-2xl font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]">${totalToCharge.toFixed(2)}</span>
+              <span className="text-lg font-bold text-white/60">Total to Pay</span>
+              <span className="text-2xl font-black text-orange-400">${totalToCharge.toFixed(2)}</span>
            </div>
-           
+
            <div className="flex gap-4">
-             <button disabled={isProcessing} onClick={onCancel} className="flex-[0.5] py-4 rounded-xl font-bold bg-white/5 text-stone-300 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-colors shadow-sm">
+             <button disabled={isProcessing} onClick={onCancel} className="flex-[0.5] py-4 rounded-xl font-bold bg-white/5 text-white/50 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-colors">
                 Cancel
              </button>
-             <button disabled={isProcessing} onClick={handlePay} className="flex-1 py-4 rounded-xl font-black bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-400 hover:to-red-500 transition-all flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(255,50,0,0.4)] hover:shadow-[0_0_30px_rgba(255,50,0,0.6)] hover:scale-[1.02]">
+             <button disabled={isProcessing} onClick={handlePay} className="flex-1 py-4 rounded-xl font-black bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-400 hover:to-orange-500 transition-all flex justify-center items-center gap-2 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] hover:scale-[1.02]">
                 {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : `Pay $${totalToCharge.toFixed(2)}`}
              </button>
            </div>

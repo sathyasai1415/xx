@@ -139,7 +139,7 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.2 } }}
       transition={{ delay, type: "spring", stiffness: 100, damping: 20 }}
-      className={`bg-white/10 backdrop-blur-2xl rounded-3xl p-6 shadow-[0_15px_40px_rgba(0,0,0,0.5)] border relative flex flex-col transition-all overflow-hidden cursor-default group/card ${quote.bestValueOptionId ? 'border-orange-500/50 shadow-[0_0_30px_rgba(255,100,0,0.3)]' : 'border-white/10 hover:border-white/30'}`}
+      className={`bg-white/10 backdrop-blur-2xl rounded-3xl p-6 shadow-[0_15px_40px_rgba(0,0,0,0.5)] border relative flex flex-col transition-all overflow-hidden cursor-default group/card ${quote.bestValueOptionId ? 'border-red-500/50 shadow-[0_0_30px_rgba(220,38,38,0.3)]' : 'border-white/10 hover:border-white/30'}`}
     >
       {/* Dynamic Cursor Glow */}
       <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-700 pointer-events-none bg-[radial-gradient(circle_at_var(--mouse-x,_50%)_var(--mouse-y,_50%),_rgba(255,150,50,0.15)_0%,_transparent_60%)] z-0" />
@@ -218,8 +218,8 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
            const isDoordash = opt.providerId === 'doordash';
            const isUber = opt.providerId === 'ubereats';
            const isGrubhub = opt.providerId === 'grubhub';
-           const bgClass = isPrimary ? (isUber ? 'bg-green-950/40 border-green-500/50 shadow-[0_0_15px_rgba(74,222,128,0.2)]' : isDoordash ? 'bg-red-950/40 border-red-500/50 shadow-[0_0_15px_rgba(248,113,113,0.2)]' : isGrubhub ? 'bg-orange-950/40 border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 'bg-blue-950/40 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]') : 'bg-black/20 border-white/5';
-           const textClass = isUber ? 'text-green-400' : isDoordash ? 'text-red-400' : isGrubhub ? 'text-orange-400' : 'text-blue-400';
+           const bgClass = isPrimary ? (isUber ? 'bg-green-950/40 border-green-500/50 shadow-[0_0_15px_rgba(74,222,128,0.2)]' : isDoordash ? 'bg-red-950/40 border-red-500/50 shadow-[0_0_15px_rgba(248,113,113,0.2)]' : isGrubhub ? 'bg-red-950/40 border-red-500/50 shadow-[0_0_15px_rgba(220,38,38,0.2)]' : 'bg-blue-950/40 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]') : 'bg-black/20 border-white/5';
+           const textClass = isUber ? 'text-green-400' : isDoordash ? 'text-red-400' : isGrubhub ? 'text-red-400' : 'text-blue-400';
            
            const finalTotal = calculateOptionTotal(opt);
            const activeCoupon = appliedCoupons[opt.providerId];
@@ -235,7 +235,7 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
                    }}
                 >
                    {isPrimary && (
-                     <div className={`absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-white shadow-sm ${isUber ? 'bg-green-500' : isDoordash ? 'bg-red-500' : isGrubhub ? 'bg-orange-500' : 'bg-stone-600'}`}>
+                     <div className={`absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center text-white shadow-sm ${isUber ? 'bg-green-500' : isDoordash ? 'bg-red-500' : isGrubhub ? 'bg-red-500' : 'bg-stone-600'}`}>
                        <CheckCircle2 className="w-3 h-3" />
                      </div>
                    )}
@@ -243,7 +243,7 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
                       <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-black/5 flex items-center justify-center overflow-hidden shrink-0">
                          {isUber ? <span className="font-extrabold text-[10px] text-green-700">UBER</span> :
                           isDoordash ? <span className="font-extrabold text-[10px] text-red-600">DASH</span> :
-                          isGrubhub ? <span className="font-extrabold text-[9px] text-orange-600">GRUB</span> :
+                          isGrubhub ? <span className="font-extrabold text-[9px] text-red-600">GRUB</span> :
                           opt.providerId === 'pickup' ? <Car className="w-4 h-4 text-stone-600" /> :
                           <span className="font-extrabold text-[10px] text-blue-700">STORE</span>}
                       </div>
@@ -356,7 +356,7 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
           <button onClick={() => handleAddToCart(false)} className="flex-[0.4] bg-black/40 hover:bg-black/60 border border-white/10 text-white text-sm font-black py-3.5 rounded-2xl transition-colors flex items-center justify-center gap-2">
             <ShoppingCart className="w-4 h-4" /> Add to Cart
           </button>
-          <button onClick={() => handleAddToCart(true)} disabled={!primaryOption} className="flex-1 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white text-sm font-black py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(255,50,0,0.4)] hover:scale-[1.02] disabled:opacity-50 uppercase tracking-wider flex justify-center items-center gap-2 border border-orange-400/50">
+          <button onClick={() => handleAddToCart(true)} disabled={!primaryOption} className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white text-sm font-black py-3.5 rounded-2xl transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:scale-[1.02] disabled:opacity-50 uppercase tracking-wider flex justify-center items-center gap-2 border border-red-400/50">
             Order Now <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -407,7 +407,7 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
                                <td className="px-4 py-3 font-bold text-stone-300 flex items-center gap-2">
                                   {opt.providerId === 'doordash' && <span className="w-2 h-2 rounded-full bg-red-500" />}
                                   {opt.providerId === 'ubereats' && <span className="w-2 h-2 rounded-full bg-green-500" />}
-                                  {opt.providerId === 'grubhub' && <span className="w-2 h-2 rounded-full bg-orange-500" />}
+                                  {opt.providerId === 'grubhub' && <span className="w-2 h-2 rounded-full bg-red-500" />}
                                   {opt.providerId === 'pickup' && <span className="w-2 h-2 rounded-full bg-stone-500" />}
                                   {opt.providerId === 'store' && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                                   {opt.providerName}

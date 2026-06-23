@@ -20,6 +20,12 @@ export interface StoreDoc {
   rating_count?: number;
   accepting_orders?: boolean;
   is_approved?: boolean;
+  is_setup_complete?: boolean;
+  application_status?: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'suspended';
+  submittedAt?: unknown;
+  reviewedAt?: unknown;
+  rejection_reason?: string;
+  review_notes?: string;
   latitude?: number;
   longitude?: number;
   ownerId?: string;
@@ -83,6 +89,15 @@ export async function getStore(storeId: string): Promise<StoreDoc | null> {
 
 export async function updateStore(storeId: string, patch: Partial<StoreDoc>): Promise<void> {
   await updateDoc(doc(db, 'stores', storeId), { ...patch, updatedAt: serverTimestamp() });
+}
+
+export async function submitStoreApplication(storeId: string, patch: Partial<StoreDoc>): Promise<void> {
+  await updateDoc(doc(db, 'stores', storeId), {
+    ...patch,
+    application_status: 'submitted',
+    submittedAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
 }
 
 /**

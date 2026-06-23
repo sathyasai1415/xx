@@ -1,58 +1,81 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import type { User as FirebaseUser } from 'firebase/auth';
-import { onAuthChange, signOutUser, getUserProfile, UserProfile } from '../lib/auth';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
-interface AuthContextValue {
-  user: FirebaseUser | null;
+export interface UserProfile {
+  uid: string;
+  email: string;
+  fullName: string;
+  role: 'customer' | 'store_owner' | 'admin';
+  phone?: string;
+  storeId?: string;
+  storeName?: string;
+}
+
+const LOCAL_KEY = 'miSliceAuth';
+
+function load(): UserProfile | null {
+  try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null'); }
+  catch { return null; }
+}
+function save(p: UserProfile | null) {
+  if (p) localStorage.setItem(LOCAL_KEY, JSON.stringify(p));
+  else localStorage.removeItem(LOCAL_KEY);
+}
+
+interface AuthCtxValue {
   profile: UserProfile | null;
   loading: boolean;
   isAuthenticated: boolean;
   isStoreOwner: boolean;
-  refreshProfile: () => Promise<void>;
+  isAdmin: boolean;
+  loginLocal: (profile: UserProfile) => Promise<void>;
   logout: () => Promise<void>;
+  // kept for compat with any component that calls it
+  refreshProfile: () => Promise<void>;
+  user: null;
 }
 
-const AuthCtx = createContext<AuthContextValue | null>(null);
+const AuthCtx = createContext<AuthCtxValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthChange((u, p) => {
-      setUser(u);
-      setProfile(p);
-      setLoading(false);
-    });
-    return () => unsub();
+    setProfile(load());
+    setLoading(false);
   }, []);
 
-  const refreshProfile = useCallback(async () => {
-    if (user) setProfile(await getUserProfile(user.uid));
-  }, [user]);
+  const loginLocal = useCallback(async (p: UserProfile) => {
+    setProfile(p);
+    save(p);
+  }, []);
 
   const logout = useCallback(async () => {
-    await signOutUser();
-    setUser(null);
     setProfile(null);
+    save(null);
   }, []);
 
-  const value: AuthContextValue = {
-    user,
-    profile,
-    loading,
-    isAuthenticated: !!user,
-    isStoreOwner: profile?.role === 'store_owner',
-    refreshProfile,
-    logout,
-  };
+  const refreshProfile = useCallback(async () => {}, []);
 
-  return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>;
+  return (
+    <AuthCtx.Provider value={{
+      profile,
+      loading,
+      isAuthenticated: !!profile,
+      isStoreOwner: profile?.role === 'store_owner',
+      isAdmin: profile?.role === 'admin',
+      loginLocal,
+      logout,
+      refreshProfile,
+      user: null,
+    }}>
+      {children}
+    </AuthCtx.Provider>
+  );
 }
 
 export function useAuth() {
   const ctx = useContext(AuthCtx);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  if (!ctx) throw new Error('useAuth must be inside AuthProvider');
   return ctx;
 }

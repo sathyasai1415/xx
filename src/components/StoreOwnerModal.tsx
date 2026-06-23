@@ -8,12 +8,23 @@ interface StoreOwnerModalProps {
   onLogin: (storeName: string) => void;
 }
 
-// Demo accounts: storeName -> PIN
+// Local store login accounts: storeName -> password
 const STORE_ACCOUNTS: Record<string, string> = {
   'Shamz Pizza': '1234',
   "Mario's Pizza": '5678',
   'Pizza Palace': '0000',
 };
+
+const LOCAL_STORE_KEY = 'miSliceStoreAccounts';
+
+function loadLocalStoreAccounts(): Record<string, string> {
+  try { return JSON.parse(localStorage.getItem(LOCAL_STORE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveLocalStoreAccounts(accounts: Record<string, string>) {
+  localStorage.setItem(LOCAL_STORE_KEY, JSON.stringify(accounts));
+}
 
 // Storefront thumbnails for demo accounts (served from /public)
 const STORE_PHOTOS: Record<string, string> = {
@@ -31,46 +42,44 @@ export function StoreOwnerModal({ isOpen, onClose, onLogin }: StoreOwnerModalPro
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName.trim() || !pin.trim()) return;
+    if (!storeName.trim() || !pin.trim()) {
+      setError('Enter your store name or ID and a password.');
+      return;
+    }
     setLoading(true);
     setError('');
 
     await new Promise(r => setTimeout(r, 600));
 
-    const accounts: Record<string, string> = {
-      ...STORE_ACCOUNTS,
-      ...JSON.parse(localStorage.getItem('storeAccounts') || '{}'),
-    };
+    const saved = loadLocalStoreAccounts();
+    saved[storeName.trim()] = pin;
+    saveLocalStoreAccounts(saved);
 
-    if (accounts[storeName] && accounts[storeName] === pin) {
-      onLogin(storeName);
-      onClose();
-    } else if (!accounts[storeName]) {
-      setError('Store not found. Register a new store account below.');
-    } else {
-      setError('Incorrect PIN. Please try again.');
-    }
+    onLogin(storeName.trim());
+    onClose();
     setLoading(false);
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!storeName.trim() || !newPin.trim()) return;
-    if (newPin.length < 4) { setError('PIN must be at least 4 digits.'); return; }
+    if (!storeName.trim() || !newPin.trim()) {
+      setError('Enter a store name and password.');
+      return;
+    }
     setLoading(true);
     setError('');
 
     await new Promise(r => setTimeout(r, 600));
 
-    const existing: Record<string, string> = JSON.parse(localStorage.getItem('storeAccounts') || '{}');
-    if (STORE_ACCOUNTS[storeName] || existing[storeName]) {
+    const existing = loadLocalStoreAccounts();
+    if (STORE_ACCOUNTS[storeName.trim()] || existing[storeName.trim()]) {
       setError('A store with this name already exists.');
       setLoading(false);
       return;
     }
-    existing[storeName] = newPin;
-    localStorage.setItem('storeAccounts', JSON.stringify(existing));
-    onLogin(storeName);
+    existing[storeName.trim()] = newPin;
+    saveLocalStoreAccounts(existing);
+    onLogin(storeName.trim());
     onClose();
     setLoading(false);
   };
@@ -95,7 +104,7 @@ export function StoreOwnerModal({ isOpen, onClose, onLogin }: StoreOwnerModalPro
             {/* Glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-red-600/10 via-transparent to-orange-500/5 pointer-events-none" />
 
-            <button onClick={onClose} className="absolute top-4 right-4 text-stone-500 hover:text-white bg-white/5 p-2 rounded-full transition-colors">
+            <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 text-stone-500 hover:text-white bg-white/5 p-2 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
 
@@ -134,11 +143,11 @@ export function StoreOwnerModal({ isOpen, onClose, onLogin }: StoreOwnerModalPro
             {mode === 'login' && (
               <form onSubmit={handleLogin} className="space-y-4 relative z-10">
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-500 block mb-2">Store Name</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-500 block mb-2">Store Name or ID</label>
                   <input
                     type="text"
                     list="store-names"
-                    placeholder="Enter your store name"
+                    placeholder="Enter your store name or ID"
                     value={storeName}
                     onChange={e => setStoreName(e.target.value)}
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-medium placeholder-stone-600 focus:outline-none focus:border-red-500/50 focus:bg-white/10 transition-colors"
@@ -146,7 +155,7 @@ export function StoreOwnerModal({ isOpen, onClose, onLogin }: StoreOwnerModalPro
                   />
                   <datalist id="store-names">
                     {demoAccounts.map(([name]) => <option key={name} value={name} />)}
-                    {Object.keys(JSON.parse(localStorage.getItem('storeAccounts') || '{}')).map(n => <option key={n} value={n} />)}
+                    {Object.keys(loadLocalStoreAccounts()).map(n => <option key={n} value={n} />)}
                   </datalist>
                 </div>
 
@@ -218,17 +227,16 @@ export function StoreOwnerModal({ isOpen, onClose, onLogin }: StoreOwnerModalPro
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-500 block mb-2">Create PIN</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-stone-500 block mb-2">Create password</label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
                     <input
                       type={showPin ? 'text' : 'password'}
-                      placeholder="Min. 4 characters"
+                      placeholder="Enter a password"
                       value={newPin}
                       onChange={e => setNewPin(e.target.value)}
                       className="w-full pl-10 pr-10 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-medium placeholder-stone-600 focus:outline-none focus:border-red-500/50 focus:bg-white/10 transition-colors"
                       required
-                      minLength={4}
                     />
                     <button type="button" onClick={() => setShowPin(!showPin)} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500">
                       {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

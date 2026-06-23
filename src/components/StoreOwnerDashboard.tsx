@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard, Pizza, Tag, Store, LogOut, Plus, Trash2, Edit2, Check, X,
   DollarSign, ShoppingBag, Power, Loader2, Clock, MapPin, Phone, Save,
-  BarChart3, Wallet, TrendingUp, Timer,
+  BarChart3, Wallet, TrendingUp, Timer, Menu,
 } from 'lucide-react';
 import {
   StoreDoc, MenuItemDoc, DealDoc,
@@ -11,6 +11,7 @@ import {
   setMenuItemAvailability, deleteMenuItem, getStoreDeals, upsertDeal, deleteDeal,
   watchStoreRichOrders, setOrderStatus, updateOrderFields,
 } from '../lib/db';
+import { AdminOnboarding } from './admin/AdminOnboarding';
 
 interface Props {
   storeId: string;
@@ -44,8 +45,18 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const flash = useCallback((m: string) => { setToast(m); setTimeout(() => setToast(''), 2500); }, []);
+
+  const reloadStore = useCallback(async () => {
+    try {
+      const s = await getStore(storeId);
+      setStore(s);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [storeId]);
 
   const reloadMenu = useCallback(async () => setMenu(await getStoreMenu(storeId)), [storeId]);
   const reloadDeals = useCallback(async () => setDeals(await getStoreDeals(storeId)), [storeId]);
@@ -77,28 +88,77 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
   if (loading) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[#080808]">
-        <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
+        <Loader2 className="w-6 h-6 text-red-400 animate-spin" />
       </div>
     );
   }
 
+  const storeIsApproved = store?.application_status === 'approved' || store?.is_approved === true;
+
+  if (store && !storeIsApproved) {
+    return (
+      <div className="min-h-screen w-full bg-[#080808] text-stone-100 px-6 py-10">
+        <AdminOnboarding storeData={store} onComplete={reloadStore} onLogout={onLogout} />
+      </div>
+    );
+  }
+
+  const goTab = (t: Tab) => { setTab(t); setSidebarOpen(false); };
+
   return (
-    <div className="min-h-screen w-full flex bg-[#080808] text-stone-100">
-      {/* Sidebar */}
-      <aside className="w-60 shrink-0 border-r border-white/8 bg-[#0b0b0b] flex flex-col">
+    <div className="min-h-screen w-full bg-[#080808] text-stone-100 lg:flex">
+
+      {/* ── Mobile top bar ───────────────────────────────────────────────── */}
+      <div className="lg:hidden sticky top-0 z-50 bg-[#0b0b0b] border-b border-white/8 px-4 py-3 flex items-center gap-3">
+        <button onClick={() => setSidebarOpen(true)} aria-label="Open menu"
+          className="p-2 rounded-xl hover:bg-white/8 transition-colors">
+          <Menu className="w-5 h-5 text-stone-300" />
+        </button>
+        <div className="w-7 h-7 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shrink-0">
+          <Store className="w-4 h-4 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-black text-white truncate">{store?.store_name || storeName}</p>
+        </div>
+        <button onClick={toggleAccepting}
+          className={`text-[9px] font-black px-2.5 py-1 rounded-full border shrink-0 ${
+            (store?.accepting_orders ?? true) ? 'bg-green-500/15 text-green-400 border-green-500/25' : 'bg-stone-500/15 text-stone-500 border-white/10'
+          }`}>
+          {(store?.accepting_orders ?? true) ? '● OPEN' : '● PAUSED'}
+        </button>
+      </div>
+
+      {/* ── Mobile sidebar backdrop ──────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)} />
+      )}
+
+      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
+      <aside className={`
+        fixed top-0 bottom-0 left-0 z-50 w-60 shrink-0
+        bg-[#0b0b0b] border-r border-white/8 flex flex-col
+        transition-transform duration-300
+        lg:static lg:translate-x-0 lg:h-screen lg:sticky lg:top-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
         <div className="flex items-center gap-3 px-5 py-5 border-b border-white/8">
           <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shrink-0">
             <Store className="w-5 h-5 text-white" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-black text-white truncate">{store?.store_name || storeName}</p>
             <p className="text-[9px] text-stone-600 font-bold uppercase tracking-widest">Store Dashboard</p>
           </div>
+          {/* Mobile close */}
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1.5 rounded-lg hover:bg-white/8 transition-colors">
+            <X className="w-4 h-4 text-stone-400" />
+          </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {NAV.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => setTab(id)}
+            <button key={id} onClick={() => goTab(id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${
                 tab === id ? 'bg-gradient-to-r from-red-600/90 to-orange-600/70 text-white' : 'text-stone-400 hover:bg-white/6 hover:text-white'
               }`}>
@@ -120,10 +180,10 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
         </div>
       </aside>
 
-      {/* Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          {tab === 'overview' && <Overview store={store} menu={menu} deals={deals} orders={orders} onGoOrders={() => setTab('orders')} />}
+      {/* ── Main content ─────────────────────────────────────────────────── */}
+      <main className="flex-1 overflow-y-auto min-h-screen">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
+          {tab === 'overview' && <Overview store={store} menu={menu} deals={deals} orders={orders} onGoOrders={() => goTab('orders')} />}
           {tab === 'orders' && <Orders orders={orders} flash={flash} />}
           {tab === 'menu' && <MenuManager storeId={storeId} menu={menu} reload={reloadMenu} flash={flash} setMenu={setMenu} />}
           {tab === 'deals' && <DealsManager storeId={storeId} deals={deals} reload={reloadDeals} flash={flash} />}
@@ -153,7 +213,7 @@ function Overview({ store, menu, deals, orders, onGoOrders }: { store: StoreDoc 
   const revenue = orders.reduce((s, o) => s + (Number(o.finalTotal ?? o.total) || 0), 0);
   const pending = orders.filter(o => (o.orderStatus ?? o.status ?? 'placed') === 'placed');
   const stats = [
-    { label: 'Orders Today', value: todays.length, icon: ShoppingBag, color: 'text-orange-400' },
+    { label: 'Orders Today', value: todays.length, icon: ShoppingBag, color: 'text-red-400' },
     { label: 'Total Orders', value: orders.length, icon: ShoppingBag, color: 'text-blue-400' },
     { label: 'Revenue', value: money(revenue), icon: DollarSign, color: 'text-green-400' },
     { label: 'Menu Items', value: menu.length, icon: Pizza, color: 'text-red-400' },
@@ -173,7 +233,7 @@ function Overview({ store, menu, deals, orders, onGoOrders }: { store: StoreDoc 
             </span>
             <p className="text-sm font-black text-white">{pending.length} new order{pending.length !== 1 ? 's' : ''} need action</p>
           </div>
-          <span className="text-xs font-bold text-orange-300">Review →</span>
+          <span className="text-xs font-bold text-red-300">Review →</span>
         </button>
       )}
 

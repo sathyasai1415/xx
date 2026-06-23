@@ -16,8 +16,9 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { updateStore } from './db';
 
-export type UserRole = 'customer' | 'store_owner';
+export type UserRole = 'customer' | 'store_owner' | 'admin';
 
 export interface UserProfile {
   uid: string;
@@ -85,11 +86,13 @@ export async function signUpCustomer(params: {
 
 export async function signUpStoreOwner(params: {
   email: string; password: string; fullName: string; storeName: string; phone?: string;
-}): Promise<UserProfile> {
+}, options?: { isApproved?: boolean; applicationStatus?: 'draft' | 'submitted' | 'under_review' | 'approved' | 'rejected' | 'suspended' }): Promise<UserProfile> {
   try {
     const cred = await createUserWithEmailAndPassword(auth, params.email.trim(), params.password);
     await updateProfile(cred.user, { displayName: params.fullName });
     const uid = cred.user.uid;
+    const approved = options?.isApproved === true;
+    const status = options?.applicationStatus ?? (approved ? 'approved' : 'draft');
 
     const profile: UserProfile = {
       uid,
@@ -109,7 +112,9 @@ export async function signUpStoreOwner(params: {
       city: 'Detroit',
       state: 'MI',
       accepting_orders: true,
-      is_approved: false,
+      is_approved: approved,
+      is_setup_complete: false,
+      application_status: status,
       rating_avg: 0,
       rating_count: 0,
       createdAt: serverTimestamp(),

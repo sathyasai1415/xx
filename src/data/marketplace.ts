@@ -130,7 +130,7 @@ function pizza(storeId: string, id: string, name: string, desc: string, price: n
   return { id, storeId, name, description: desc, price, category: 'pizza', imageColor: color, tags, isPopular: popular, isNew: false };
 }
 function side(storeId: string, id: string, name: string, desc: string, price: number): MarketplaceMenuItem {
-  return { id, storeId, name, description: desc, price, category: 'sides', imageColor: 'from-amber-600 to-yellow-500', tags: [], isPopular: false, isNew: false };
+  return { id, storeId, name, description: desc, price, category: 'sides', imageColor: 'from-red-600 to-red-500', tags: [], isPopular: false, isNew: false };
 }
 function drink(storeId: string, id: string, name: string, price: number): MarketplaceMenuItem {
   return { id, storeId, name, description: 'Chilled & refreshing', price, category: 'drinks', imageColor: 'from-blue-500 to-cyan-400', tags: [], isPopular: false, isNew: false };
@@ -174,10 +174,10 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     ],
     reviews: REVIEWS.dominos,
     menu: [
-      pizza('dominos', 'dom-pep', 'Classic Pepperoni', 'Double pepperoni on robust tomato sauce.', 13.99, 'from-red-600 to-orange-500', true),
-      pizza('dominos', 'dom-ext', 'ExtravaganZZa', '8 toppings, mozzarella, robust sauce.', 17.99, 'from-orange-600 to-amber-500', true),
+      pizza('dominos', 'dom-pep', 'Classic Pepperoni', 'Double pepperoni on robust tomato sauce.', 13.99, 'from-red-600 to-red-500', true),
+      pizza('dominos', 'dom-ext', 'ExtravaganZZa', '8 toppings, mozzarella, robust sauce.', 17.99, 'from-red-600 to-red-500', true),
       pizza('dominos', 'dom-veg', 'Pacific Veggie', 'Spinach, tomatoes, mushrooms, onions, peppers.', 14.99, 'from-green-600 to-emerald-500', false, ['vegetarian']),
-      pizza('dominos', 'dom-bbq', 'Memphis BBQ Chicken', 'Grilled chicken, BBQ sauce, red onion.', 15.99, 'from-amber-700 to-yellow-600'),
+      pizza('dominos', 'dom-bbq', 'Memphis BBQ Chicken', 'Grilled chicken, BBQ sauce, red onion.', 15.99, 'from-red-700 to-red-600'),
       pizza('dominos', 'dom-marg', 'Margherita', 'Fresh tomato sauce, mozzarella, basil.', 11.99, 'from-red-500 to-pink-500', false, ['vegetarian']),
       side('dominos', 'dom-bread', 'Stuffed Cheesy Bread', 'Mozzarella and cheddar in soft bread.', 6.99),
       side('dominos', 'dom-wings', 'Boneless Wings (8pc)', 'Choice of sauce. Crispy & tender.', 8.99),
@@ -219,8 +219,8 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     reviews: REVIEWS.pizzaHut,
     menu: [
       pizza('pizza-hut', 'ph-stuf', 'Stuffed Crust Pepperoni', 'Pepperoni with mozzarella-stuffed crust.', 16.99, 'from-red-600 to-rose-500', true),
-      pizza('pizza-hut', 'ph-sup', 'Supreme', 'Pepperoni, sausage, peppers, onions, olives.', 17.49, 'from-orange-600 to-red-500', true),
-      pizza('pizza-hut', 'ph-cheese', 'Cheese Lovers', 'Mozzarella, provolone, white cheddar, romano.', 15.99, 'from-yellow-500 to-amber-400', false, ['vegetarian']),
+      pizza('pizza-hut', 'ph-sup', 'Supreme', 'Pepperoni, sausage, peppers, onions, olives.', 17.49, 'from-red-600 to-red-500', true),
+      pizza('pizza-hut', 'ph-cheese', 'Cheese Lovers', 'Mozzarella, provolone, white cheddar, romano.', 15.99, 'from-red-400 to-red-500', false, ['vegetarian']),
       pizza('pizza-hut', 'ph-veg', 'Veggie Lovers', 'Fresh vegetables on garlic sauce.', 14.99, 'from-green-500 to-teal-500', false, ['vegetarian']),
       side('pizza-hut', 'ph-bread', 'Original Breadsticks (6pc)', 'Topped with garlic butter & seasoning.', 5.99),
       drink('pizza-hut', 'ph-pepsi', 'Pepsi 2L', 2.99),
@@ -302,10 +302,10 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     reviews: REVIEWS.marios,
     menu: [
       pizza('marios', 'mar-marg', 'Margherita Classica', 'San Marzano tomato, buffalo mozzarella, fresh basil.', 14.99, 'from-red-500 to-pink-400', true, ['vegetarian']),
-      pizza('marios', 'mar-4frm', 'Quattro Formaggi', 'Mozzarella, gorgonzola, parmigiano, ricotta.', 16.99, 'from-yellow-400 to-amber-300', true, ['vegetarian']),
-      pizza('marios', 'mar-diav', 'Diavola', 'Spicy salami, Calabrian chili, tomato, mozzarella.', 16.49, 'from-red-700 to-orange-600'),
+      pizza('marios', 'mar-4frm', 'Quattro Formaggi', 'Mozzarella, gorgonzola, parmigiano, ricotta.', 16.99, 'from-red-400 to-red-300', true, ['vegetarian']),
+      pizza('marios', 'mar-diav', 'Diavola', 'Spicy salami, Calabrian chili, tomato, mozzarella.', 16.49, 'from-red-700 to-red-600'),
       pizza('marios', 'mar-prsc', 'Prosciutto & Rucola', 'Thin crust, prosciutto di Parma, rocket, parmigiano.', 18.99, 'from-green-600 to-emerald-400'),
-      pizza('marios', 'mar-ndc', 'Nduja Special', 'Spicy pork, fire-roasted peppers, mozzarella.', 17.49, 'from-orange-700 to-red-500'),
+      pizza('marios', 'mar-ndc', 'Nduja Special', 'Spicy pork, fire-roasted peppers, mozzarella.', 17.49, 'from-red-700 to-red-600'),
       side('marios', 'mar-bread', 'Garlic Focaccia', 'House-baked with rosemary & sea salt.', 5.99),
       side('marios', 'mar-salad', 'Insalata Mista', 'Mixed greens, olives, cherry tomatoes, EVOO.', 7.99),
       drink('marios', 'mar-soda', 'San Pellegrino 500ml', 3.49),
@@ -346,11 +346,11 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     ],
     reviews: REVIEWS.localSlice,
     menu: [
-      pizza('local-slice', 'ls-nyc', 'NY Cheese Slice', 'Classic NY thin crust, tomato sauce, mozzarella.', 4.99, 'from-yellow-500 to-amber-400', true, ['vegetarian']),
-      pizza('local-slice', 'ls-pep', 'Pepperoni Slice', 'NY thin with generous pepperoni.', 5.99, 'from-red-500 to-orange-400', true),
-      pizza('local-slice', 'ls-buff', 'Buffalo Chicken Slice', 'Buffalo sauce, grilled chicken, blue cheese.', 6.99, 'from-orange-500 to-amber-500'),
-      pizza('local-slice', 'ls-whole', 'Whole NY Cheese', 'Full 18" New York style.', 16.99, 'from-yellow-600 to-orange-400'),
-      pizza('local-slice', 'ls-bbq', 'BBQ Pulled Pork Slice', 'Slow-cooked pork, BBQ drizzle, slaw.', 7.49, 'from-amber-700 to-red-600'),
+      pizza('local-slice', 'ls-nyc', 'NY Cheese Slice', 'Classic NY thin crust, tomato sauce, mozzarella.', 4.99, 'from-red-400 to-red-500', true, ['vegetarian']),
+      pizza('local-slice', 'ls-pep', 'Pepperoni Slice', 'NY thin with generous pepperoni.', 5.99, 'from-red-600 to-red-500', true),
+      pizza('local-slice', 'ls-buff', 'Buffalo Chicken Slice', 'Buffalo sauce, grilled chicken, blue cheese.', 6.99, 'from-red-600 to-red-500'),
+      pizza('local-slice', 'ls-whole', 'Whole NY Cheese', 'Full 18" New York style.', 16.99, 'from-red-500 to-red-600'),
+      pizza('local-slice', 'ls-bbq', 'BBQ Pulled Pork Slice', 'Slow-cooked pork, BBQ drizzle, slaw.', 7.49, 'from-red-700 to-red-600'),
       side('local-slice', 'ls-knots', 'Garlic Knots (6pc)', 'Baked with garlic butter, parsley.', 3.99),
       drink('local-slice', 'ls-can', 'Canned Soda', 1.49),
     ],
@@ -391,11 +391,11 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     ],
     reviews: REVIEWS.shamz,
     menu: [
-      pizza('shamz', 'sh-mf', 'Shamz Meat Feast', 'Pepperoni, halal beef, lamb, chicken, mozzarella.', 18.99, 'from-red-700 to-orange-600', true),
+      pizza('shamz', 'sh-mf', 'Shamz Meat Feast', 'Pepperoni, halal beef, lamb, chicken, mozzarella.', 18.99, 'from-red-700 to-red-600', true),
       pizza('shamz', 'sh-pep', 'Pepperoni Supreme', 'Double pepperoni, smoked mozzarella, bold tomato.', 16.99, 'from-red-600 to-red-400', true),
-      pizza('shamz', 'sh-bbq', 'BBQ Chicken Ranch', 'Grilled chicken, BBQ + ranch drizzle, jalapeño.', 17.49, 'from-amber-600 to-yellow-500'),
+      pizza('shamz', 'sh-bbq', 'BBQ Chicken Ranch', 'Grilled chicken, BBQ + ranch drizzle, jalapeño.', 17.49, 'from-red-600 to-red-500'),
       pizza('shamz', 'sh-marg', 'Classic Margherita', 'San Marzano tomato, fresh mozzarella, basil.', 13.99, 'from-red-500 to-pink-400', false, ['vegetarian']),
-      pizza('shamz', 'sh-truf', 'Truffle Mushroom', 'Wild mushroom, truffle oil, parmigiano, rocket.', 19.99, 'from-stone-600 to-amber-700'),
+      pizza('shamz', 'sh-truf', 'Truffle Mushroom', 'Wild mushroom, truffle oil, parmigiano, rocket.', 19.99, 'from-stone-600 to-red-700'),
       pizza('shamz', 'sh-veg', 'Veggie Garden', 'Capsicum, olives, sun-dried tomato, feta.', 15.49, 'from-green-600 to-emerald-400', false, ['vegetarian']),
       side('shamz', 'sh-gb', 'Garlic Bread', 'Toasted Italian bread with garlic butter.', 5.49),
       side('shamz', 'sh-fries', 'Loaded Fries', 'Cheese sauce, bacon bits, sour cream.', 7.99),
@@ -438,9 +438,9 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     reviews: REVIEWS.greenPie,
     menu: [
       pizza('green-pie', 'gp-marg', 'Vegan Margherita', 'Cashew mozzarella, tomato, fresh basil, EVOO.', 14.99, 'from-green-600 to-emerald-400', true, ['vegan', 'vegetarian']),
-      pizza('green-pie', 'gp-bbqj', 'BBQ Jackfruit', 'Pulled jackfruit, BBQ sauce, red onion, peppers.', 15.99, 'from-amber-600 to-yellow-500', true, ['vegan', 'vegetarian']),
+      pizza('green-pie', 'gp-bbqj', 'BBQ Jackfruit', 'Pulled jackfruit, BBQ sauce, red onion, peppers.', 15.99, 'from-red-600 to-red-500', true, ['vegan', 'vegetarian']),
       pizza('green-pie', 'gp-med', 'Mediterranean Roast', 'Roasted veg, hummus base, olives, spinach.', 15.49, 'from-teal-600 to-green-400', false, ['vegan', 'vegetarian', 'gluten-free']),
-      pizza('green-pie', 'gp-truffle', 'Vegan Truffle', 'Mushroom, truffle oil, cashew parm, rocket.', 17.99, 'from-stone-500 to-amber-600', false, ['vegan', 'vegetarian']),
+      pizza('green-pie', 'gp-truffle', 'Vegan Truffle', 'Mushroom, truffle oil, cashew parm, rocket.', 17.99, 'from-stone-500 to-red-600', false, ['vegan', 'vegetarian']),
       side('green-pie', 'gp-knots', 'Garlic Knots (V)', 'Vegan butter & fresh herbs.', 4.99),
       side('green-pie', 'gp-salad', 'Greek Salad', 'Tomato, cucumber, kalamata, vegan feta.', 8.99),
       drink('green-pie', 'gp-juice', 'Cold Pressed Juice', 5.99),
@@ -481,7 +481,7 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     reviews: REVIEWS.brooklyn,
     menu: [
       pizza('brooklyn', 'bk-nyc', 'NY Cheese', '18" hand-tossed, low-moisture mozz, tomato.', 18.99, 'from-slate-500 to-gray-400', true, ['vegetarian']),
-      pizza('brooklyn', 'bk-prsc', 'Prosciutto & Truffle', 'Di Parma prosciutto, truffle oil, rocket, parm.', 24.99, 'from-amber-700 to-stone-500', true),
+      pizza('brooklyn', 'bk-prsc', 'Prosciutto & Truffle', 'Di Parma prosciutto, truffle oil, rocket, parm.', 24.99, 'from-red-700 to-stone-500', true),
       pizza('brooklyn', 'bk-clam', 'White Clam Pie', 'Clams, garlic, olive oil, pecorino. No sauce.', 22.99, 'from-sky-600 to-blue-500'),
       pizza('brooklyn', 'bk-marg', 'Neapolitan Margherita', '00 flour, DOP tomatoes, bufala mozzarella.', 19.99, 'from-red-500 to-rose-400', false, ['vegetarian']),
       side('brooklyn', 'bk-an', 'Arancini (4pc)', 'Saffron risotto balls, sugo.', 11.99),
@@ -492,7 +492,7 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     id: 'fire-dough',
     name: 'Fire & Dough',
     emoji: '🔥',
-    logoColor: 'bg-orange-700',
+    logoColor: 'bg-red-700',
     category: 'artisan',
     address: '228 Piquette Ave',
     neighborhood: 'Milwaukee Junction',
@@ -522,8 +522,8 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     ],
     reviews: [],
     menu: [
-      pizza('fire-dough', 'fd-chor', 'Smoky Chorizo', 'Spanish chorizo, roasted peppers, piquillo, romesco.', 17.99, 'from-orange-600 to-red-500', true),
-      pizza('fire-dough', 'fd-nduj', 'Nduja & Honey', 'Spicy Calabrian pork spread, ricotta, wild honey.', 18.49, 'from-amber-500 to-orange-600', true),
+      pizza('fire-dough', 'fd-chor', 'Smoky Chorizo', 'Spanish chorizo, roasted peppers, piquillo, romesco.', 17.99, 'from-red-600 to-red-500', true),
+      pizza('fire-dough', 'fd-nduj', 'Nduja & Honey', 'Spicy Calabrian pork spread, ricotta, wild honey.', 18.49, 'from-red-500 to-red-600', true),
       pizza('fire-dough', 'fd-marg', 'Wood-Fired Margherita', 'Classic Neapolitan, leopard charring.', 15.99, 'from-stone-500 to-red-500', false, ['vegetarian']),
       side('fire-dough', 'fd-burrata', 'Burrata & Heirloom Tomatoes', 'Stracciatella, basil oil, fleur de sel.', 13.99),
       drink('fire-dough', 'fd-water', 'San Pellegrino', 3.99),
@@ -564,7 +564,7 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     reviews: [],
     menu: [
       pizza('pizza-king', 'pk-pep', 'King Pepperoni', 'Massive pepperoni load, their signature.', 10.99, 'from-purple-600 to-violet-500', true),
-      pizza('pizza-king', 'pk-bbq', 'BBQ Beef King', 'Ground beef, BBQ sauce, jalapeños, cheese.', 12.99, 'from-amber-700 to-orange-500'),
+      pizza('pizza-king', 'pk-bbq', 'BBQ Beef King', 'Ground beef, BBQ sauce, jalapeños, cheese.', 12.99, 'from-red-700 to-red-600'),
       pizza('pizza-king', 'pk-val', 'Value Combo', 'Cheese + pepperoni, thin crust, 12".', 8.99, 'from-purple-500 to-pink-400'),
       side('pizza-king', 'pk-wings', 'Wings (10pc)', 'Choice of BBQ or hot sauce.', 9.99),
       drink('pizza-king', 'pk-coke', 'Soda (any)', 1.99),
@@ -602,7 +602,7 @@ export const MARKETPLACE_STORES: MarketplaceStore[] = [
     deals: [],
     reviews: [],
     menu: [
-      pizza('little-italy', 'li-truf', 'Tartufo Bianco', 'White truffle, burrata, 24-month prosciutto, rocket.', 28.99, 'from-amber-600 to-yellow-400', true),
+      pizza('little-italy', 'li-truf', 'Tartufo Bianco', 'White truffle, burrata, 24-month prosciutto, rocket.', 28.99, 'from-red-600 to-red-400', true),
       pizza('little-italy', 'li-cap', 'Caprese', 'Heirloom tomatoes, bufala, aged balsamic.', 22.99, 'from-red-400 to-rose-300', false, ['vegetarian']),
       pizza('little-italy', 'li-lob', 'Lobster Bianca', 'Poached lobster, mascarpone, chives, lemon zest.', 34.99, 'from-sky-500 to-blue-400'),
       side('little-italy', 'li-ant', 'Antipasto Board', 'Seasonal Italian cured meats & artisan cheeses.', 24.99),

@@ -65,7 +65,7 @@ export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onCont
                      storeName={item.store_name}
                      logoUrl={getStoreDetails(item.store_id || '', item.store_name).logoUrl}
                      brandColor={getStoreDetails(item.store_id || '', item.store_name).brandColor || 
-                       (item.store_id === 'dominos' ? 'blue' : item.store_id === 'pizza-hut' ? 'red' : item.store_id === 'papa-johns' ? 'green' : 'orange')
+                       (item.store_id === 'dominos' ? 'blue' : item.store_id === 'pizza-hut' ? 'red' : item.store_id === 'papa-johns' ? 'green' : 'red')
                      }
                      className="w-6 h-6 border-stone-700"
                    />
@@ -183,7 +183,7 @@ export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onCont
 
             <button 
               onClick={onCheckout} 
-              className="w-full font-bold py-3.5 rounded-xl mt-6 shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white transition-all transform hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:shadow-md shadow-[0_0_20px_rgba(255,50,0,0.3)] border border-orange-400/50"
+              className="w-full font-bold py-3.5 rounded-xl mt-6 shadow-lg flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white transition-all transform hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 active:shadow-md shadow-[0_0_20px_rgba(220,38,38,0.3)] border border-red-400/50"
             >
               <CreditCard className="w-5 h-5" /> Pay ${total.toFixed(2)}
             </button>

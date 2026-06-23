@@ -190,7 +190,7 @@ function OrderCard({ order, onReorder, onViewReceipt, onCancel }: { key?: string
           </button>
         )}
         {contactSupport && (
-           <button onClick={() => alert("Please contact support at 1-800-MISLICE to modify an order in progress.")} className="flex-[1] min-w-[140px] bg-amber-50 hover:bg-amber-100 text-amber-700 font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2">
+           <button onClick={() => alert("Please contact support at 1-800-MISLICE to modify an order in progress.")} className="flex-[1] min-w-[140px] bg-red-50 hover:bg-red-100 text-red-700 font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2">
              Contact Support
            </button>
         )}

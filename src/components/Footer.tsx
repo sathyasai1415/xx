@@ -38,7 +38,7 @@ export function Footer() {
             {/* Brand */}
             <div className="max-w-xs">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-9 h-9 bg-gradient-to-br from-amber-400 to-orange-500 rounded-xl flex items-center justify-center">
+                <div className="w-9 h-9 bg-gradient-to-br from-red-400 to-red-500 rounded-xl flex items-center justify-center">
                   <Pizza className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-stone-800 font-black text-xl tracking-tight">MiSlice</span>
@@ -78,7 +78,7 @@ export function Footer() {
                   key={s.label}
                   href="#"
                   aria-label={s.label}
-                  className="clay-btn w-8 h-8 rounded-full bg-white flex items-center justify-center text-stone-400 hover:text-amber-500"
+                  className="clay-btn w-8 h-8 rounded-full bg-white flex items-center justify-center text-stone-400 hover:text-red-500"
                 >
                   <s.icon className="w-3.5 h-3.5" />
                 </a>

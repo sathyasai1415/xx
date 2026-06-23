@@ -114,7 +114,7 @@ export function LocationModal({ isOpen, onClose, currentLocation, onLocationChan
 
             {/* Search input */}
             <div className="px-5 py-3 shrink-0">
-              <div className="relative flex items-center bg-white/6 border border-white/12 focus-within:border-orange-500/40 rounded-2xl overflow-hidden transition-colors">
+              <div className="relative flex items-center bg-white/6 border border-white/12 focus-within:border-red-500/40 rounded-2xl overflow-hidden transition-colors">
                 <Search className="w-4 h-4 text-stone-500 ml-4 shrink-0" />
                 <input
                   ref={inputRef}
@@ -144,14 +144,14 @@ export function LocationModal({ isOpen, onClose, currentLocation, onLocationChan
                   whileTap={{ scale: 0.97 }}
                   onClick={detectGPS}
                   disabled={detecting || detected}
-                  className="w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-orange-500/12 to-red-500/8 border border-orange-500/25 hover:border-orange-500/45 transition-all group"
+                  className="w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-500/12 to-red-500/8 border border-red-500/25 hover:border-red-500/45 transition-all group"
                 >
-                  <div className="w-9 h-9 bg-orange-500/15 rounded-xl flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 bg-red-500/15 rounded-xl flex items-center justify-center shrink-0">
                     {detecting
-                      ? <Loader2 className="w-4 h-4 text-orange-400 animate-spin" />
+                      ? <Loader2 className="w-4 h-4 text-red-400 animate-spin" />
                       : detected
                       ? <Check className="w-4 h-4 text-green-400" />
-                      : <Navigation className="w-4 h-4 text-orange-400" />
+                      : <Navigation className="w-4 h-4 text-red-400" />
                     }
                   </div>
                   <div className="text-left">
@@ -160,7 +160,7 @@ export function LocationModal({ isOpen, onClose, currentLocation, onLocationChan
                     </p>
                     <p className="text-[10px] text-stone-500">GPS-powered · most accurate results</p>
                   </div>
-                  {!detecting && !detected && <ChevronRight className="w-4 h-4 text-stone-600 group-hover:text-orange-400 ml-auto transition-colors" />}
+                  {!detecting && !detected && <ChevronRight className="w-4 h-4 text-stone-600 group-hover:text-red-400 ml-auto transition-colors" />}
                 </motion.button>
               </div>
 
@@ -225,7 +225,7 @@ export function LocationModal({ isOpen, onClose, currentLocation, onLocationChan
                         <p>No matches for "<span className="text-stone-400">{query}</span>"</p>
                         <button
                           onClick={() => saveAndClose(query)}
-                          className="mt-3 text-xs font-bold text-orange-400 hover:text-orange-300"
+                          className="mt-3 text-xs font-bold text-red-400 hover:text-red-300"
                         >
                           Use "{query}" as location →
                         </button>
@@ -240,7 +240,7 @@ export function LocationModal({ isOpen, onClose, currentLocation, onLocationChan
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   onClick={() => saveAndClose(query.trim())}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-red-600 text-white font-black text-sm shadow-[0_0_20px_rgba(255,80,0,0.3)] border border-orange-400/30 hover:opacity-90 transition-opacity"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 text-white font-black text-sm shadow-[0_0_20px_rgba(220,38,38,0.3)] border border-red-400/30 hover:opacity-90 transition-opacity"
                 >
                   <MapPin className="w-4 h-4" /> Set Location to "{query.trim()}"
                 </motion.button>
@@ -261,17 +261,17 @@ function LocationRow({ emoji, label, detail, onClick, isCurrent }: {
       onClick={onClick}
       className={`w-full flex items-center gap-3 py-3 px-3.5 rounded-xl border transition-all group text-left ${
         isCurrent
-          ? 'bg-orange-500/10 border-orange-500/25 text-orange-300'
+          ? 'bg-red-500/10 border-red-500/25 text-red-300'
           : 'bg-white/4 border-white/8 hover:border-white/18 hover:bg-white/7'
       }`}
     >
       <span className="text-lg shrink-0">{emoji}</span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-bold truncate ${isCurrent ? 'text-orange-300' : 'text-white'}`}>{label}</p>
+        <p className={`text-sm font-bold truncate ${isCurrent ? 'text-red-300' : 'text-white'}`}>{label}</p>
         <p className="text-[10px] text-stone-600 truncate">{detail}</p>
       </div>
       {isCurrent
-        ? <Check className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+        ? <Check className="w-3.5 h-3.5 text-red-400 shrink-0" />
         : <ChevronRight className="w-3.5 h-3.5 text-stone-700 group-hover:text-stone-400 transition-colors shrink-0" />
       }
     </button>

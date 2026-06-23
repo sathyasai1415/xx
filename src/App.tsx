@@ -7,6 +7,7 @@ import { ComparisonCards } from './components/ComparisonCards';
 import { HomeView } from './components/HomeView';
 import { HowItWorksView } from './components/HowItWorksView';
 import { LocalDeals } from './components/LocalDeals';
+import { DealsHub } from './components/DealsHub';
 import { PizzaConfig, DeliveryType, Review, Order, OrderItem } from './types';
 import { calculateQuotes } from './lib/pricing';
 import { Heart, Search, ShoppingBag } from 'lucide-react';
@@ -18,6 +19,7 @@ import { CartItem } from './types';
 import { TopNav } from './components/TopNav';
 import { StoreOwnerModal } from './components/StoreOwnerModal';
 import { StoreOwnerDashboard } from './components/StoreOwnerDashboard';
+import { PlatformAdminDashboard } from './components/admin/PlatformAdminDashboard';
 import { CustomerProfile } from './components/CustomerProfile';
 import { RewardsView } from './components/RewardsView';
 import { NotificationsView } from './components/NotificationsView';
@@ -38,8 +40,22 @@ export default function App() {
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [pastOrders, setPastOrders] = useState<Order[]>([]);
 
-  // Theme state
-  const [isLight, setIsLight] = useState(false);
+  // Theme + meat preferences (persisted)
+  const [isLight, setIsLight] = useState(() => {
+    try { return localStorage.getItem('miSliceTheme') === 'light'; } catch { return false; }
+  });
+  const [meatPreferences, setMeatPreferences] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('miSliceMeatPrefs') || '[]'); } catch { return []; }
+  });
+
+  const savePreferences = (theme: boolean, meats: string[]) => {
+    setIsLight(theme);
+    setMeatPreferences(meats);
+    try {
+      localStorage.setItem('miSliceTheme', theme ? 'light' : 'dark');
+      localStorage.setItem('miSliceMeatPrefs', JSON.stringify(meats));
+    } catch { /* ignore */ }
+  };
 
   // Toast notification
   const [toast, setToast] = useState<string>('');
@@ -85,7 +101,7 @@ export default function App() {
   });
 
   // Authentication (Firebase) — drives role-based routing
-  const { profile, loading: authLoading, isAuthenticated, isStoreOwner, logout } = useAuth();
+  const { profile, loading: authLoading, isAuthenticated, isStoreOwner, isAdmin, logout } = useAuth();
   const uid = profile?.uid ?? null;
   const customerName = profile?.fullName || '';
   const storeOwnerName = profile?.storeName || profile?.fullName || '';
@@ -276,7 +292,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-[#080808]">
-        <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
+        <Loader2 className="w-6 h-6 text-red-400 animate-spin" />
       </div>
     );
   }
@@ -286,6 +302,15 @@ export default function App() {
     return (
       <AppProvider>
         <WelcomeScreen />
+      </AppProvider>
+    );
+  }
+
+  // ── Admin: platform administration portal ───────────────────────────────
+  if (isAdmin) {
+    return (
+      <AppProvider>
+        <PlatformAdminDashboard />
       </AppProvider>
     );
   }
@@ -301,7 +326,7 @@ export default function App() {
 
   return (
     <AppProvider>
-    <div className="relative min-h-screen font-sans flex overflow-x-hidden clay-page text-stone-800">
+    <div className="relative min-h-screen font-sans flex overflow-x-hidden bg-[#0A0D18]">
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] clay bg-white text-stone-800 text-sm font-bold px-6 py-3 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 whitespace-nowrap">
@@ -311,7 +336,8 @@ export default function App() {
 
       <TopNav
         isLight={isLight}
-        setIsLight={setIsLight}
+        meatPreferences={meatPreferences}
+        onSavePreferences={savePreferences}
         cartItemCount={cart.length}
         onCartClick={() => setView('cart')}
         onFavoritesClick={() => setView('saved-pizzas')}
@@ -327,22 +353,43 @@ export default function App() {
         setIsOpen={setSidebarOpen}
         isStoreOwner={isStoreOwner}
         storeOwnerName={storeOwnerName}
-        onStoreOwnerLogin={handleSignOut}
         onStoreOwnerLogout={handleSignOut}
         customerName={customerName}
         onCustomerLogout={handleSignOut}
       />
 
-      <main className="flex-1 lg:pl-64 flex flex-col min-h-screen transition-all duration-300 relative z-10">
-        <div className="w-full px-4 pt-16 lg:pt-8 pb-24 max-w-6xl mx-auto flex-1 flex flex-col items-center">
+      <main className={`flex-1 lg:pl-64 flex flex-col min-h-screen transition-all duration-300 relative z-10 ${view === 'profile' ? 'bg-white' : ''}`}>
 
-          {view === 'local-deals' && (
+        {/* Home view renders full-bleed with its own dark layout */}
+        {view === 'home' && (
+          <div className="w-full flex-1 pt-14 lg:pt-0">
+            <HomeView
+              onCustomize={handleCustomize}
+              onCompare={(config) => {
+                setPizzaConfig(config);
+                setView('compare');
+                setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+              }}
+              onNavigate={setView}
+              currentConfig={pizzaConfig}
+              quotes={quotes}
+              favoriteStores={favoriteStores}
+              onToggleFavoriteStore={toggleFavoriteStore}
+              onAddReview={handleAddReview}
+              onAddToCart={addToCart}
+            />
+          </div>
+        )}
+
+        <div className={`w-full px-4 pt-16 lg:pt-8 pb-24 max-w-6xl mx-auto flex-1 flex flex-col items-center ${view === 'home' ? 'hidden' : ''}`}>
+
+          {(view === 'deals-hub' || view === 'local-deals' || view === 'rewards' || view === 'notifications') && (
             <div className="w-full">
-              <div className="mb-8 text-center pt-8">
-                <h1 className="text-3xl font-black text-stone-800 mb-2">Local Deals</h1>
-                <p className="text-stone-500">Discover handpicked deals from pizza shops near you.</p>
-              </div>
-              <LocalDeals onAddToCart={addToCart} />
+              <DealsHub
+                initialTab={view === 'rewards' ? 'rewards' : view === 'notifications' ? 'alerts' : 'deals'}
+                onNavigate={(v) => setView(v as ViewState)}
+                onAddToCart={addToCart}
+              />
             </div>
           )}
 
@@ -373,12 +420,12 @@ export default function App() {
 
           {view === 'saved-pizzas' && (
             <div className="w-full max-w-5xl mx-auto py-8">
-              <h2 className="text-3xl font-black text-stone-800 mb-8">My Saved Pizzas</h2>
+              <h2 className="text-3xl font-black text-white mb-8">My Saved Pizzas</h2>
               {favorites.length === 0 ? (
                 <div className="clay bg-white text-center py-20 rounded-3xl">
                   <Heart className="w-8 h-8 mx-auto text-stone-300 mb-4" />
                   <p className="text-stone-500 font-bold">You haven't saved any pizzas yet.</p>
-                  <button onClick={() => setView('pizza-builder')} className="mt-4 text-amber-600 font-bold text-sm hover:underline">Build one now</button>
+                  <button onClick={() => setView('pizza-builder')} className="mt-4 text-red-600 font-bold text-sm hover:underline">Build one now</button>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -410,15 +457,7 @@ export default function App() {
           {view === 'how-it-works' && <HowItWorksView />}
 
           {view === 'profile' && (
-            <CustomerProfile onNavigate={(v) => setView(v as ViewState)} />
-          )}
-
-          {view === 'rewards' && (
-            <RewardsView onNavigate={(v) => setView(v as ViewState)} />
-          )}
-
-          {view === 'notifications' && (
-            <NotificationsView onNavigate={(v) => setView(v as ViewState)} />
+            <CustomerProfile onNavigate={(v) => setView(v as ViewState)} orders={pastOrders} meatPreferences={meatPreferences} />
           )}
 
           {view === 'order-tracking' && currentOrder && (
@@ -436,7 +475,7 @@ export default function App() {
                 <div className="absolute inset-0 bg-green-400 blur-xl opacity-20 rounded-full"></div>
                 <svg className="w-12 h-12 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
               </div>
-              <h2 className="text-4xl font-black text-stone-800 mb-4 tracking-tight">Order Placed!</h2>
+              <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Order Placed!</h2>
 
               <div className="clay bg-white rounded-[2rem] p-8 text-left mt-8 mb-8 space-y-6">
                 <div>
@@ -476,12 +515,12 @@ export default function App() {
 
           {view === 'orders' && (
             <div className="w-full max-w-5xl mx-auto py-8">
-              <h2 className="text-3xl font-black text-stone-800 mb-8">Order History</h2>
+              <h2 className="text-3xl font-black text-white mb-8">Order History</h2>
               {pastOrders.length === 0 ? (
                 <div className="clay bg-white text-center py-20 rounded-3xl">
                   <ShoppingBag className="w-8 h-8 mx-auto text-stone-300 mb-4" />
                   <p className="text-stone-500 font-bold">No orders yet.</p>
-                  <button onClick={() => setView('pizza-builder')} className="mt-4 text-amber-600 font-bold text-sm hover:underline">Build a pizza</button>
+                  <button onClick={() => setView('pizza-builder')} className="mt-4 text-red-600 font-bold text-sm hover:underline">Build a pizza</button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -508,31 +547,14 @@ export default function App() {
             </div>
           )}
 
-          {view === 'home' && (
-            <HomeView
-              onCustomize={handleCustomize}
-              onCompare={(config) => {
-                setPizzaConfig(config);
-                setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
-              }}
-              onNavigate={setView}
-              currentConfig={pizzaConfig}
-              quotes={quotes}
-              favoriteStores={favoriteStores}
-              onToggleFavoriteStore={toggleFavoriteStore}
-              onAddReview={handleAddReview}
-              onAddToCart={addToCart}
-            />
-          )}
-
           {view === 'pizza-builder' && (
             <div className="w-full pt-4">
               <div className="mb-8 text-center">
-                <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-100 text-amber-600 text-[10px] font-black px-4 py-2 rounded-full mb-4">
+                <div className="inline-flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-black px-4 py-2 rounded-full mb-4">
                   ✦ Premium Pizza Builder
                 </div>
-                <h1 className="text-3xl sm:text-4xl font-black text-stone-800 mb-2 tracking-tight">Build Your Perfect Pizza</h1>
-                <p className="text-stone-500 text-sm">Live prices from every store update as you customize.</p>
+                <h1 className="text-3xl sm:text-4xl font-black text-white mb-2 tracking-tight">Build Your Perfect Pizza</h1>
+                <p className="text-white/50 text-sm">Live prices from every store update as you customize.</p>
               </div>
               <PremiumPizzaBuilder
                 currentConfig={pizzaConfig || { size: 'Large', crust: 'Hand Tossed', sauce: 'Robust Inspired Tomato Sauce', cheese: ['Mozzarella'], meats: [], veggies: [], extras: [], quantity: 1 }}
@@ -556,21 +578,21 @@ export default function App() {
           {view === 'compare' && (
             <div className="w-full pt-4">
               <div className="mb-8 text-center flex flex-col items-center">
-                <h1 className="text-3xl font-black text-stone-800 mb-2">Compare Deals</h1>
-                <p className="text-stone-500 mb-6">See how your custom creation prices out across top stores.</p>
-                <button onClick={() => setView('pizza-builder')} className="text-sm font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 px-4 py-2 rounded-lg transition-colors">
+                <h1 className="text-3xl font-black text-white mb-2">Compare Deals</h1>
+                <p className="text-white/50 mb-6">See how your custom creation prices out across top stores.</p>
+                <button onClick={() => setView('pizza-builder')} className="text-sm font-bold text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-lg transition-colors">
                   ← Edit pizza configuration
                 </button>
               </div>
 
               {pizzaConfig && (
                 <div className="mb-8 z-10 flex justify-center w-full animate-in fade-in duration-500">
-                  <div className="clay-inset inline-flex rounded-2xl p-1">
+                  <div className="bg-white/6 border border-white/10 inline-flex rounded-2xl p-1">
                     {(['auto', 'store-delivery', 'pickup'] as const).map((type, i) => (
                       <button
                         key={type}
                         onClick={() => setDeliveryType(type)}
-                        className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${deliveryType === type ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800'}`}
+                        className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${deliveryType === type ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'}`}
                       >
                         {type === 'auto' ? 'Best Match' : type === 'store-delivery' ? 'Store Delivery' : 'Pickup'}
                       </button>

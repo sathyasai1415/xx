@@ -7,7 +7,7 @@ export function TabOverview({ storeData, orders }: { storeData: any, orders: any
   return (
     <div className="space-y-6">
       {/* Daily Price Verification Widget */}
-      <div className="bg-gradient-to-r from-red-600/20 to-orange-500/10 border border-red-500/30 rounded-3xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-red-600/20 to-red-500/10 border border-red-500/30 rounded-3xl p-6 flex flex-col sm:flex-row justify-between items-center gap-4 relative overflow-hidden">
         <div className="flex items-center gap-4 z-10">
           <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center border border-red-500/50 text-red-500">
             <AlertTriangle className="w-6 h-6" />

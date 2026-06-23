@@ -76,7 +76,7 @@ export function StoreDashboard({ storeData, deals, orders }: { storeData: any, d
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                  {[
                    { title: 'New', count: pendingOrders.length, items: pendingOrders, color: 'text-blue-400', border: 'border-blue-500/30' },
-                   { title: 'Preparing', count: preparingOrders.length, items: preparingOrders, color: 'text-amber-400', border: 'border-amber-500/30' },
+                   { title: 'Preparing', count: preparingOrders.length, items: preparingOrders, color: 'text-red-400', border: 'border-red-500/30' },
                    { title: 'Ready / Out', count: readyOrders.length + outOrders.length, items: [...readyOrders, ...outOrders], color: 'text-green-400', border: 'border-green-500/30' },
                    { title: 'Completed', count: 0, items: [], color: 'text-stone-400', border: 'border-white/10' }
                  ].map(col => (

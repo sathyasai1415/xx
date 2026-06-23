@@ -280,7 +280,7 @@ export function SmartSearchBar({ onSearch, onLocationChange, location = 'Michiga
                 </AnimatePresence>
               )}
               {query && (
-                <button type="button" onClick={(e) => { e.stopPropagation(); setQuery(''); inputRef.current?.focus(); }}
+                <button type="button" title="Clear search" aria-label="Clear search" onClick={(e) => { e.stopPropagation(); setQuery(''); inputRef.current?.focus(); }}
                   className="absolute right-0 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-1">
                   <X className="w-4 h-4" />
                 </button>
