@@ -1,50 +1,50 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Pizza, User, Store, ArrowRight, ChevronLeft, Lock, Eye, EyeOff } from 'lucide-react';
+import { Pizza, User, Store, ArrowRight, ChevronLeft, Lock, Eye, EyeOff, Mail, PlayCircle, Bike, X } from 'lucide-react';
 import { MinionsBackground } from './MinionsBackground';
 import { useAuth } from '../store/AuthContext';
 
-const PASSWORD = '123456';
-
 type Role = 'customer' | 'store_owner';
 
-export function WelcomeScreen() {
-  const { loginLocal } = useAuth();
+const FIREBASE_ERRORS: Record<string, string> = {
+  'auth/wrong-password': 'Incorrect password.',
+  'auth/invalid-credential': 'Incorrect email or password.',
+  'auth/too-many-requests': 'Too many attempts. Try again later.',
+  'auth/email-already-in-use': 'Account already exists. Try signing in.',
+  'auth/weak-password': 'Password must be at least 6 characters.',
+  'auth/invalid-email': 'Please enter a valid email address.',
+  'auth/network-request-failed': 'Network error. Check your connection.',
+};
+
+export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; onCustomerDemo: () => void }) {
+  const { loginOrRegister } = useAuth();
   const [role, setRole] = useState<Role | null>(null);
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [storeName, setStoreName] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDriverModal, setShowDriverModal] = useState(false);
 
-  const reset = () => { setError(''); setName(''); setStoreName(''); setPassword(''); };
+  const reset = () => { setError(''); setName(''); setEmail(''); setStoreName(''); setPassword(''); };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     if (!name.trim()) { setError('Please enter your name.'); return; }
+    if (!email.trim()) { setError('Please enter your email.'); return; }
     if (role === 'store_owner' && !storeName.trim()) { setError('Please enter your store name.'); return; }
-    if (password !== PASSWORD) { setError('Incorrect password. Hint: 123456'); return; }
+    if (password.length < 6) { setError('Password must be at least 6 characters.'); return; }
 
     setLoading(true);
     try {
-      const slug = (role === 'store_owner' ? storeName : name)
-        .trim().toLowerCase().replace(/\s+/g, '-');
-
-      await loginLocal({
-        uid: `${role}-${slug}`,
-        email: `${slug}@mislice.local`,
-        fullName: name.trim(),
-        role,
-        ...(role === 'store_owner' && {
-          storeId: slug,
-          storeName: storeName.trim(),
-        }),
-      });
-    } catch {
-      setError('Something went wrong. Try again.');
+      await loginOrRegister(email.trim().toLowerCase(), password, role!, name.trim(), storeName.trim() || undefined);
+    } catch (err: any) {
+      const code: string = err?.code ?? '';
+      setError(FIREBASE_ERRORS[code] || 'Something went wrong. Try again.');
     } finally {
       setLoading(false);
     }
@@ -96,13 +96,58 @@ export function WelcomeScreen() {
                   onClick={() => { reset(); setRole('store_owner'); }}
                 />
 
-                <p className="text-center text-[11px] text-stone-400 pt-3 font-medium">
-                  Password for both roles: <span className="font-black text-stone-600">123456</span>
-                </p>
+                {/* Delivery partner */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setShowDriverModal(true)}
+                  className="clay-btn w-full bg-white p-5 flex items-center gap-4 text-left group"
+                >
+                  <div className="clay-soft w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 text-emerald-500">
+                    <Bike className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-black text-stone-800">Delivery Partner</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Accept deliveries, track earnings & routes.</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-stone-300 group-hover:translate-x-1 transition-all shrink-0" />
+                </motion.button>
+
+                {/* Demo option */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={onDemo}
+                  className="w-full border-2 border-dashed border-orange-300/60 rounded-[1.5rem] p-4 flex items-center gap-4 text-left group hover:border-orange-400/80 transition-colors"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center shrink-0 text-orange-500 group-hover:bg-orange-100 transition-colors">
+                    <PlayCircle className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-black text-stone-700">Preview Store Owner Demo</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Explore the full dashboard with realistic mock data — no login needed.</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-orange-300 group-hover:translate-x-1 transition-all shrink-0" />
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={onCustomerDemo}
+                  className="w-full border-2 border-dashed border-red-300/60 rounded-[1.5rem] p-4 flex items-center gap-4 text-left group hover:border-red-400/80 transition-colors"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center shrink-0 text-red-500 group-hover:bg-red-100 transition-colors">
+                    <User className="w-7 h-7" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-base font-black text-stone-700">Preview Customer Demo</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Explore the customer experience — no login needed.</p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-red-300 group-hover:translate-x-1 transition-all shrink-0" />
+                </motion.button>
               </motion.div>
             )}
 
-            {/* ── Step 2: Enter name + password ── */}
+            {/* ── Step 2: Enter details + login/register ── */}
             {role && (
               <motion.div key="form"
                 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
@@ -124,7 +169,7 @@ export function WelcomeScreen() {
                     <h2 className="text-xl font-black text-stone-800">
                       {role === 'store_owner' ? 'Store Admin' : 'Customer'}
                     </h2>
-                    <p className="text-stone-400 text-xs">Enter your details to continue</p>
+                    <p className="text-stone-400 text-xs">Sign in or create an account</p>
                   </div>
                 </div>
 
@@ -135,23 +180,11 @@ export function WelcomeScreen() {
                 )}
 
                 <form onSubmit={submit} className="space-y-3.5">
-                  {/* Name */}
-                  <Field
-                    icon={User}
-                    placeholder="Your name"
-                    value={name}
-                    onChange={setName}
-                    autoFocus
-                  />
+                  <Field icon={User} placeholder="Your full name" value={name} onChange={setName} autoFocus />
+                  <Field icon={Mail} placeholder="Email address" value={email} onChange={setEmail} type="email" />
 
-                  {/* Store name — only for store owner */}
                   {role === 'store_owner' && (
-                    <Field
-                      icon={Store}
-                      placeholder="Store name"
-                      value={storeName}
-                      onChange={setStoreName}
-                    />
+                    <Field icon={Store} placeholder="Store name (e.g. Motor City Pies)" value={storeName} onChange={setStoreName} />
                   )}
 
                   {/* Password */}
@@ -159,7 +192,7 @@ export function WelcomeScreen() {
                     <Lock className="w-4 h-4 text-stone-400 shrink-0" />
                     <input
                       type={showPw ? 'text' : 'password'}
-                      placeholder="Password"
+                      placeholder="Password (min. 6 characters)"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       required
@@ -180,13 +213,13 @@ export function WelcomeScreen() {
                     {loading ? (
                       <span className="w-4 h-4 border-2 border-stone-700/30 border-t-stone-700 rounded-full animate-spin" />
                     ) : (
-                      <>Enter <ArrowRight className="w-4 h-4" /></>
+                      <>Sign In / Register <ArrowRight className="w-4 h-4" /></>
                     )}
                   </motion.button>
                 </form>
 
                 <p className="text-center text-[11px] text-stone-400 mt-5 font-medium">
-                  Hint: password is <span className="font-black text-stone-600">123456</span>
+                  New? We'll create your account automatically.
                 </p>
               </motion.div>
             )}
@@ -196,6 +229,116 @@ export function WelcomeScreen() {
 
         <p className="text-center text-stone-300 text-[10px] font-bold mt-8">MiSlice © 2026 · Michigan</p>
       </div>
+
+      {/* Delivery Partner — Vision & Coming Soon modal */}
+      <AnimatePresence>
+        {showDriverModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowDriverModal(false)}
+              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 16 }}
+              className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 pointer-events-none"
+            >
+              <div className="clay rounded-[2rem] w-full max-w-sm pointer-events-auto relative overflow-hidden max-h-[90vh] overflow-y-auto">
+
+                {/* Header */}
+                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 px-6 pt-7 pb-6 text-white relative">
+                  <button
+                    onClick={() => setShowDriverModal(false)}
+                    className="absolute top-4 right-4 p-1.5 rounded-xl bg-white/20 hover:bg-white/30 transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                  <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center mb-4">
+                    <Bike className="w-7 h-7 text-white" />
+                  </div>
+                  <h2 className="text-xl font-black mb-1">Delivery Partner Login</h2>
+                  <p className="text-emerald-100 text-xs font-medium leading-relaxed">
+                    Coming soon — here's how it will work.
+                  </p>
+                </div>
+
+                <div className="px-6 py-5 space-y-5">
+
+                  {/* How it works */}
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-3">How It Works</p>
+                    <div className="space-y-3">
+                      {[
+                        {
+                          step: '1',
+                          color: 'bg-blue-100 text-blue-600',
+                          title: 'You get a delivery offer',
+                          desc: 'A MiSlice order appears in your DoorDash, UberEats, or GrubHub app just like any other delivery request.',
+                        },
+                        {
+                          step: '2',
+                          color: 'bg-violet-100 text-violet-600',
+                          title: 'Tap "Open in MiSlice"',
+                          desc: "Before picking up, you'll see a prompt inside your delivery app to redirect to MiSlice for order verification.",
+                        },
+                        {
+                          step: '3',
+                          color: 'bg-orange-100 text-orange-600',
+                          title: 'Scan the QR code on the order',
+                          desc: 'At the restaurant, scan the QR code printed on the order bag. This confirms you are the assigned driver.',
+                        },
+                        {
+                          step: '4',
+                          color: 'bg-emerald-100 text-emerald-600',
+                          title: 'Order is released to you',
+                          desc: 'Once verified, the order is locked to your pickup. No other person can claim or walk off with it.',
+                        },
+                      ].map(s => (
+                        <div key={s.step} className="flex gap-3 items-start">
+                          <div className={`w-7 h-7 rounded-xl ${s.color} flex items-center justify-center shrink-0 text-xs font-black`}>
+                            {s.step}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-stone-800">{s.title}</p>
+                            <p className="text-xs text-stone-500 leading-relaxed mt-0.5">{s.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Why this matters */}
+                  <div className="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 mb-2">Why this exists</p>
+                    <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                      MiSlice uses QR scan verification to <span className="font-black">eliminate missing or stolen orders</span>. Only the assigned, authenticated delivery partner from DoorDash, UberEats, GrubHub, or MiSlice's own fleet can scan and pick up an order. Everyone else is blocked — no exceptions.
+                    </p>
+                  </div>
+
+                  {/* Supported platforms */}
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2">Supported platforms (coming soon)</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['DoorDash', 'UberEats', 'GrubHub', 'MiSlice Fleet'].map(p => (
+                        <span key={p} className="text-[11px] font-bold bg-stone-100 text-stone-600 px-2.5 py-1 rounded-full border border-stone-200">{p}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setShowDriverModal(false)}
+                    className="clay-accent w-full py-3.5 text-stone-900 font-black text-sm"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -217,19 +360,20 @@ function RoleCard({ icon: Icon, iconColor, title, desc, onClick }: {
         <p className="text-base font-black text-stone-800">{title}</p>
         <p className="text-xs text-stone-400 mt-0.5">{desc}</p>
       </div>
-      <ArrowRight className={`w-5 h-5 text-stone-300 group-hover:translate-x-1 transition-all shrink-0 group-hover:${iconColor}`} />
+      <ArrowRight className={`w-5 h-5 text-stone-300 group-hover:translate-x-1 transition-all shrink-0`} />
     </motion.button>
   );
 }
 
-function Field({ icon: Icon, value, onChange, ...rest }: {
+function Field({ icon: Icon, value, onChange, type = 'text', ...rest }: {
   icon: React.ElementType; value: string; onChange: (v: string) => void;
-  placeholder?: string; autoFocus?: boolean;
+  placeholder?: string; autoFocus?: boolean; type?: string;
 }) {
   return (
     <div className="clay-inset flex items-center gap-2.5 px-4 focus-within:ring-2 focus-within:ring-amber-300/60 transition-all">
       <Icon className="w-4 h-4 text-stone-400 shrink-0" />
       <input
+        type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
         className="w-full bg-transparent py-3.5 text-stone-800 text-sm placeholder-stone-400 outline-none"

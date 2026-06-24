@@ -6,6 +6,8 @@ import { PremiumPizzaBuilder } from './components/PremiumPizzaBuilder';
 import { ComparisonCards } from './components/ComparisonCards';
 import { HomeView } from './components/HomeView';
 import { HowItWorksView } from './components/HowItWorksView';
+import { LegalView } from './components/LegalView';
+import { ContactView } from './components/ContactView';
 import { LocalDeals } from './components/LocalDeals';
 import { DealsHub } from './components/DealsHub';
 import { PizzaConfig, DeliveryType, Review, Order, OrderItem } from './types';
@@ -25,17 +27,24 @@ import { RewardsView } from './components/RewardsView';
 import { NotificationsView } from './components/NotificationsView';
 import { OrderTracking } from './components/OrderTracking';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { DemoStoreDashboard } from './components/DemoStoreDashboard';
+import { FavoriteStoresPicker } from './components/FavoriteStoresPicker';
+import { type CompareMode } from './components/ComparisonCards';
 import { useAuth } from './store/AuthContext';
 import { Loader2 } from 'lucide-react';
 import {
   getUserData, saveUserCart, saveUserSavedPizzas,
   saveCustomerOrder, getCustomerOrders,
 } from './lib/db';
+import { registerFcmToken, listenForMessages } from './lib/fcm';
 
 export default function App() {
+  const [demoMode, setDemoMode] = useState(false);
+  const [customerDemoMode, setCustomerDemoMode] = useState(false);
   const [pizzaConfig, setPizzaConfig] = useState<PizzaConfig | null>(null);
   const [deliveryType, setDeliveryType] = useState<DeliveryType | 'auto'>('auto');
   const [view, setView] = useState<ViewState>('home');
+  const [compareMode, setCompareMode] = useState<CompareMode>('all');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<Order | null>(null);
   const [pastOrders, setPastOrders] = useState<Order[]>([]);
@@ -55,6 +64,22 @@ export default function App() {
       localStorage.setItem('miSliceTheme', theme ? 'light' : 'dark');
       localStorage.setItem('miSliceMeatPrefs', JSON.stringify(meats));
     } catch { /* ignore */ }
+  };
+
+  // Premium subscription
+  const [isPremium, setIsPremium] = useState(() => {
+    try { return localStorage.getItem('miSlicePro') === 'true'; } catch { return false; }
+  });
+
+  const activatePremium = () => {
+    setIsPremium(true);
+    try { localStorage.setItem('miSlicePro', 'true'); } catch { /* ignore */ }
+    showToast('🎉 Welcome to MiSlice Pro!');
+  };
+
+  const saveMeatPreferences = (meats: string[]) => {
+    setMeatPreferences(meats);
+    try { localStorage.setItem('miSliceMeatPrefs', JSON.stringify(meats)); } catch { /* ignore */ }
   };
 
   // Toast notification
@@ -130,6 +155,14 @@ export default function App() {
     })();
     return () => { active = false; };
   }, [uid]);
+
+  // Register FCM token for store owners so they get push notifications on new orders.
+  useEffect(() => {
+    if (!uid || !isStoreOwner) return;
+    registerFcmToken().catch(() => {});
+    const unsub = listenForMessages((title, body) => showToast(`${title}: ${body}`));
+    return unsub;
+  }, [uid, isStoreOwner]);
 
   // Reviews
   const [userReviews, setUserReviews] = useState<Record<string, Review[]>>({});
@@ -297,11 +330,16 @@ export default function App() {
     );
   }
 
+  // ── Demo mode: full store owner experience with mock data ─────────────────
+  if (demoMode) {
+    return <DemoStoreDashboard onExit={() => setDemoMode(false)} />;
+  }
+
   // ── Not signed in: Firebase login/signup gate ─────────────────────────────
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !customerDemoMode) {
     return (
       <AppProvider>
-        <WelcomeScreen />
+        <WelcomeScreen onDemo={() => setDemoMode(true)} onCustomerDemo={() => setCustomerDemoMode(true)} />
       </AppProvider>
     );
   }
@@ -326,7 +364,7 @@ export default function App() {
 
   return (
     <AppProvider>
-    <div className="relative min-h-screen font-sans flex overflow-x-hidden bg-[#0A0D18]">
+    <div className={`relative min-h-screen font-sans flex overflow-x-hidden bg-[#0A0D18] transition-colors duration-300 ${isLight ? 'light-theme' : ''}`}>
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] clay bg-white text-stone-800 text-sm font-bold px-6 py-3 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 whitespace-nowrap">
@@ -336,8 +374,7 @@ export default function App() {
 
       <TopNav
         isLight={isLight}
-        meatPreferences={meatPreferences}
-        onSavePreferences={savePreferences}
+        onThemeChange={(light) => savePreferences(light, meatPreferences)}
         cartItemCount={cart.length}
         onCartClick={() => setView('cart')}
         onFavoritesClick={() => setView('saved-pizzas')}
@@ -377,6 +414,8 @@ export default function App() {
               onToggleFavoriteStore={toggleFavoriteStore}
               onAddReview={handleAddReview}
               onAddToCart={addToCart}
+              isPremium={isPremium}
+              onUpgrade={activatePremium}
             />
           </div>
         )}
@@ -455,9 +494,18 @@ export default function App() {
           )}
 
           {view === 'how-it-works' && <HowItWorksView />}
+          {view === 'legal' && <LegalView />}
+          {view === 'contact' && <ContactView />}
+
+          {view === 'favorite-stores' && (
+            <FavoriteStoresPicker
+              favoriteStores={favoriteStores}
+              onToggle={toggleFavoriteStore}
+            />
+          )}
 
           {view === 'profile' && (
-            <CustomerProfile onNavigate={(v) => setView(v as ViewState)} orders={pastOrders} meatPreferences={meatPreferences} />
+            <CustomerProfile onNavigate={(v) => setView(v as ViewState)} orders={pastOrders} meatPreferences={meatPreferences} onSaveMeatPreferences={saveMeatPreferences} />
           )}
 
           {view === 'order-tracking' && currentOrder && (
@@ -609,6 +657,9 @@ export default function App() {
                   onAddReview={handleAddReview}
                   onAddToCart={addToCart}
                   currentConfig={pizzaConfig}
+                  compareMode={compareMode}
+                  onCompareModeChange={setCompareMode}
+                  onGoToFavoritesPicker={() => setView('favorite-stores')}
                 />
               ) : (
                 <div className="clay bg-white text-center py-20 rounded-3xl max-w-2xl mx-auto">

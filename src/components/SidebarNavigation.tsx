@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import {
   ChefHat, ShoppingBag, Info, Menu, X, Tag,
-  LogOut, BarChart2, User, Pizza,
+  LogOut, BarChart2, Pizza, Store, FileText, MessageSquare, Heart,
 } from 'lucide-react';
 
 export type ViewState =
   | 'home' | 'compare' | 'pizza-builder' | 'saved-pizzas'
   | 'orders' | 'cart' | 'checkout' | 'admin-dashboard'
   | 'how-it-works' | 'local-deals' | 'order-confirmation' | 'order-tracking'
-  | 'profile' | 'rewards' | 'notifications' | 'deals-hub';
+  | 'profile' | 'rewards' | 'notifications' | 'deals-hub'
+  | 'legal' | 'contact' | 'favorite-stores';
 
 interface SidebarProps {
   currentView: ViewState;
@@ -25,29 +26,26 @@ interface SidebarProps {
 
 const NAV_SECTIONS = [
   {
-    label: 'Discover',
-    items: [
-      { id: 'compare', label: 'Compare Prices', icon: BarChart2, desc: 'Side-by-side pricing' },
-    ],
-  },
-  {
-    label: 'Build',
+    label: 'Build & Discover',
     items: [
       { id: 'pizza-builder', label: 'Pizza Builder', icon: ChefHat, desc: 'Design your perfect pizza' },
+      { id: 'compare', label: 'Compare Prices', icon: BarChart2, desc: 'Side-by-side pricing' },
     ],
   },
   {
     label: 'My Account',
     items: [
-      { id: 'orders',    label: 'My Orders',       icon: ShoppingBag, desc: 'Order history & reorder' },
-      { id: 'deals-hub', label: 'Deals & Rewards', icon: Tag,         desc: 'Live deals, alerts & loyalty points', badge: 'NEW' },
-      { id: 'profile',   label: 'My Profile',      icon: User,        desc: 'Preferences & address' },
+      { id: 'orders',          label: 'My Orders',       icon: ShoppingBag, desc: 'Order history & reorder' },
+      { id: 'favorite-stores', label: 'Favorite Stores', icon: Heart,       desc: 'Up to 5 preferred stores' },
+      { id: 'deals-hub',       label: 'Deals & Rewards', icon: Tag,         desc: 'Live deals, alerts & loyalty points', badge: 'NEW' },
     ],
   },
   {
-    label: 'Info',
+    label: 'Info & Support',
     items: [
-      { id: 'how-it-works', label: 'How It Works', icon: Info, desc: 'Learn about MiSlice' },
+      { id: 'how-it-works', label: 'How It Works',        icon: Info,          desc: 'Learn about MiSlice' },
+      { id: 'legal',        label: 'FAQs & Legal',        icon: FileText,      desc: 'FAQs, Terms, Privacy & Data Rights' },
+      { id: 'contact',      label: 'Contact Us',          icon: MessageSquare, desc: 'Reach the MiSlice team' },
     ],
   },
 ] as const;

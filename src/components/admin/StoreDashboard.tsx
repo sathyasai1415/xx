@@ -1,245 +1,364 @@
 import React, { useState } from 'react';
-import { Store as StoreIcon, AlertTriangle, CheckCircle2, DollarSign, TrendingUp, Users, Pizza, Plus, MoreHorizontal } from 'lucide-react';
+import {
+  LayoutDashboard, ShoppingBag, UtensilsCrossed, Tag,
+  Zap, DollarSign, Store as StoreIcon, ShieldCheck, Clock,
+  CheckCircle2, ArrowRight, Receipt,
+} from 'lucide-react';
 import { db, auth } from '../../lib/firebase';
 import { updateDoc, doc } from 'firebase/firestore';
-import { StoreProfileTab } from './tabs/StoreProfileTab';
-import { PayoutsTab } from './tabs/PayoutsTab';
-import { ReceiptsTab } from './tabs/ReceiptsTab';
-import { TabOverview } from './tabs/TabOverview';
-import { PriceManagerTab } from './tabs/PriceManagerTab';
 import { logAudit } from '../../utils/audit';
 
-export function StoreDashboard({ storeData, deals, orders }: { storeData: any, deals: any[], orders: any[] }) {
-  const [tab, setTab] = useState<'overview' | 'profile' | 'menu' | 'price' | 'orders' | 'receipts' | 'payouts' | 'deals' | 'analytics'>('overview');
+// Tabs
+import { TabOverview }           from './tabs/TabOverview';
+import { MenuPricesTab }         from './tabs/MenuPricesTab';
+import { DealsManagerTab }       from './tabs/DealsManagerTab';
+import { AIInsightsTab }         from './tabs/AIInsightsTab';
+import { EarningsTab }           from './tabs/EarningsTab';
+import { StoreProfileTab }       from './tabs/StoreProfileTab';
+import { VerificationStatusTab } from './tabs/VerificationStatusTab';
+import { ReceiptsTab }           from './tabs/ReceiptsTab';
 
-  const pendingOrders = orders.filter(o => o.orderStatus === 'pending' || o.orderStatus === 'placed' || o.orderStatus === 'confirmed');
-  const preparingOrders = orders.filter(o => o.orderStatus === 'preparing');
-  const readyOrders = orders.filter(o => o.orderStatus === 'ready_for_pickup');
-  const outOrders = orders.filter(o => o.orderStatus === 'out_for_delivery');
-  
-  const handleUpdateOrderStatus = async (orderId: string, oldStatus: string, newStatus: string) => {
-    await updateDoc(doc(db, 'orders', orderId), { orderStatus: newStatus });
-    await logAudit(
-       'ORDER_STATUS_UPDATED',
-       'orders',
-       oldStatus,
-       newStatus,
-       auth.currentUser?.uid || 'store',
-       storeData?.store_name || auth.currentUser?.email || 'Store Owner',
-       'storeOwner'
-    );
-  };
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type Tab = 'overview' | 'orders' | 'menu' | 'deals' | 'insights' | 'ai-setup'
+         | 'earnings' | 'profile' | 'verification';
+
+// ─── Nav configs ──────────────────────────────────────────────────────────────
+
+const LIVE_NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: 'overview',  label: 'Overview',      icon: LayoutDashboard },
+  { id: 'orders',    label: 'Orders',         icon: ShoppingBag     },
+  { id: 'menu',      label: 'Menu & Prices',  icon: UtensilsCrossed },
+  { id: 'deals',     label: 'Deals',          icon: Tag             },
+  { id: 'insights',  label: 'AI Insights',    icon: Zap             },
+  { id: 'earnings',  label: 'Earnings',       icon: DollarSign      },
+  { id: 'profile',   label: 'Store Profile',  icon: StoreIcon       },
+];
+
+const PENDING_NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: 'overview',     label: 'Overview',           icon: LayoutDashboard },
+  { id: 'menu',         label: 'Menu & Prices',       icon: UtensilsCrossed },
+  { id: 'deals',        label: 'Deals',               icon: Tag             },
+  { id: 'ai-setup',     label: 'AI Setup Assistant',  icon: Zap             },
+  { id: 'profile',      label: 'Store Profile',       icon: StoreIcon       },
+  { id: 'verification', label: 'Verification Status', icon: ShieldCheck     },
+];
+
+// ─── Status colors ────────────────────────────────────────────────────────────
+
+const STATUS_COLOR: Record<string, string> = {
+  delivered:        'text-green-400',
+  out_for_delivery: 'text-blue-400',
+  preparing:        'text-yellow-400',
+  confirmed:        'text-orange-400',
+  placed:           'text-stone-400',
+  pending:          'text-stone-400',
+  cancelled:        'text-red-400',
+};
+
+// ─── Orders Panel ─────────────────────────────────────────────────────────────
+
+function OrdersPanel({ orders, onUpdateStatus }: {
+  orders: any[];
+  onUpdateStatus: (id: string, old: string, next: string) => void;
+}) {
+  const [view, setView] = useState<'active' | 'past' | 'receipts'>('active');
+
+  const active = orders.filter(o =>
+    ['pending','placed','confirmed','preparing','ready_for_pickup','out_for_delivery'].includes(o.orderStatus)
+  );
+  const past = orders.filter(o => ['delivered','cancelled'].includes(o.orderStatus));
 
   return (
-    <div className="max-w-7xl mx-auto w-full pt-8 pb-20">
-      <div className="flex flex-col md:flex-row gap-8">
-        
-        {/* Sidebar Nav */}
-        <div className="w-full md:w-64 flex-shrink-0 space-y-2">
-           <div className="bg-black/40 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl mb-4 text-center">
-             <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 border border-red-500/50">
-               <StoreIcon className="w-8 h-8" />
-             </div>
-             <h2 className="text-xl font-black text-white">{storeData?.store_name}</h2>
-             <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mt-1">Merchant ID: {storeData?.unique_store_id}</p>
-           </div>
-           
-           {[
-             { id: 'overview', label: 'Overview' },
-             { id: 'profile', label: 'Store Profile' },
-             { id: 'menu', label: 'Menu Builder' },
-             { id: 'price', label: 'Price Manager' },
-             { id: 'orders', label: 'Live Orders' },
-             { id: 'receipts', label: 'Receipts' },
-             { id: 'payouts', label: 'Payments & Payouts' },
-             { id: 'deals', label: 'Deals & Coupons' },
-             { id: 'analytics', label: 'Analytics' }
-           ].map(t => (
-             <button 
-               key={t.id} 
-               onClick={() => setTab(t.id as any)}
-               className={`w-full text-left px-6 py-4 rounded-2xl font-bold text-sm transition-all ${tab === t.id ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(255,30,30,0.3)]' : 'bg-white/5 text-stone-400 border border-white/10 hover:bg-white/10 hover:text-white'}`}
-             >
-               {t.label}
-             </button>
-           ))}
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-black text-white">Orders</h2>
+        <div className="flex gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
+          {(['active','past','receipts'] as const).map(v => (
+            <button key={v} onClick={() => setView(v)}
+              className={`px-3 py-1.5 text-xs font-black rounded-lg capitalize transition-all ${view === v ? 'bg-red-600 text-white' : 'text-stone-500 hover:text-white'}`}>
+              {v}
+              {v === 'active' && active.length > 0 && (
+                <span className="ml-1.5 w-4 h-4 inline-flex items-center justify-center bg-white/20 rounded-full text-[9px] font-black">{active.length}</span>
+              )}
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 space-y-6">
-          
-          {tab === 'overview' && <TabOverview storeData={storeData} orders={orders} />}
-
-          {tab === 'orders' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black text-white mb-6">Live Orders</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                 {[
-                   { title: 'New', count: pendingOrders.length, items: pendingOrders, color: 'text-blue-400', border: 'border-blue-500/30' },
-                   { title: 'Preparing', count: preparingOrders.length, items: preparingOrders, color: 'text-red-400', border: 'border-red-500/30' },
-                   { title: 'Ready / Out', count: readyOrders.length + outOrders.length, items: [...readyOrders, ...outOrders], color: 'text-green-400', border: 'border-green-500/30' },
-                   { title: 'Completed', count: 0, items: [], color: 'text-stone-400', border: 'border-white/10' }
-                 ].map(col => (
-                   <div key={col.title} className="bg-black/40 border border-white/10 rounded-2xl flex flex-col overflow-hidden h-[600px]">
-                     <div className={`p-4 border-b border-white/10 bg-white/5 flex justify-between items-center`}>
-                       <h3 className={`font-black ${col.color}`}>{col.title}</h3>
-                       <span className="bg-white/10 px-2 py-0.5 rounded-full text-xs font-bold text-white">{col.count}</span>
-                     </div>
-                     <div className="flex-1 overflow-y-auto p-3 space-y-3 no-scrollbar cursor-pointer">
-                        {col.items.map(order => (
-                          <div key={order.id} className={`bg-white/5 border ${col.border} rounded-xl p-4 hover:bg-white/10 transition-colors`}>
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="text-xs font-bold text-white">#{order.id?.slice(-4).toUpperCase()}</span>
-                              <span className="text-xs font-black text-green-400">${order.finalTotal?.toFixed(2)}</span>
-                            </div>
-                            <div className="text-xs text-stone-300 space-y-1 mb-3">
-                              {order.items?.map((item: any, i: number) => (
-                                <div key={i}>{item.quantity}x {item.pizzaName}</div>
-                              ))}
-                            </div>
-                            <select 
-                              value={order.orderStatus} 
-                              onChange={(e) => handleUpdateOrderStatus(order.id, order.orderStatus, e.target.value)}
-                              className="w-full bg-black border border-white/20 text-xs font-bold text-stone-300 rounded-lg p-2 focus:outline-none focus:border-red-500"
-                            >
-                              <option value="pending">Pending</option>
-                              <option value="preparing">Preparing</option>
-                              <option value="ready_for_pickup">Ready for Pickup</option>
-                              <option value="out_for_delivery">Out for Delivery</option>
-                              <option value="delivered">Delivered</option>
-                            </select>
-                          </div>
+      {view === 'active' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {[
+            { title: 'New Orders',  statuses: ['pending','placed','confirmed'],        color: 'text-blue-400',   border: 'border-blue-500/20',   bg: 'bg-blue-500/5'   },
+            { title: 'In Progress', statuses: ['preparing'],                           color: 'text-yellow-400', border: 'border-yellow-500/20', bg: 'bg-yellow-500/5' },
+            { title: 'Out / Ready', statuses: ['ready_for_pickup','out_for_delivery'], color: 'text-green-400',  border: 'border-green-500/20',  bg: 'bg-green-500/5'  },
+          ].map(col => {
+            const colOrders = orders.filter(o => col.statuses.includes(o.orderStatus));
+            return (
+              <div key={col.title} className={`border ${col.border} ${col.bg} rounded-2xl flex flex-col overflow-hidden`} style={{ minHeight: 300 }}>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
+                  <h3 className={`text-sm font-black ${col.color}`}>{col.title}</h3>
+                  <span className="text-xs font-black text-stone-500">{colOrders.length}</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+                  {colOrders.map(o => (
+                    <div key={o.id} className={`bg-white/5 border ${col.border} rounded-xl p-3`}>
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-xs font-black text-white">#{(o.id||'').slice(-5).toUpperCase()}</span>
+                        <span className="text-xs font-black text-green-400">${(o.customerFinalTotal||0).toFixed(2)}</span>
+                      </div>
+                      <div className="text-[10px] text-stone-400 space-y-0.5 mb-2">
+                        {(o.items||[]).slice(0,3).map((it: any, i: number) => (
+                          <div key={i}>{it.quantity||1}× {it.pizzaName||it.name}</div>
                         ))}
-                     </div>
-                   </div>
-                 ))}
-              </div>
-            </div>
-          )}
-
-          {tab === 'menu' && (
-            <div className="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-black text-white">Menu Builder</h2>
-                <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center gap-2">
-                  <Plus className="w-4 h-4" /> Add Item
-                </button>
-              </div>
-              <p className="text-stone-400 mb-6 text-sm">Manage your category-based pricing here.</p>
-              
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                  {['Pizzas', 'Sizes', 'Crusts', 'Meat Tops', 'Veggie Tops', 'Drinks', 'Sides', 'Desserts'].map((cat, i) => (
-                    <div key={cat} className={`p-4 rounded-xl border font-bold text-center cursor-pointer transition-colors ${i === 0 ? 'bg-red-600/20 border-red-500 text-red-500' : 'bg-white/5 border-white/10 text-stone-400 hover:bg-white/10 hover:text-white'}`}>
-                      {cat}
+                        {(o.items||[]).length > 3 && <div className="text-stone-600">+{(o.items||[]).length-3} more</div>}
+                      </div>
+                      <p className="text-[9px] text-stone-600 mb-2">
+                        {new Date(o.createdAt).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
+                      </p>
+                      <select value={o.orderStatus}
+                        onChange={e => onUpdateStatus(o.id, o.orderStatus, e.target.value)}
+                        className="w-full bg-black/60 border border-white/15 text-[10px] font-bold text-stone-300 rounded-lg p-1.5 focus:outline-none focus:border-red-500">
+                        <option value="pending">Pending</option>
+                        <option value="preparing">Preparing</option>
+                        <option value="ready_for_pickup">Ready for Pickup</option>
+                        <option value="out_for_delivery">Out for Delivery</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
                     </div>
                   ))}
+                  {colOrders.length === 0 && (
+                    <p className="text-[11px] text-stone-700 text-center mt-8">No orders here</p>
+                  )}
+                </div>
               </div>
-              
-              <div className="space-y-4">
-                 {['Classic Cheese', 'Pepperoni', 'Veggie', 'BBQ Chicken', 'Meat Lovers'].map((pizza, i) => (
-                   <div key={pizza} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 bg-stone-900 rounded-lg flex items-center justify-center">
-                           <Pizza className="w-6 h-6 text-stone-500" />
-                         </div>
-                         <div>
-                            <p className="text-white font-bold">{pizza}</p>
-                            <p className="text-xs text-stone-500">Base Price: ${i === 0 ? '12.99' : '15.99'}</p>
-                         </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button className="text-xs font-bold text-stone-400 hover:text-white px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg">Edit</button>
-                        <button className="text-xs font-bold text-red-400 hover:text-red-300 px-3 py-1 bg-red-500/10 hover:bg-red-500/20 rounded-lg">Disable</button>
-                      </div>
-                   </div>
-                 ))}
-              </div>
-            </div>
-          )}
+            );
+          })}
+        </div>
+      )}
 
-          {tab === 'deals' && (
-            <div className="bg-black/40 backdrop-blur-2xl border border-white/10 rounded-3xl p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-black text-white">Deals & Offers</h2>
-                <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-xl text-sm flex items-center gap-2">
-                  <Plus className="w-4 h-4" /> Create Deal
+      {view === 'past' && (
+        <div className="bg-black/40 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="grid grid-cols-[1fr_80px_100px_90px] text-[9px] font-black uppercase tracking-widest text-stone-600 px-5 py-3 border-b border-white/8">
+            <span>Order</span><span className="text-center">Items</span><span className="text-center">Total</span><span className="text-center">Status</span>
+          </div>
+          <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto">
+            {past.length === 0 ? (
+              <p className="text-sm text-stone-600 text-center py-10">No past orders yet.</p>
+            ) : past.map(o => (
+              <div key={o.id} className="grid grid-cols-[1fr_80px_100px_90px] items-center px-5 py-3 hover:bg-white/3 transition-colors">
+                <div>
+                  <p className="text-xs font-black text-white">#{(o.id||'').slice(-6).toUpperCase()}</p>
+                  <p className="text-[9px] text-stone-600">{new Date(o.createdAt).toLocaleDateString()}</p>
+                </div>
+                <p className="text-xs font-bold text-stone-400 text-center">{(o.items||[]).length}</p>
+                <p className="text-sm font-black text-white text-center">${(o.customerFinalTotal||0).toFixed(2)}</p>
+                <p className={`text-[9px] font-black uppercase text-center ${STATUS_COLOR[o.orderStatus]||'text-stone-500'}`}>
+                  {(o.orderStatus||'').replace(/_/g,' ')}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {view === 'receipts' && <ReceiptsTab orders={orders} />}
+    </div>
+  );
+}
+
+// ─── Pending Overview ─────────────────────────────────────────────────────────
+
+function PendingOverview({ storeData, onNavigate }: { storeData: any; onNavigate: (tab: Tab) => void }) {
+  const steps: { label: string; done: boolean; tab: Tab }[] = [
+    { label: 'Account Created',          done: true,                         tab: 'profile' },
+    { label: 'Restaurant Information',   done: !!storeData?.store_name,      tab: 'profile' },
+    { label: 'Menu Uploaded',            done: !!storeData?.menu_uploaded,   tab: 'menu'    },
+    { label: 'Contract Signed',          done: !!storeData?.contract_signed, tab: 'verification' },
+    { label: 'Bank Account Connected',   done: !!storeData?.bank_connected,  tab: 'profile' },
+  ];
+  const done  = steps.filter(s => s.done).length;
+  const pct   = Math.round((done / steps.length) * 100);
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-black text-white">Setup Checklist</h2>
+        <p className="text-xs text-stone-500 mt-0.5">Complete your store setup while your application is reviewed</p>
+      </div>
+
+      <div className="bg-black/40 border border-white/10 rounded-2xl p-5">
+        <div className="flex justify-between mb-2">
+          <p className="text-xs font-black text-white">Setup Progress</p>
+          <p className="text-xs font-black text-red-400">{pct}%</p>
+        </div>
+        <div className="h-2 bg-white/8 rounded-full overflow-hidden mb-5">
+          <div className="h-full bg-gradient-to-r from-red-600 to-red-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+        </div>
+        <div className="space-y-3">
+          {steps.map(s => (
+            <div key={s.label} className="flex items-center gap-3">
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${s.done ? 'bg-green-500/20 border-green-500' : 'border-white/20'}`}>
+                {s.done && <CheckCircle2 className="w-3 h-3 text-green-400" />}
+              </div>
+              <p className={`text-sm font-bold flex-1 ${s.done ? 'text-white' : 'text-stone-500'}`}>{s.label}</p>
+              {!s.done && (
+                <button onClick={() => onNavigate(s.tab)} className="text-[10px] font-black text-red-400 hover:text-red-300 flex items-center gap-1">
+                  Complete <ArrowRight className="w-3 h-3" />
                 </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { emoji: '🍕', label: 'Upload Menu',     tab: 'menu'         as Tab, desc: 'Add items & prices' },
+          { emoji: '🏷️', label: 'Create Deals',    tab: 'deals'        as Tab, desc: 'Set up promotions'  },
+          { emoji: '🏪', label: 'Store Profile',   tab: 'profile'      as Tab, desc: 'Logo, hours & more' },
+          { emoji: '📋', label: 'Check Status',    tab: 'verification' as Tab, desc: 'Review progress'    },
+        ].map(q => (
+          <button key={q.label} onClick={() => onNavigate(q.tab)}
+            className="bg-white/4 hover:bg-white/8 border border-white/8 hover:border-white/20 rounded-2xl p-4 text-left transition-all group">
+            <span className="text-2xl mb-2 block">{q.emoji}</span>
+            <p className="text-sm font-black text-white group-hover:text-red-300 transition-colors">{q.label}</p>
+            <p className="text-[10px] text-stone-500 mt-0.5">{q.desc}</p>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
+
+export function StoreDashboard({ storeData, deals, orders }: { storeData: any; deals: any[]; orders: any[] }) {
+  const status: string = storeData?.status || 'pending';
+  const isLive = status === 'approved' || status === 'active';
+
+  const [tab, setTab] = useState<Tab>('overview');
+
+  const liveCount = orders.filter(o =>
+    ['pending','placed','confirmed','preparing'].includes(o.orderStatus)
+  ).length;
+
+  const handleUpdateOrderStatus = async (orderId: string, oldStatus: string, newStatus: string) => {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), { orderStatus: newStatus });
+      await logAudit('ORDER_STATUS_UPDATED','orders',oldStatus,newStatus,
+        auth.currentUser?.uid||'store',
+        storeData?.store_name||auth.currentUser?.email||'Store Owner','storeOwner');
+    } catch { /* offline */ }
+  };
+
+  const NAV = isLive ? LIVE_NAV : PENDING_NAV;
+
+  return (
+    <div className="max-w-7xl mx-auto w-full pt-6 pb-20">
+
+      {/* Verification banner */}
+      {!isLive && (
+        <div className="bg-yellow-500/10 border border-yellow-500/25 rounded-2xl px-5 py-4 flex items-center gap-4 mb-6">
+          <Clock className="w-5 h-5 text-yellow-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-black text-white">Your restaurant is currently under review</p>
+            <p className="text-xs text-stone-400 mt-0.5">
+              You can continue setting up your store. The restaurant is not visible to customers yet. Estimated approval: 24–48 hours.
+            </p>
+          </div>
+          <button onClick={() => setTab('verification')}
+            className="shrink-0 text-xs font-black text-yellow-400 hover:text-white flex items-center gap-1 transition-colors">
+            View Status <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+
+      <div className="flex gap-6">
+
+        {/* ── Sidebar (desktop) ── */}
+        <div className="w-52 flex-shrink-0 hidden md:flex flex-col gap-3">
+          {/* Store identity card */}
+          <div className="bg-black/60 border border-white/10 rounded-2xl px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-red-500/20 text-red-400 rounded-xl flex items-center justify-center border border-red-500/30 shrink-0">
+                <StoreIcon className="w-4 h-4" />
               </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                 {['20% Off', 'Buy One Get One', 'Free Delivery'].map((type) => (
-                   <div key={type} className="bg-white/5 border border-white/10 p-6 rounded-2xl text-center hover:border-red-500/50 cursor-pointer transition-all">
-                      <div className="w-12 h-12 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <Plus className="w-6 h-6" />
-                      </div>
-                      <p className="text-white font-bold">{type}</p>
-                   </div>
-                 ))}
-              </div>
-              
-              <h3 className="text-lg font-bold text-white mb-4">Active Coupons</h3>
-              <div className="space-y-4">
-                 {deals.length === 0 ? (
-                   <p className="text-sm text-stone-500">No active deals found.</p>
-                 ) : (
-                   deals.map(deal => (
-                     <div key={deal.id} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center justify-between">
-                        <div>
-                           <p className="text-white font-bold">{deal.title}</p>
-                           <p className="text-xs font-bold text-green-400 mt-1">${deal.discounted_price?.toFixed(2)} <span className="text-stone-500 line-through">${deal.original_price?.toFixed(2)}</span></p>
-                        </div>
-                        <button className="text-xs font-bold text-stone-400 hover:text-white px-3 py-1 bg-white/5 hover:bg-white/10 rounded-lg">Disable</button>
-                     </div>
-                   ))
-                 )}
+              <div className="min-w-0">
+                <p className="text-xs font-black text-white truncate">{storeData?.email || storeData?.store_name || 'My Store'}</p>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-stone-600">Store Dashboard</p>
               </div>
             </div>
-          )}
+          </div>
 
+          {/* Nav links */}
+          <nav className="bg-black/40 border border-white/10 rounded-2xl p-2 space-y-0.5">
+            {NAV.map(n => {
+              const Icon = n.icon;
+              const badge = n.id === 'orders' && liveCount > 0 ? liveCount : 0;
+              return (
+                <button key={n.id} onClick={() => setTab(n.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                    tab === n.id ? 'bg-red-600 text-white' : 'text-stone-400 hover:bg-white/6 hover:text-white'
+                  }`}>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-left text-[13px]">{n.label}</span>
+                  {badge > 0 && (
+                    <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center shrink-0">
+                      {badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Live/pending status */}
+          <div className={`border rounded-xl px-4 py-2.5 flex items-center gap-2 ${
+            isLive ? 'bg-green-500/10 border-green-500/25' : 'bg-yellow-500/10 border-yellow-500/25'
+          }`}>
+            <span className={`w-2 h-2 rounded-full shrink-0 animate-pulse ${isLive ? 'bg-green-400' : 'bg-yellow-400'}`} />
+            <p className={`text-xs font-black ${isLive ? 'text-green-400' : 'text-yellow-400'}`}>
+              {isLive ? 'Accepting Orders' : 'Under Review'}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Mobile scrolling nav ── */}
+        <div className="md:hidden w-full absolute left-0 px-4">
+          <div className="flex overflow-x-auto gap-2 pb-2 no-scrollbar">
+            {NAV.map(n => {
+              const Icon = n.icon;
+              return (
+                <button key={n.id} onClick={() => setTab(n.id)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
+                    tab === n.id ? 'bg-red-600 text-white' : 'bg-white/5 border border-white/10 text-stone-400'
+                  }`}>
+                  <Icon className="w-3.5 h-3.5" /> {n.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ── Content ── */}
+        <div className="flex-1 min-w-0">
+          {/* Pending-only tabs */}
+          {!isLive && tab === 'overview'     && <PendingOverview storeData={storeData} onNavigate={setTab} />}
+          {!isLive && tab === 'ai-setup'     && <AIInsightsTab orders={[]} storeData={storeData} isPending />}
+          {!isLive && tab === 'verification' && <VerificationStatusTab storeData={storeData} />}
+
+          {/* Shared tabs */}
+          {tab === 'menu'    && <MenuPricesTab storeData={storeData} />}
+          {tab === 'deals'   && <DealsManagerTab storeData={storeData} initialDeals={deals} />}
           {tab === 'profile' && <StoreProfileTab storeData={storeData} />}
-          {tab === 'price' && <PriceManagerTab storeData={storeData} />}
-          {tab === 'receipts' && <ReceiptsTab orders={orders} />}
-          {tab === 'payouts' && <PayoutsTab storeData={storeData} orders={orders} />}
 
-          {tab === 'analytics' && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-black text-white mb-6">Analytics</h2>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                 <div className="bg-black/40 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl">
-                   <h3 className="text-sm font-bold text-stone-500 uppercase tracking-widest mb-4">Top Selling Pizzas</h3>
-                   <div className="space-y-4">
-                     {[{ n: 'Pepperoni', v: '34%' }, { n: 'Meat Lovers', v: '22%' }, { n: 'Classic Cheese', v: '18%' }].map(item => (
-                       <div key={item.n}>
-                         <div className="flex justify-between text-sm font-bold text-white mb-1">
-                           <span>{item.n}</span>
-                           <span>{item.v}</span>
-                         </div>
-                         <div className="w-full bg-white/10 h-2 rounded-full overflow-hidden">
-                           <div className="bg-red-500 h-full rounded-full" style={{ width: item.v }}></div>
-                         </div>
-                       </div>
-                     ))}
-                   </div>
-                 </div>
-
-                 <div className="bg-black/40 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl">
-                   <h3 className="text-sm font-bold text-stone-500 uppercase tracking-widest mb-4">Delivery vs Pickup</h3>
-                   <div className="flex items-center justify-center h-32 relative">
-                      {/* Simple CSS Donut Chart */}
-                      <div className="w-24 h-24 rounded-full border-[12px] border-red-500 border-r-blue-500/50 mix-blend-screen relative">
-                         <div className="absolute inset-0 flex items-center justify-center text-xl font-black text-white">65%</div>
-                      </div>
-                   </div>
-                   <div className="flex justify-center gap-6 mt-4 text-xs font-bold">
-                     <span className="flex items-center gap-2 text-white"><div className="w-3 h-3 bg-red-500 rounded-sm"></div> Delivery</span>
-                     <span className="flex items-center gap-2 text-white"><div className="w-3 h-3 bg-blue-500/50 rounded-sm"></div> Pickup</span>
-                   </div>
-                 </div>
-              </div>
-            </div>
-          )}
-
+          {/* Live-only tabs */}
+          {isLive && tab === 'overview'  && <TabOverview storeData={storeData} orders={orders} onNavigate={setTab as any} />}
+          {isLive && tab === 'orders'    && <OrdersPanel orders={orders} onUpdateStatus={handleUpdateOrderStatus} />}
+          {isLive && tab === 'insights'  && <AIInsightsTab orders={orders} storeData={storeData} />}
+          {isLive && tab === 'earnings'  && <EarningsTab orders={orders} storeData={storeData} />}
         </div>
       </div>
     </div>

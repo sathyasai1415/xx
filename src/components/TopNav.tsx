@@ -3,17 +3,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sun, Moon, ShoppingCart, Heart, Pizza, Check, SlidersHorizontal } from 'lucide-react';
 import { useApp } from '../store/AppContext';
 
-const MEAT_OPTIONS = [
-  { id: 'Lamb',      emoji: '🐑' },
-  { id: 'Pepperoni', emoji: '🍕' },
-  { id: 'Chicken',   emoji: '🍗' },
-  { id: 'Beef',      emoji: '🥩' },
-];
-
 interface TopNavProps {
   isLight: boolean;
-  meatPreferences: string[];
-  onSavePreferences: (isLight: boolean, meats: string[]) => void;
+  onThemeChange: (isLight: boolean) => void;
   cartItemCount: number;
   onCartClick: () => void;
   onFavoritesClick: () => void;
@@ -39,21 +31,12 @@ function NavBadge({ count }: { count: number }) {
   );
 }
 
-export function TopNav({ isLight, meatPreferences, onSavePreferences, cartItemCount, onCartClick, onFavoritesClick, onLogoClick }: TopNavProps) {
+export function TopNav({ isLight, onThemeChange, cartItemCount, onCartClick, onFavoritesClick, onLogoClick }: TopNavProps) {
   const { state } = useApp();
   const favoriteCount = state.favoriteStoreIds.size;
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [draftTheme, setDraftTheme] = useState(isLight);
-  const [draftMeats, setDraftMeats] = useState<string[]>(meatPreferences);
-  const [saved, setSaved] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Sync drafts when props change (e.g. loaded from localStorage)
-  useEffect(() => {
-    setDraftTheme(isLight);
-    setDraftMeats(meatPreferences);
-  }, [isLight, meatPreferences]);
 
   // Close on outside click
   useEffect(() => {
@@ -66,22 +49,6 @@ export function TopNav({ isLight, meatPreferences, onSavePreferences, cartItemCo
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [dropdownOpen]);
-
-  const toggleMeat = (id: string) =>
-    setDraftMeats(prev => prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]);
-
-  const handleSave = () => {
-    onSavePreferences(draftTheme, draftMeats);
-    setSaved(true);
-    setTimeout(() => { setSaved(false); setDropdownOpen(false); }, 1200);
-  };
-
-  const handleOpen = () => {
-    setDraftTheme(isLight);
-    setDraftMeats(meatPreferences);
-    setSaved(false);
-    setDropdownOpen(v => !v);
-  };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
@@ -159,18 +126,28 @@ export function TopNav({ isLight, meatPreferences, onSavePreferences, cartItemCo
             <NavBadge count={cartItemCount} />
           </motion.button>
 
-          {/* Theme & Preferences button + dropdown */}
+          {/* Theme toggle button + dropdown */}
           <div className="relative" ref={dropdownRef}>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.94 }}
-              onClick={handleOpen}
+              onClick={() => setDropdownOpen(v => !v)}
               className={`clay-btn w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${
                 dropdownOpen ? 'bg-slate-100 text-slate-700' : 'bg-white text-stone-400 hover:text-amber-500'
               }`}
-              title="Theme & Preferences"
+              title="Theme"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <AnimatePresence mode="wait">
+                {isLight ? (
+                  <motion.span key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <Sun className="w-4 h-4 text-amber-500" />
+                  </motion.span>
+                ) : (
+                  <motion.span key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <Moon className="w-4 h-4" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.button>
 
             <AnimatePresence>
@@ -180,95 +157,48 @@ export function TopNav({ isLight, meatPreferences, onSavePreferences, cartItemCo
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -8 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 28 }}
-                  className="absolute right-0 top-12 w-64 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] border border-slate-100 overflow-hidden z-[200]"
+                  className="absolute right-0 top-12 w-56 bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] border border-slate-100 overflow-hidden z-[200]"
                 >
                   {/* Header */}
                   <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-xs font-black text-slate-800 uppercase tracking-widest">Theme & Preferences</p>
+                    <p className="text-xs font-black text-slate-800 uppercase tracking-widest">Appearance</p>
                   </div>
 
-                  <div className="p-3 space-y-4">
+                  <div className="p-2 space-y-1">
+                    {[
+                      { label: 'Light Mode', icon: Sun,  value: true,  desc: 'Bright & clean' },
+                      { label: 'Dark Mode',  icon: Moon, value: false, desc: 'Easy on the eyes' },
+                    ].map(opt => {
+                      const Icon = opt.icon;
+                      const active = isLight === opt.value;
+                      return (
+                        <button
+                          key={opt.label}
+                          onClick={() => { onThemeChange(opt.value); setDropdownOpen(false); }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
+                            active ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-600'
+                          }`}
+                        >
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            active ? 'border-white bg-white' : 'border-slate-300'
+                          }`}>
+                            {active && <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />}
+                          </div>
+                          <Icon className="w-4 h-4 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold leading-tight">{opt.label}</p>
+                            <p className={`text-[10px] leading-tight ${active ? 'text-white/60' : 'text-slate-400'}`}>{opt.desc}</p>
+                          </div>
+                          {active && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                    {/* Appearance */}
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Appearance</p>
-                      <div className="space-y-1">
-                        {[
-                          { label: 'Light Mode', icon: Sun, value: true, desc: 'Bright & clean' },
-                          { label: 'Dark Mode', icon: Moon, value: false, desc: 'Easy on the eyes' },
-                        ].map(opt => {
-                          const Icon = opt.icon;
-                          const active = draftTheme === opt.value;
-                          return (
-                            <button
-                              key={opt.label}
-                              onClick={() => setDraftTheme(opt.value)}
-                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left ${
-                                active ? 'bg-slate-900 text-white' : 'hover:bg-slate-50 text-slate-600'
-                              }`}
-                            >
-                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                                active ? 'border-white bg-white' : 'border-slate-300'
-                              }`}>
-                                {active && <div className="w-2.5 h-2.5 rounded-full bg-slate-900" />}
-                              </div>
-                              <Icon className="w-4 h-4 shrink-0" />
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-bold leading-tight">{opt.label}</p>
-                                <p className={`text-[10px] leading-tight ${active ? 'text-white/60' : 'text-slate-400'}`}>{opt.desc}</p>
-                              </div>
-                              {active && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="border-t border-slate-100" />
-
-                    {/* Meat Preference */}
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Meat Preference</p>
-                      <div className="grid grid-cols-2 gap-1.5">
-                        {MEAT_OPTIONS.map(opt => {
-                          const on = draftMeats.includes(opt.id);
-                          return (
-                            <button
-                              key={opt.id}
-                              onClick={() => toggleMeat(opt.id)}
-                              className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${
-                                on
-                                  ? 'bg-red-50 border-red-200 text-red-700'
-                                  : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
-                              }`}
-                            >
-                              <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                                on ? 'bg-red-500 border-red-500' : 'border-slate-300'
-                              }`}>
-                                {on && <Check className="w-2.5 h-2.5 text-white" />}
-                              </div>
-                              <span className="text-sm">{opt.emoji}</span>
-                              {opt.id}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="border-t border-slate-100" />
-
-                    {/* Save */}
-                    <motion.button
-                      whileTap={{ scale: 0.97 }}
-                      onClick={handleSave}
-                      className={`w-full py-2.5 rounded-xl text-sm font-black transition-all ${
-                        saved
-                          ? 'bg-green-500 text-white shadow-[0_4px_12px_rgba(34,197,94,0.3)]'
-                          : 'bg-slate-900 text-white hover:bg-slate-700 shadow-[0_4px_12px_rgba(0,0,0,0.15)]'
-                      }`}
-                    >
-                      {saved ? '✓ Preferences Saved!' : 'Save Preferences'}
-                    </motion.button>
+                  <div className="px-4 pb-3 pt-1">
+                    <p className="text-[10px] text-slate-400 text-center">
+                      Meat preferences → <span className="font-bold text-slate-600">My Profile</span>
+                    </p>
                   </div>
                 </motion.div>
               )}

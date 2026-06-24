@@ -26,8 +26,18 @@ export interface StoreDoc {
   reviewedAt?: unknown;
   rejection_reason?: string;
   review_notes?: string;
+  address?: string;
+  phone?: string;
+  description?: string;
+  delivery_fee?: number;
+  delivery_radius?: number;
+  minimum_order?: number;
+  average_eta?: number;
   latitude?: number;
   longitude?: number;
+  /** Firebase Auth UID of the store owner — used in Firestore security rules. */
+  ownerUid?: string;
+  /** @deprecated use ownerUid */
   ownerId?: string;
 }
 
@@ -58,6 +68,8 @@ export interface DealDoc {
 export interface OrderDoc {
   id?: string;
   userId: string;
+  /** Firebase Auth UID of the customer — mirrors userId but explicit for rules. */
+  customerId?: string;
   storeId: string;
   storeName: string;
   items: Array<{ name: string; quantity: number; price: number }>;
@@ -70,6 +82,9 @@ export interface OrderDoc {
   deliveryType: string;
   deliveryProvider?: string;
   deliveryAddress?: string;
+  /** Random token printed as QR code on the order bag; verified on driver pickup. */
+  qrToken?: string;
+  qrScannedAt?: unknown;
   createdAt?: unknown;
 }
 
@@ -169,8 +184,20 @@ export async function deleteDeal(dealId: string): Promise<void> {
 
 // ── Orders ─────────────────────────────────────────────────────────────────--
 
+function generateQrToken(): string {
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+}
+
 export async function createOrder(order: OrderDoc): Promise<string> {
-  const ref = await addDoc(collection(db, 'orders'), { ...order, createdAt: serverTimestamp() });
+  const enriched = {
+    ...order,
+    customerId: order.customerId ?? order.userId,
+    qrToken: generateQrToken(),
+    createdAt: serverTimestamp(),
+  };
+  const ref = await addDoc(collection(db, 'orders'), enriched);
   return ref.id;
 }
 
@@ -246,7 +273,12 @@ export async function saveUserSavedPizzas(uid: string, savedPizzas: any[]): Prom
 // can read orders for their store (enforced by security rules).
 
 export async function saveCustomerOrder(order: any): Promise<string> {
-  const ref = await addDoc(collection(db, 'orders'), order);
+  const enriched = {
+    ...order,
+    customerId: order.customerId ?? order.userId,
+    qrToken: order.qrToken ?? generateQrToken(),
+  };
+  const ref = await addDoc(collection(db, 'orders'), enriched);
   return ref.id;
 }
 

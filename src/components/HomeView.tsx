@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   MapPin, ChevronRight, ChevronDown, ChevronUp, Map, Navigation,
   Pizza, BarChart3, Tag, X, Sparkles, Play, Pause, Volume2, VolumeX,
+  Lock, Crown,
 } from 'lucide-react';
 import { SmartSearchBar, ParsedQuery } from './SmartSearchBar';
+import { PremiumUpgradeModal } from './PremiumUpgradeModal';
 import { StoreGrid } from './StoreGrid';
 import { InteractiveMap } from './InteractiveMap';
 import { StoreDetailSheet } from './StoreDetailSheet';
@@ -65,6 +67,8 @@ interface HomeViewProps {
   onAddReview: (chainId: string, rating: number, text: string) => void;
   onAddToCart: (item: Omit<CartItem, 'id'>, redirect?: boolean) => void;
   userPreferences?: { isVegetarian: boolean; allowedMeats: string[] } | null;
+  isPremium?: boolean;
+  onUpgrade?: () => void;
 }
 
 // ── Quick action card ─────────────────────────────────────────────────────────
@@ -173,7 +177,7 @@ function HeroVideo() {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function HomeView({
-  onCompare, onNavigate, currentConfig, onAddToCart,
+  onCompare, onNavigate, currentConfig, onAddToCart, isPremium = false, onUpgrade,
 }: HomeViewProps) {
   const { state, setSearch } = useApp();
   const [activeCity, setActiveCity] = useState('All');
@@ -181,6 +185,7 @@ export function HomeView({
   const [mapExpanded, setMapExpanded] = useState(false);
   const [showStores, setShowStores] = useState(false);
   const [tickerIdx, setTickerIdx] = useState(0);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const storesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -267,7 +272,39 @@ export function HomeView({
               transition={{ delay: 0.14, duration: 0.45, ease: 'easeOut' }}
               className="mt-5 sm:mt-10"
             >
-              <SmartSearchBar onSearch={handleSearch} location={activeCity === 'All' ? 'Michigan' : `${activeCity}, MI`} />
+              {isPremium ? (
+                <SmartSearchBar onSearch={handleSearch} location={activeCity === 'All' ? 'Michigan' : `${activeCity}, MI`} />
+              ) : (
+                /* ── Locked search bar for free users ── */
+                <div className="relative w-full max-w-3xl mx-auto">
+                  {/* Blurred ghost of the real bar */}
+                  <div className="pointer-events-none select-none blur-[3px] opacity-50">
+                    <div className="flex items-center bg-white rounded-full border border-stone-100 px-5 py-3.5 gap-3"
+                      style={{ boxShadow: '8px 8px 24px rgba(176,182,204,0.45), -8px -8px 22px rgba(255,255,255,0.95)' }}>
+                      <Lock className="w-5 h-5 text-stone-300 shrink-0" />
+                      <span className="flex-1 text-stone-400 text-sm font-medium">Search for pizza…</span>
+                      <div className="bg-amber-100 text-amber-700 font-black text-sm rounded-full px-6 py-2.5">Search</div>
+                    </div>
+                  </div>
+
+                  {/* Upgrade overlay */}
+                  <button
+                    onClick={() => setUpgradeOpen(true)}
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-2 group"
+                  >
+                    <motion.div
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-black text-sm px-6 py-3 rounded-2xl shadow-[0_8px_24px_rgba(251,146,60,0.5)] group-hover:shadow-[0_12px_32px_rgba(251,146,60,0.6)] transition-all"
+                    >
+                      <Crown className="w-4 h-4" />
+                      Unlock Smart Search — MiSlice Pro
+                      <ChevronRight className="w-4 h-4" />
+                    </motion.div>
+                    <p className="text-white/60 text-xs font-medium">From $3.33/mo · Cancel any time</p>
+                  </button>
+                </div>
+              )}
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -278,7 +315,7 @@ export function HomeView({
               <QuickAction icon={Pizza} title="AI Pizza Builder" sub="Create a pizza and compare it to local store prices." onClick={() => onNavigate('pizza-builder')} />
               <QuickAction icon={BarChart3} title="Compare Prices" sub="See the cheapest local pizza offers instantly." onClick={() => onNavigate('compare')} />
               <QuickAction icon={Tag} title="Best Deals" sub="Track live promotions and delivery savings." onClick={() => onNavigate('local-deals')} />
-              <QuickAction icon={Map} title="Nearby Stores" sub="Browse open pizza shops by price and speed." onClick={() => onNavigate('home')} />
+              <QuickAction icon={Map} title="Nearby Stores" sub="Browse open pizza shops by price and speed." onClick={revealStores} />
             </motion.div>
           </div>
         </section>
@@ -415,7 +452,13 @@ export function HomeView({
         onAddToCart={onAddToCart}
       />
 
-      <Footer />
+      <PremiumUpgradeModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        onSubscribe={() => { setUpgradeOpen(false); onUpgrade?.(); }}
+      />
+
+      <Footer onNavigate={onNavigate} />
     </div>
   );
 }

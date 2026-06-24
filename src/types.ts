@@ -15,6 +15,10 @@ export interface PizzaConfig {
   extras: string[];
   drizzles?: string[];
   toppingPlacements?: Record<string, 'whole' | 'left' | 'right'>;
+  toppingAmounts?: Record<string, 'Light' | 'Moderate' | 'Extra'>;
+  bakePreference?: 'Light Bake' | 'Normal Bake' | 'Well Done';
+  cutStyle?: 'Pie Cut' | 'Square Cut' | 'No Cut';
+  specialInstructions?: string;
   quantity: number;
 }
 

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Quote, PizzaConfig, CartItem, DeliveryProviderOption, Coupon } from '../types';
-import { ChevronDown, Star, Heart, MessageSquareText, ShoppingCart, Send, Car, CheckCircle2, Ticket, ArrowRight, Table2 } from 'lucide-react';
+import { ChevronDown, Star, Heart, MessageSquareText, ShoppingCart, Send, Car, CheckCircle2, Ticket, ArrowRight, Table2, Sparkles, ChevronRight } from 'lucide-react';
 import { StoreLogo } from './StoreLogo';
 import { STORES } from '../lib/storeData';
 import { MARKETPLACE_STORES } from '../data/marketplace';
+
+export type CompareMode = 'all' | 'favorites';
 
 function getStoreWebsite(chainId: string, chainName: string): string | undefined {
   const ms = MARKETPLACE_STORES.find(s => s.id === chainId || s.name === chainName);
@@ -42,27 +44,153 @@ interface ComparisonCardsProps {
   onAddReview: (chainId: string, rating: number, text: string) => void;
   onAddToCart: (item: Omit<CartItem, 'id'>, redirect: boolean) => void;
   currentConfig: PizzaConfig | null;
+  compareMode: CompareMode;
+  onCompareModeChange: (mode: CompareMode) => void;
+  onGoToFavoritesPicker: () => void;
 }
 
-export function ComparisonCards({ quotes, favoriteStores, onToggleFavoriteStore, onAddReview, onAddToCart, currentConfig }: ComparisonCardsProps) {
+export function ComparisonCards({
+  quotes, favoriteStores, onToggleFavoriteStore, onAddReview, onAddToCart,
+  currentConfig, compareMode, onCompareModeChange, onGoToFavoritesPicker,
+}: ComparisonCardsProps) {
   if (quotes.length === 0 || !currentConfig) return null;
 
+  const favCount = favoriteStores.length;
+
+  // Quotes to show based on current mode
+  const favoriteQuotes = quotes.filter(q => favoriteStores.includes(q.chainId));
+  const visibleQuotes = compareMode === 'favorites' && favCount > 0 ? favoriteQuotes : quotes;
+
+  // Cheaper-elsewhere: min best price from non-favorites vs min best price from favorites
+  const getMinPrice = (qs: Quote[]) =>
+    Math.min(...qs.flatMap(q => q.deliveryOptions.map(o => o.priceBreakdown.grandTotal)));
+
+  const cheaperElsewhere = (() => {
+    if (compareMode !== 'favorites' || favoriteQuotes.length === 0) return null;
+    const otherQuotes = quotes.filter(q => !favoriteStores.includes(q.chainId));
+    if (otherQuotes.length === 0) return null;
+    const favMin = getMinPrice(favoriteQuotes);
+    const otherMin = getMinPrice(otherQuotes);
+    if (otherMin < favMin - 0.5) {
+      const best = otherQuotes.reduce((a, b) =>
+        getMinPrice([a]) < getMinPrice([b]) ? a : b
+      );
+      return { store: best.chainName, saving: favMin - otherMin };
+    }
+    return null;
+  })();
+
   return (
-    <div className="w-full max-w-4xl mx-auto z-10 relative mt-12 mb-24 grid sm:grid-cols-2 gap-6">
+    <div className="w-full max-w-4xl mx-auto z-10 relative mt-6 mb-24">
+
+      {/* Filter bar */}
+      <div className="flex items-center gap-3 mb-5 flex-wrap">
+        <div className="flex bg-white/6 border border-white/10 rounded-2xl p-1 gap-1">
+          <button
+            onClick={() => onCompareModeChange('all')}
+            className={`px-4 py-2 text-sm font-bold rounded-xl transition-all ${compareMode === 'all' ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white/70'}`}
+          >
+            All Stores
+          </button>
+          <button
+            onClick={() => favCount > 0 ? onCompareModeChange('favorites') : onGoToFavoritesPicker()}
+            className={`px-4 py-2 text-sm font-bold rounded-xl transition-all flex items-center gap-1.5 ${compareMode === 'favorites' ? 'bg-red-500/20 text-red-300 shadow-sm' : 'text-white/40 hover:text-white/70'}`}
+          >
+            <Heart className={`w-3.5 h-3.5 ${compareMode === 'favorites' ? 'fill-red-400 text-red-400' : ''}`} />
+            My Favorites
+            {favCount > 0 && (
+              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${compareMode === 'favorites' ? 'bg-red-500/30 text-red-300' : 'bg-white/10 text-white/50'}`}>
+                {favCount}
+              </span>
+            )}
+          </button>
+        </div>
+
+        {favCount === 0 && (
+          <button
+            onClick={onGoToFavoritesPicker}
+            className="flex items-center gap-1.5 text-xs font-bold text-stone-400 hover:text-white transition-colors border border-dashed border-white/20 hover:border-white/40 px-3 py-2 rounded-xl"
+          >
+            <Heart className="w-3.5 h-3.5" /> Pick favorite stores
+          </button>
+        )}
+
+        <span className="text-xs text-stone-600 font-medium ml-auto">
+          {visibleQuotes.length} store{visibleQuotes.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+
+      {/* Cheaper-elsewhere alert */}
       <AnimatePresence>
-        {quotes.map((quote, idx) => (
-          <QuoteCard 
-             key={quote.chainId} 
-             quote={quote} 
-             delay={idx * 0.1} 
-             isFavorite={favoriteStores.includes(quote.chainId)} 
-             onToggleFavorite={() => onToggleFavoriteStore(quote.chainId)} 
-             onAddReview={onAddReview} 
-             onAddToCart={onAddToCart}
-             currentConfig={currentConfig}
-          />
-        ))}
+        {cheaperElsewhere && (
+          <motion.div
+            key="cheaper-alert"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="mb-5 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/30 rounded-2xl px-4 py-3.5 flex items-center gap-3"
+          >
+            <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-black text-white">
+                Cheaper option available — <span className="text-emerald-400">{cheaperElsewhere.store}</span>
+              </p>
+              <p className="text-xs text-stone-400 mt-0.5">
+                Save <span className="text-emerald-400 font-bold">${cheaperElsewhere.saving.toFixed(2)}</span> vs your cheapest favorite. Switch to All Stores to see it.
+              </p>
+            </div>
+            <button
+              onClick={() => onCompareModeChange('all')}
+              className="shrink-0 flex items-center gap-1 text-xs font-black text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 px-3 py-2 rounded-xl transition-all"
+            >
+              View all <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </motion.div>
+        )}
       </AnimatePresence>
+
+      {/* No favorites selected state */}
+      {compareMode === 'favorites' && favCount === 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-16"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+            <Heart className="w-8 h-8 text-red-400" />
+          </div>
+          <h3 className="text-white font-black text-lg mb-2">No favorites yet</h3>
+          <p className="text-stone-400 text-sm mb-5">Pick up to 5 stores you love and compare just those.</p>
+          <button onClick={onGoToFavoritesPicker} className="bg-red-500/15 border border-red-500/30 text-red-300 font-bold text-sm px-6 py-3 rounded-xl hover:bg-red-500/25 transition-colors">
+            Choose Favorite Stores
+          </button>
+        </motion.div>
+      )}
+
+      {compareMode === 'favorites' && favCount > 0 && favoriteQuotes.length === 0 && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+          <p className="text-stone-400 text-sm">None of your favorite stores have prices for this configuration yet.</p>
+          <button onClick={() => onCompareModeChange('all')} className="mt-4 text-white/60 hover:text-white text-sm font-bold">See all stores instead →</button>
+        </motion.div>
+      )}
+
+      {/* Cards grid */}
+      <div className="grid sm:grid-cols-2 gap-6">
+        <AnimatePresence>
+          {visibleQuotes.map((quote, idx) => (
+            <QuoteCard
+              key={quote.chainId}
+              quote={quote}
+              delay={idx * 0.08}
+              isFavorite={favoriteStores.includes(quote.chainId)}
+              onToggleFavorite={() => onToggleFavoriteStore(quote.chainId)}
+              onAddReview={onAddReview}
+              onAddToCart={onAddToCart}
+              currentConfig={currentConfig}
+            />
+          ))}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -93,13 +93,23 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded-full border ${s.cls}`}>{s.label}</span>;
 }
 
+const MEAT_OPTIONS = [
+  { id: 'Lamb',      emoji: '🐑' },
+  { id: 'Pepperoni', emoji: '🍕' },
+  { id: 'Chicken',   emoji: '🍗' },
+  { id: 'Beef',      emoji: '🥩' },
+  { id: 'Pork',      emoji: '🥓' },
+  { id: 'Anchovies', emoji: '🐟' },
+];
+
 interface CustomerProfileProps {
   onNavigate: (view: string) => void;
   orders?: Order[];
   meatPreferences?: string[];
+  onSaveMeatPreferences?: (meats: string[]) => void;
 }
 
-export function CustomerProfile({ onNavigate, orders = [], meatPreferences = [] }: CustomerProfileProps) {
+export function CustomerProfile({ onNavigate, orders = [], meatPreferences = [], onSaveMeatPreferences }: CustomerProfileProps) {
   const [activeTab, setActiveTab] = useState<'info' | 'orders'>('info');
   const [orderSubTab, setOrderSubTab] = useState<'active' | 'completed'>('active');
 
@@ -109,6 +119,17 @@ export function CustomerProfile({ onNavigate, orders = [], meatPreferences = [] 
   });
   const [saved, setSaved] = useState(false);
   const [addressForm, setAddressForm] = useState<{ label: string; address: string } | null>(null);
+  const [draftMeats, setDraftMeats] = useState<string[]>(meatPreferences);
+  const [meatSaved, setMeatSaved] = useState(false);
+
+  const toggleMeat = (id: string) =>
+    setDraftMeats(prev => prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]);
+
+  const saveMeats = () => {
+    onSaveMeatPreferences?.(draftMeats);
+    setMeatSaved(true);
+    setTimeout(() => setMeatSaved(false), 2000);
+  };
 
   useEffect(() => {
     localStorage.setItem('miSliceCustomerProfile', JSON.stringify(profile));
@@ -194,7 +215,7 @@ export function CustomerProfile({ onNavigate, orders = [], meatPreferences = [] 
         </div>
 
         {/* Contact + pizzeria details */}
-        {(profile.email || profile.phone || profile.favoritePizzeria || meatPreferences.length > 0) && (
+        {(profile.email || profile.phone || profile.favoritePizzeria || true) && (
           <div className="border-t border-slate-100 pt-4 grid sm:grid-cols-2 gap-4">
             {/* Contact info */}
             {(profile.email || profile.phone) && (
@@ -226,19 +247,45 @@ export function CustomerProfile({ onNavigate, orders = [], meatPreferences = [] 
               </div>
             )}
 
-            {/* Meat Preferences */}
-            {meatPreferences.length > 0 && (
-              <div className="space-y-1.5 sm:col-span-2">
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meat Preferences</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {meatPreferences.map(m => (
-                    <span key={m} className="text-xs font-bold bg-red-50 border border-red-200 text-red-700 px-2.5 py-1 rounded-full">
-                      • {m}
-                    </span>
-                  ))}
-                </div>
+            {/* Meat Preferences — editable */}
+            <div className="space-y-2 sm:col-span-2">
+              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Meat Preferences</p>
+              <p className="text-[10px] text-slate-400">Select the meats you eat — used to personalise your pizza builder.</p>
+              <div className="grid grid-cols-3 gap-2">
+                {MEAT_OPTIONS.map(opt => {
+                  const on = draftMeats.includes(opt.id);
+                  return (
+                    <button
+                      key={opt.id}
+                      onClick={() => toggleMeat(opt.id)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-bold transition-all ${
+                        on
+                          ? 'bg-red-50 border-red-300 text-red-700 shadow-sm'
+                          : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700'
+                      }`}
+                    >
+                      <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                        on ? 'bg-red-500 border-red-500' : 'border-slate-300'
+                      }`}>
+                        {on && <Check className="w-2.5 h-2.5 text-white" />}
+                      </div>
+                      <span className="text-sm">{opt.emoji}</span>
+                      {opt.id}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+              <button
+                onClick={saveMeats}
+                className={`mt-1 flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition-all ${
+                  meatSaved
+                    ? 'bg-green-500 text-white'
+                    : 'bg-slate-900 text-white hover:bg-slate-700'
+                }`}
+              >
+                {meatSaved ? <><Check className="w-3.5 h-3.5" /> Saved!</> : <>Save Preferences</>}
+              </button>
+            </div>
           </div>
         )}
       </div>

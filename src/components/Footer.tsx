@@ -3,22 +3,27 @@ import {
   Pizza, Instagram, Facebook, Linkedin, Heart,
 } from 'lucide-react';
 
-const FOOTER_LINKS = {
+interface FooterProps {
+  onNavigate?: (view: string) => void;
+}
+
+const FOOTER_LINKS = (nav: (v: string) => void) => ({
   Customers: [
-    { label: 'How It Works', href: '#' },
-    { label: 'Rewards', href: '#' },
-    { label: 'Deals & Alerts', href: '#' },
+    { label: 'How It Works', action: () => nav('how-it-works') },
+    { label: 'Rewards', action: () => nav('deals-hub') },
+    { label: 'Deals & Alerts', action: () => nav('deals-hub') },
+    { label: 'FAQs', action: () => nav('legal') },
   ],
   Company: [
-    { label: 'About', href: '#' },
-    { label: 'Contact', href: '#' },
-    { label: 'For Store Owners', href: '#' },
+    { label: 'Contact Us', action: () => nav('contact') },
+    { label: 'For Store Owners', action: () => nav('contact') },
   ],
   Legal: [
-    { label: 'Privacy Policy', href: '#' },
-    { label: 'Terms of Service', href: '#' },
+    { label: 'Privacy Policy', action: () => nav('legal') },
+    { label: 'Terms of Use', action: () => nav('legal') },
+    { label: 'Data Privacy Rights', action: () => nav('legal') },
   ],
-};
+});
 
 const SOCIALS = [
   { icon: Instagram, label: 'Instagram' },
@@ -26,7 +31,10 @@ const SOCIALS = [
   { icon: Linkedin, label: 'LinkedIn' },
 ];
 
-export function Footer() {
+export function Footer({ onNavigate }: FooterProps) {
+  const nav = (v: string) => { if (onNavigate) onNavigate(v); };
+  const links = FOOTER_LINKS(nav);
+
   return (
     <footer className="relative w-full mt-16">
       <div className="max-w-6xl mx-auto px-5">
@@ -50,15 +58,18 @@ export function Footer() {
 
             {/* Links */}
             <div className="grid grid-cols-3 gap-8">
-              {Object.entries(FOOTER_LINKS).map(([section, links]) => (
+              {Object.entries(links).map(([section, items]) => (
                 <div key={section}>
                   <h4 className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-3">{section}</h4>
                   <ul className="space-y-2">
-                    {links.map(link => (
+                    {items.map(link => (
                       <li key={link.label}>
-                        <a href={link.href} className="text-xs font-bold text-stone-500 hover:text-stone-900 transition-colors">
+                        <button
+                          onClick={link.action}
+                          className="text-xs font-bold text-stone-500 hover:text-stone-900 transition-colors text-left"
+                        >
                           {link.label}
-                        </a>
+                        </button>
                       </li>
                     ))}
                   </ul>
