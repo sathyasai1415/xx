@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import {
-  ChefHat, ShoppingBag, Info, Menu, X, Tag,
-  LogOut, BarChart2, Pizza, Store, FileText, MessageSquare, Heart,
-} from 'lucide-react';
+import { Menu, X, LogOut, Pizza, Store, ChevronRight, Home } from 'lucide-react';
+import { GridScan } from './GridScan';
 
 export type ViewState =
   | 'home' | 'compare' | 'pizza-builder' | 'saved-pizzas'
@@ -24,188 +22,263 @@ interface SidebarProps {
   onCustomerLogout?: () => void;
 }
 
-const NAV_SECTIONS = [
-  {
-    label: 'Build & Discover',
-    items: [
-      { id: 'pizza-builder', label: 'Pizza Builder', icon: ChefHat, desc: 'Design your perfect pizza' },
-      { id: 'compare', label: 'Compare Prices', icon: BarChart2, desc: 'Side-by-side pricing' },
-    ],
-  },
-  {
-    label: 'My Account',
-    items: [
-      { id: 'orders',          label: 'My Orders',       icon: ShoppingBag, desc: 'Order history & reorder' },
-      { id: 'favorite-stores', label: 'Favorite Stores', icon: Heart,       desc: 'Up to 5 preferred stores' },
-      { id: 'deals-hub',       label: 'Deals & Rewards', icon: Tag,         desc: 'Live deals, alerts & loyalty points', badge: 'NEW' },
-    ],
-  },
-  {
-    label: 'Info & Support',
-    items: [
-      { id: 'how-it-works', label: 'How It Works',        icon: Info,          desc: 'Learn about MiSlice' },
-      { id: 'legal',        label: 'FAQs & Legal',        icon: FileText,      desc: 'FAQs, Terms, Privacy & Data Rights' },
-      { id: 'contact',      label: 'Contact Us',          icon: MessageSquare, desc: 'Reach the MiSlice team' },
-    ],
-  },
-] as const;
-
 const DEALS_HUB_VIEWS = new Set(['deals-hub', 'local-deals', 'rewards', 'notifications']);
 
+const CUSTOMER_NAV = [
+  { label: 'Build a Pizza',  view: 'pizza-builder' as ViewState, emoji: '🍕' },
+  { label: 'Compare Pizzas', view: 'compare'        as ViewState, emoji: '⚖️' },
+  { label: 'Deals & Offers', view: 'deals-hub'      as ViewState, emoji: '🏷️' },
+  { label: 'How It Works',   view: 'how-it-works'   as ViewState, emoji: '💡' },
+  { label: 'Contact',        view: 'contact'         as ViewState, emoji: '✉️' },
+];
+
+const STORE_NAV = [
+  { label: 'Dashboard',    view: 'admin-dashboard' as ViewState, emoji: '📊' },
+  { label: 'How It Works', view: 'how-it-works'   as ViewState, emoji: '💡' },
+  { label: 'Contact',      view: 'contact'         as ViewState, emoji: '✉️' },
+];
+
 export function SidebarNavigation({
-  currentView, onNavigate, cartItemCount, isOpen, setIsOpen,
+  currentView, onNavigate, isOpen, setIsOpen,
   isStoreOwner, storeOwnerName, onStoreOwnerLogout,
   customerName, onCustomerLogout,
 }: SidebarProps) {
-  const [logoSpinning, setLogoSpinning] = useState(false);
-  const go = (view: ViewState) => { onNavigate(view); setIsOpen(false); };
+  const [logoHover, setLogoHover] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  const handleLogoClick = () => {
-    setLogoSpinning(true);
-    setTimeout(() => { setLogoSpinning(false); go('home'); }, 420);
-  };
+  const go = (view: ViewState) => { onNavigate(view); setIsOpen(false); };
+  const handleLogoClick = () => { go('home'); };
+
+  const navItems = isStoreOwner ? STORE_NAV : CUSTOMER_NAV;
+
+  const isActive = (view: ViewState) =>
+    currentView === view || (view === 'deals-hub' && DEALS_HUB_VIEWS.has(currentView));
+
+  const avatar = (() => {
+    try {
+      const p = JSON.parse(localStorage.getItem('miSliceCustomerProfile') || '{}');
+      return p.avatar || '';
+    } catch { return ''; }
+  })();
 
   return (
     <>
       {/* Mobile hamburger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 bg-[#0D1020] border border-white/10 rounded-xl text-white/70 hover:text-white transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-50 flex items-center gap-2 px-3 py-2 rounded-xl shadow-lg transition-all active:scale-95"
+        style={{
+          background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+          boxShadow: '0 4px 16px rgba(220,38,38,0.45)',
+        }}
         aria-label="Menu"
       >
-        {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {isOpen ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
+        {!isOpen && <span className="text-white font-black text-sm tracking-tight">Menu</span>}
       </button>
 
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      <aside className={`
-        fixed top-0 bottom-0 left-0 z-40
-        w-64 bg-[#0D1020] border-r border-white/8
-        flex flex-col transition-transform duration-300
-        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed top-0 bottom-0 left-0 z-40 w-64
+          flex flex-col transition-transform duration-300 overflow-hidden
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+        style={{ background: '#0a0a14' }}
+      >
+        {/* Animated GridScan background */}
+        <GridScan
+          linesColor="#3a1520"
+          scanColor="#dc2626"
+          scanOpacity={0.55}
+          gridScale={0.13}
+          lineThickness={1.2}
+          scanGlow={0.7}
+          scanSoftness={2.5}
+          scanDuration={2.5}
+          scanDelay={1.5}
+          noiseIntensity={0.008}
+          enablePost={false}
+        />
 
-        {/* Logo */}
+        {/* Dark gradient overlay so content stays readable */}
+        <div
+          className="absolute inset-0 pointer-events-none z-[1]"
+          style={{
+            background: 'linear-gradient(180deg, rgba(10,10,20,0.82) 0%, rgba(10,10,20,0.72) 60%, rgba(10,10,20,0.92) 100%)',
+          }}
+        />
+
+        {/* ── Logo / Home button ── */}
         <button
           onClick={handleLogoClick}
-          className="flex items-center gap-3 px-5 py-5 border-b border-white/8 hover:bg-white/4 transition-colors group"
-          title="Go home"
+          onMouseEnter={() => setLogoHover(true)}
+          onMouseLeave={() => setLogoHover(false)}
+          className="relative z-10 flex items-center gap-3 px-4 py-4 shrink-0 transition-colors group"
+          style={{
+            borderBottom: '1px solid rgba(220,38,38,0.18)',
+            background: logoHover ? 'rgba(220,38,38,0.12)' : 'transparent',
+          }}
+          title="Go to home"
         >
           <div
-            className="w-9 h-9 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shrink-0"
+            className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300"
             style={{
-              boxShadow: logoSpinning
-                ? '0 6px 20px rgba(220,38,38,0.6)'
-                : '0 4px 12px rgba(220,38,38,0.4)',
-              transform: logoSpinning
-                ? 'perspective(300px) rotateY(360deg) scale(1.12)'
-                : 'perspective(300px) rotateY(0deg) scale(1)',
-              transition: 'transform 0.42s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease',
+              background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+              boxShadow: logoHover
+                ? '0 6px 24px rgba(220,38,38,0.6)'
+                : '0 3px 12px rgba(220,38,38,0.4)',
+              transform: logoHover ? 'scale(1.1)' : 'scale(1)',
             }}
           >
             <Pizza className="w-5 h-5 text-white" />
           </div>
-          <div className="text-left">
-            <span className="text-white font-black text-base tracking-tight group-hover:text-red-300 transition-colors">MiSlice</span>
-            <p className="text-[9px] text-white/35 font-bold -mt-0.5 uppercase tracking-widest">Pizza Marketplace</p>
+
+          <div className="text-left flex-1 min-w-0">
+            <div className="flex items-baseline gap-1.5">
+              <span
+                className="font-black text-lg tracking-tight leading-none transition-colors"
+                style={{ color: logoHover ? '#fca5a5' : '#ffffff' }}
+              >
+                MiSlice
+              </span>
+              <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider leading-none"
+                style={{ background: 'rgba(220,38,38,0.25)', color: '#fca5a5', border: '1px solid rgba(220,38,38,0.4)' }}>
+                MI
+              </span>
+            </div>
+            <p className="text-[10px] font-semibold mt-0.5 uppercase tracking-widest"
+              style={{ color: 'rgba(255,255,255,0.35)' }}>
+              Pizza Marketplace
+            </p>
           </div>
+
+          <Home
+            className="w-3.5 h-3.5 shrink-0 transition-colors"
+            style={{ color: logoHover ? '#fca5a5' : 'rgba(255,255,255,0.2)' }}
+          />
         </button>
 
-        {/* Nav sections */}
-        <nav className="flex-1 overflow-y-auto no-scrollbar py-4 px-3 space-y-5">
-          {NAV_SECTIONS.map(section => (
-            <div key={section.label}>
-              <p className="text-[9px] font-black uppercase tracking-widest text-white/25 px-3 mb-2">
-                {section.label}
-              </p>
-              <div className="space-y-0.5">
-                {section.items.map(item => {
-                  const Icon = item.icon;
-                  const active = currentView === item.id
-                    || (item.id === 'deals-hub' && DEALS_HUB_VIEWS.has(currentView));
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => go(item.id as ViewState)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group relative ${
-                        active
-                          ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-[0_4px_14px_rgba(220,38,38,0.4)]'
-                          : 'text-white/50 hover:bg-white/6 hover:text-white'
-                      }`}
-                    >
-                      <Icon className={`w-4 h-4 shrink-0 transition-colors ${active ? 'text-white' : 'text-white/35 group-hover:text-white/70'}`} />
-                      <div className="flex-1 text-left min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold leading-tight">{item.label}</span>
-                          {'badge' in item && item.badge && (
-                            <span className="text-[8px] font-black bg-red-500 text-white px-1.5 py-0.5 rounded-full shrink-0">{item.badge}</span>
-                          )}
-                        </div>
-                        {!active && (
-                          <p className="text-[9px] text-white/25 group-hover:text-white/40 transition-colors leading-tight mt-0.5 truncate">{item.desc}</p>
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        {/* ── Nav items ── */}
+        <nav className="relative z-10 flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
+          {navItems.map(item => {
+            const active = isActive(item.view);
+            const hovered = hoveredItem === item.view;
+            return (
+              <button
+                key={item.view}
+                onClick={() => go(item.view)}
+                onMouseEnter={() => setHoveredItem(item.view)}
+                onMouseLeave={() => setHoveredItem(null)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150"
+                style={
+                  active
+                    ? {
+                        background: 'linear-gradient(135deg, #dc2626, #ef4444)',
+                        color: '#ffffff',
+                        boxShadow: '0 3px 12px rgba(220,38,38,0.35)',
+                        border: '1px solid rgba(220,38,38,0.5)',
+                      }
+                    : hovered
+                    ? {
+                        background: 'rgba(220,38,38,0.15)',
+                        color: '#fca5a5',
+                        border: '1px solid rgba(220,38,38,0.25)',
+                      }
+                    : {
+                        background: 'transparent',
+                        color: 'rgba(255,255,255,0.6)',
+                        border: '1px solid transparent',
+                      }
+                }
+              >
+                <span className="text-base leading-none">{item.emoji}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+                {active && <ChevronRight className="w-3.5 h-3.5 opacity-70" style={{ color: 'rgba(255,200,200,0.8)' }} />}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Footer */}
-        <div className="border-t border-white/8 p-3 space-y-1">
+        {/* ── Footer / User ── */}
+        <div
+          className="relative z-10 shrink-0 p-3 space-y-1"
+          style={{
+            borderTop: '1px solid rgba(220,38,38,0.18)',
+            background: 'rgba(10,10,20,0.6)',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
           {isStoreOwner ? (
             <>
-              <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2 mb-2">
-                <p className="text-[9px] font-black uppercase tracking-widest text-red-400 mb-0.5">Store Owner</p>
+              <div className="rounded-xl px-3 py-2 mb-2"
+                style={{ background: 'rgba(220,38,38,0.12)', border: '1px solid rgba(220,38,38,0.25)' }}>
+                <p className="text-[9px] font-black uppercase tracking-widest mb-0.5" style={{ color: '#fca5a5' }}>Store Owner</p>
                 <p className="text-xs font-bold text-white truncate">{storeOwnerName}</p>
               </div>
               <button
                 onClick={() => go('admin-dashboard')}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-white/50 hover:text-white hover:bg-white/6 transition-colors text-sm font-semibold"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                style={{ color: 'rgba(255,255,255,0.55)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(220,38,38,0.15)'; (e.currentTarget as HTMLButtonElement).style.color = '#fca5a5'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.55)'; }}
               >
                 <Store className="w-4 h-4" /> Store Dashboard
               </button>
               <button
                 onClick={onStoreOwnerLogout}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/30 hover:text-red-400 hover:bg-red-500/8 text-xs font-semibold transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                style={{ color: 'rgba(255,255,255,0.3)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fca5a5'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.3)'; }}
               >
                 <LogOut className="w-3.5 h-3.5" /> Sign Out of Store
               </button>
             </>
           ) : (
             <>
-              {/* Customer identity */}
               <button
                 onClick={() => go('profile')}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/6 transition-colors group mb-1"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors group mb-1"
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(220,38,38,0.12)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center text-white font-black text-sm shrink-0">
-                  {(customerName || 'G').charAt(0).toUpperCase()}
-                </div>
+                {avatar ? (
+                  <img src={avatar} alt="avatar" className="w-8 h-8 rounded-full object-cover shrink-0"
+                    style={{ border: '2px solid rgba(220,38,38,0.5)' }} />
+                ) : (
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-black text-sm shrink-0"
+                    style={{ background: 'linear-gradient(135deg, #dc2626, #f97316)' }}>
+                    {(customerName || 'G').charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div className="text-left flex-1 min-w-0">
                   <p className="text-sm font-semibold text-white truncate">{customerName || 'Guest'}</p>
-                  <p className="text-[9px] text-white/30">View profile</p>
+                  <p className="text-[9px]" style={{ color: 'rgba(255,255,255,0.3)' }}>View profile</p>
                 </div>
               </button>
-
-              {/* Sign out */}
               <button
                 onClick={onCustomerLogout}
-                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-white/25 hover:text-red-400 hover:bg-red-500/8 text-xs font-semibold transition-colors"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors"
+                style={{ color: 'rgba(255,255,255,0.3)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fca5a5'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.3)'; }}
               >
                 <LogOut className="w-3.5 h-3.5" /> Sign Out
               </button>
             </>
           )}
-          <p className="text-center text-white/15 text-[9px] font-bold pt-1">MiSlice © 2026</p>
+          <p className="text-center text-[9px] font-bold pt-1" style={{ color: 'rgba(255,255,255,0.12)' }}>
+            MiSlice © 2026 · Michigan
+          </p>
         </div>
       </aside>
     </>

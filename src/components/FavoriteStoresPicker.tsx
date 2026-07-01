@@ -2,6 +2,7 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Heart, Check, Star, MapPin, ChevronRight, Sparkles } from 'lucide-react';
 import { mockChains } from '../lib/pricing';
+import AnimatedList from './AnimatedList';
 
 const MAX_FAVORITES = 5;
 
@@ -82,28 +83,34 @@ export function FavoriteStoresPicker({ favoriteStores, onToggle }: FavoriteStore
         </div>
       </div>
 
-      {/* Store grid */}
-      <div className="space-y-3">
-        {mockChains.map((store, idx) => {
+      {/* Store list — AnimatedList */}
+      <AnimatedList
+        items={mockChains}
+        showGradients
+        enableArrowNavigation={false}
+        displayScrollbar={false}
+        maxHeight={480}
+        onItemSelect={(store) => {
+          const disabled = atMax && !favoriteStores.includes(store.id);
+          if (!disabled) onToggle(store.id);
+        }}
+        renderItem={(store, _idx, isHovered) => {
           const isFav = favoriteStores.includes(store.id);
           const meta = STORE_META[store.id];
           const disabled = atMax && !isFav;
 
           return (
-            <motion.button
-              key={store.id}
-              layout
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              onClick={() => onToggle(store.id)}
+            <button
+              onClick={(e) => { e.stopPropagation(); if (!disabled) onToggle(store.id); }}
               disabled={disabled}
               className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all duration-200 text-left group relative
                 ${isFav
                   ? 'bg-red-500/10 border-red-500/40 shadow-[0_0_20px_rgba(239,68,68,0.1)]'
                   : disabled
                     ? 'bg-white/3 border-white/5 opacity-40 cursor-not-allowed'
-                    : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 cursor-pointer'
+                    : isHovered
+                      ? 'bg-white/10 border-white/20'
+                      : 'bg-white/5 border-white/10'
                 }`}
             >
               {/* Store avatar */}
@@ -152,10 +159,10 @@ export function FavoriteStoresPicker({ favoriteStores, onToggle }: FavoriteStore
                   )}
                 </AnimatePresence>
               </div>
-            </motion.button>
+            </button>
           );
-        })}
-      </div>
+        }}
+      />
 
       {/* Tip at bottom */}
       {count > 0 && (

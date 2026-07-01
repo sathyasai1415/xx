@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Quote, PizzaConfig, CartItem, DeliveryProviderOption, Coupon } from '../types';
 import { ChevronDown, Star, Heart, MessageSquareText, ShoppingCart, Send, Car, CheckCircle2, Ticket, ArrowRight, Table2, Sparkles, ChevronRight } from 'lucide-react';
 import { StoreLogo } from './StoreLogo';
+import BorderGlow from './BorderGlow';
 import { STORES } from '../lib/storeData';
 import { MARKETPLACE_STORES } from '../data/marketplace';
 
@@ -260,6 +261,14 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
   };
 
   return (
+    <BorderGlow
+      backgroundColor="rgba(255,255,255,0.06)"
+      glowColor={quote.bestValueOptionId ? "0 80 70" : "20 70 65"}
+      colors={quote.bestValueOptionId ? ['#DC2626','#FF6B35','#F97316'] : ['#FF6B35','#DC2626','#F97316']}
+      borderRadius={24}
+      glowIntensity={quote.bestValueOptionId ? 1.4 : 1.0}
+      edgeSensitivity={25}
+    >
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
@@ -267,7 +276,7 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.2 } }}
       transition={{ delay, type: "spring", stiffness: 100, damping: 20 }}
-      className={`bg-white/10 backdrop-blur-2xl rounded-3xl p-6 shadow-[0_15px_40px_rgba(0,0,0,0.5)] border relative flex flex-col transition-all overflow-hidden cursor-default group/card ${quote.bestValueOptionId ? 'border-red-500/50 shadow-[0_0_30px_rgba(220,38,38,0.3)]' : 'border-white/10 hover:border-white/30'}`}
+      className={`backdrop-blur-2xl rounded-3xl p-6 shadow-[0_15px_40px_rgba(0,0,0,0.5)] relative flex flex-col transition-all overflow-hidden cursor-default group/card`}
     >
       {/* Dynamic Cursor Glow */}
       <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-700 pointer-events-none bg-[radial-gradient(circle_at_var(--mouse-x,_50%)_var(--mouse-y,_50%),_rgba(255,150,50,0.15)_0%,_transparent_60%)] z-0" />
@@ -569,6 +578,7 @@ function QuoteCard({ quote, delay, isFavorite, onToggleFavorite, onAddReview, on
         )}
       </AnimatePresence>
     </motion.div>
+    </BorderGlow>
   );
 }
 

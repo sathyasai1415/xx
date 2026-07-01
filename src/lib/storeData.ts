@@ -101,5 +101,25 @@ export const STORES: StoreData[] = [
     menuItems: [
       { id: "marcos-hawaiian", name: "Hawaiian", image: "/images/pizzas/hawaiian.jpg", price: 18.99, description: "Ham, pineapple, and extra cheese." }
     ]
+  },
+
+ {
+    id: "bunty-pizza",
+    name: "Bunty Pizza",
+    logoUrl: "/images/stores/bunty-pizza-store.png",
+    brandColor: "yellow",
+    backgroundColor: "yellow",
+    address: "35349 Drakeshire Ln",
+    distance: "2.4 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 4.7,
+    openNow: true,
+    menuItems: [
+      { id: "bp-spec", name: "Bunty Special", image: "/images/pizzas/pepperoni.jpg", price: 16.99, description: "Pepperoni, sausage, mushrooms, peppers, onions & extra cheese." },
+      { id: "bp-butter", name: "Butter Chicken Pizza", image: "/images/pizzas/bbq-chicken.jpg", price: 18.99, description: "Creamy butter chicken, cilantro, red onion on garlic naan crust." },
+      { id: "bp-detroit", name: "Detroit Deep Dish", image: "/images/pizzas/meat-lovers.jpg", price: 19.99, description: "Thick crust, brick cheese, pepperoni, tangy tomato stripe." },
+      { id: "bp-pep", name: "Pepperoni Blaze", image: "/images/pizzas/pepperoni.jpg", price: 14.99, description: "Triple pepperoni, hot honey drizzle, mozzarella." }
+    ]
   }
 ];

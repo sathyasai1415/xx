@@ -68,12 +68,12 @@ const FAQS = [
 // ── Data Privacy request types ─────────────────────────────────────────────────
 
 const REQUEST_TYPES = [
-  { value: 'access',      label: 'Access My Data',       desc: 'Request a copy of all personal data MiSlice holds about you.' },
-  { value: 'correct',     label: 'Correct My Data',      desc: 'Request corrections to inaccurate or incomplete personal data.' },
-  { value: 'delete',      label: 'Delete My Data',       desc: 'Request deletion of your personal data from our systems.' },
-  { value: 'portability', label: 'Data Portability',     desc: 'Receive your data in a portable, machine-readable format.' },
-  { value: 'opt-out',     label: 'Opt Out of Marketing', desc: 'Stop receiving promotional emails and push notifications.' },
-  { value: 'restrict',    label: 'Restrict Processing',  desc: 'Limit how we use your data in specific circumstances.' },
+  { value: 'access', label: 'Access My Data', desc: 'Request a copy of all personal data MiSlice holds about you.' },
+  { value: 'correct', label: 'Correct My Data', desc: 'Request corrections to inaccurate or incomplete personal data.' },
+  { value: 'delete', label: 'Delete My Data', desc: 'Request deletion of your personal data from our systems.' },
+  { value: 'portability', label: 'Data Portability', desc: 'Receive your data in a portable, machine-readable format.' },
+  { value: 'opt-out', label: 'Opt Out of Marketing', desc: 'Stop receiving promotional emails and push notifications.' },
+  { value: 'restrict', label: 'Restrict Processing', desc: 'Limit how we use your data in specific circumstances.' },
 ];
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -103,11 +103,10 @@ function FAQContent() {
           <button
             key={cat.category}
             onClick={() => setActiveCategory(cat.category)}
-            className={`text-xs font-bold px-4 py-2 rounded-full transition-all ${
-              activeCategory === cat.category
+            className={`text-xs font-bold px-4 py-2 rounded-full transition-all ${activeCategory === cat.category
                 ? 'bg-red-500 text-white shadow-[0_4px_14px_rgba(220,38,38,0.4)]'
                 : 'bg-white/8 text-stone-400 hover:text-white hover:bg-white/12'
-            }`}
+              }`}
           >
             {cat.category}
           </button>
@@ -313,11 +312,10 @@ function DataPrivacyContent() {
             key={r.value}
             type="button"
             onClick={() => set('requestType', r.value)}
-            className={`text-left p-4 rounded-2xl border transition-all ${
-              form.requestType === r.value
+            className={`text-left p-4 rounded-2xl border transition-all ${form.requestType === r.value
                 ? 'bg-red-500/20 border-red-500/60 text-white'
                 : 'bg-white/4 border-white/10 text-stone-400 hover:border-white/25 hover:text-stone-200'
-            }`}
+              }`}
           >
             <p className="font-bold text-sm mb-1">{r.label}</p>
             <p className="text-xs leading-relaxed opacity-80">{r.desc}</p>
@@ -374,10 +372,10 @@ function DataPrivacyContent() {
 // ── Tab config ─────────────────────────────────────────────────────────────────
 
 const TABS: { id: LegalTab; label: string; icon: React.ElementType }[] = [
-  { id: 'faq',          label: 'FAQs',           icon: HelpCircle },
-  { id: 'terms',        label: 'Terms of Use',   icon: FileText   },
-  { id: 'privacy',      label: 'Privacy Policy', icon: Shield     },
-  { id: 'data-privacy', label: 'Data Rights',    icon: Lock       },
+  { id: 'faq', label: 'FAQs', icon: HelpCircle },
+  { id: 'terms', label: 'Terms of Use', icon: FileText },
+  { id: 'privacy', label: 'Privacy Policy', icon: Shield },
+  { id: 'data-privacy', label: 'Data Rights', icon: Lock },
 ];
 
 // ── Main component ─────────────────────────────────────────────────────────────
@@ -404,11 +402,10 @@ export function LegalView({ initialTab = 'faq' }: LegalViewProps) {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-full transition-all ${
-                tab === t.id
+              className={`flex items-center gap-2 text-sm font-bold px-5 py-2.5 rounded-full transition-all ${tab === t.id
                   ? 'bg-red-500 text-white shadow-[0_4px_14px_rgba(220,38,38,0.4)]'
                   : 'bg-white/6 text-stone-400 hover:text-white hover:bg-white/10'
-              }`}
+                }`}
             >
               <Icon className="w-3.5 h-3.5" />
               {t.label}
@@ -418,9 +415,9 @@ export function LegalView({ initialTab = 'faq' }: LegalViewProps) {
       </div>
 
       {/* Content */}
-      {tab === 'faq'          && <FAQContent />}
-      {tab === 'terms'        && <TermsContent />}
-      {tab === 'privacy'      && <PrivacyContent />}
+      {tab === 'faq' && <FAQContent />}
+      {tab === 'terms' && <TermsContent />}
+      {tab === 'privacy' && <PrivacyContent />}
       {tab === 'data-privacy' && <DataPrivacyContent />}
     </div>
   );

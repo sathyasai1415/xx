@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Flame, Zap, DollarSign, Star, Leaf, ChevronRight, Clock, ArrowRight, Heart, ShoppingCart } from 'lucide-react';
 import { RECOMMENDATION_SLICES, MarketplaceStore } from '../data/marketplace';
 import { useApp } from '../store/AppContext';
+import BorderGlow from './BorderGlow';
 
 interface DiscoveryCardsProps {
   onSearch: (query: string) => void;
@@ -134,13 +135,13 @@ export function DiscoveryCards({ onSearch, onNavigate }: DiscoveryCardsProps) {
           const stores = card.getStores();
 
           return (
+            <BorderGlow key={card.id} backgroundColor="transparent" glowColor="20 70 65" colors={['#FF6B35','#DC2626','#F97316']} borderRadius={16} glowIntensity={0.9} edgeSensitivity={20}>
             <motion.div
-              key={card.id}
               layout
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06, type: 'spring', stiffness: 280, damping: 26 }}
-              className={`bg-gradient-to-br ${card.gradient} backdrop-blur-xl border ${card.border} rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.01] transition-transform`}
+              className={`bg-gradient-to-br ${card.gradient} backdrop-blur-xl rounded-2xl overflow-hidden cursor-pointer hover:scale-[1.01] transition-transform`}
               onClick={() => toggle(card.id)}
             >
               <div className="flex items-center gap-3 p-4">
@@ -181,6 +182,7 @@ export function DiscoveryCards({ onSearch, onNavigate }: DiscoveryCardsProps) {
                 )}
               </AnimatePresence>
             </motion.div>
+            </BorderGlow>
           );
         })}
       </div>

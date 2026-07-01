@@ -1,1 +1,1 @@
-{"version":"0.0.1","configurations":[{"name":"mislice-dev","runtimeExecutable":"npx","runtimeArgs":["vite","--port","5175"],"port":5175}]}
+{"version":"0.0.1","configurations":[{"name":"mislice-dev","runtimeExecutable":"npm","runtimeArgs":["run","dev","--","--port","30002","--host"],"port":30002}]}

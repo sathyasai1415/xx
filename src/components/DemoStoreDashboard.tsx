@@ -209,13 +209,13 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
         {/* Demo banner */}
         <div className="mx-3 mt-3 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5">
           <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest">Preview Mode</p>
-          <p className="text-[10px] text-gray-400 mt-0.5">Mock data — changes don't persist</p>
+          <p className="text-[10px] text-gray-700 mt-0.5">Mock data — changes don't persist</p>
         </div>
 
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto mt-2">
           {NAV.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => goTab(id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === id ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}>
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === id ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white' : 'text-gray-800 hover:bg-gray-100 hover:text-black'}`}>
               <Icon className="w-4 h-4 shrink-0" />
               <span className="flex-1 text-left">{label}</span>
               {id === 'orders' && liveCount > 0 && (
@@ -229,7 +229,7 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
           <div className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black ${store.accepting_orders ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
             <Power className="w-3.5 h-3.5" /> {store.accepting_orders ? 'Accepting Orders' : 'Orders Paused'}
           </div>
-          <button onClick={onExit} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
+          <button onClick={onExit} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors">
             <LogOut className="w-3.5 h-3.5" /> Exit Demo
           </button>
         </div>
@@ -248,7 +248,7 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-12 text-center">
               <Settings2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
               <p className="text-sm font-black text-gray-500 mb-1">Coming Soon</p>
-              <p className="text-xs text-gray-400">This section is not available in demo mode.</p>
+              <p className="text-xs text-gray-600">This section is not available in demo mode.</p>
             </div>
           )}
         </div>
@@ -282,7 +282,7 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
         <h1 className="text-2xl font-black text-gray-900">Welcome back 👋</h1>
         <span className="text-[9px] font-black bg-orange-50 text-orange-500 border border-orange-200 px-2.5 py-1 rounded-full uppercase">Demo</span>
       </div>
-      <p className="text-sm text-gray-400 mb-6">Here's what's happening at {store.store_name}.</p>
+      <p className="text-sm text-gray-600 mb-6">Here's what's happening at {store.store_name}.</p>
 
       {pending.length > 0 && (
         <button onClick={() => onGoTab('orders')} className="w-full mb-6 bg-orange-50 border border-orange-200 rounded-2xl px-5 py-4 flex items-center justify-between text-left hover:border-orange-300 transition-colors">
@@ -307,22 +307,22 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
           <div key={s.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <s.icon className={`w-5 h-5 ${s.color} mb-3`} />
             <p className="text-2xl font-black text-gray-900">{s.value}</p>
-            <p className="text-[11px] text-gray-400 font-bold mt-0.5">{s.label}</p>
+            <p className="text-[11px] text-gray-700 font-bold mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Fee breakdown */}
       <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
-        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
+        <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
         <div className="flex h-8 rounded-xl overflow-hidden mb-3">
           <div className="flex items-center justify-center bg-green-500 text-[10px] font-black text-white" style={{ width: '80%' }}>Your 80% — {money(net)}</div>
           <div className="flex items-center justify-center bg-red-500 text-[10px] font-black text-white" style={{ width: '20%' }}>20%</div>
         </div>
         <div className="flex gap-6 text-xs font-bold">
-          <span className="text-gray-400">Gross: <span className="text-gray-900">{money(gross)}</span></span>
-          <span className="text-gray-400">MiSlice fee: <span className="text-red-500">−{money(gross * PLATFORM_FEE)}</span></span>
-          <span className="text-gray-400">Your payout: <span className="text-green-600">{money(net)}</span></span>
+          <span className="text-gray-700">Gross: <span className="text-gray-900">{money(gross)}</span></span>
+          <span className="text-gray-700">MiSlice fee: <span className="text-red-500">−{money(gross * PLATFORM_FEE)}</span></span>
+          <span className="text-gray-700">Your payout: <span className="text-green-600">{money(net)}</span></span>
         </div>
       </div>
 
@@ -347,7 +347,7 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
           <div key={o.id} className="bg-white border border-gray-200 rounded-2xl px-5 py-3 flex items-center justify-between shadow-sm">
             <div>
               <p className="text-sm font-bold text-gray-900">{o.items[0].name}{o.items.length > 1 ? ` +${o.items.length-1}` : ''}</p>
-              <p className="text-[11px] text-gray-400 capitalize">{o.orderStatus.replace(/_/g,' ')}</p>
+              <p className="text-[11px] text-gray-600 capitalize">{o.orderStatus.replace(/_/g,' ')}</p>
             </div>
             <p className="font-black text-gray-900">{money(o.finalTotal)}</p>
           </div>
@@ -372,7 +372,7 @@ function TrackingPanel({ order, onClose }: { order: Order; onClose: () => void }
         className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl">
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-200">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Tracking</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-700">Live Tracking</p>
             <p className="text-base font-black text-gray-900">Order #{order.id.slice(-3).toUpperCase()}</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700"><X className="w-5 h-5" /></button>
@@ -380,7 +380,7 @@ function TrackingPanel({ order, onClose }: { order: Order; onClose: () => void }
         <div className="p-5 space-y-5">
           {/* Stepper */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Order Progress</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-700 mb-4">Order Progress</p>
             {STAGE_LABELS.map((label, i) => {
               const done = i < stageIdx; const cur = i === stageIdx;
               return (
@@ -391,7 +391,7 @@ function TrackingPanel({ order, onClose }: { order: Order; onClose: () => void }
                     </div>
                     {i < 5 && <div className={`w-0.5 h-5 ${i < stageIdx ? 'bg-green-400' : 'bg-gray-200'}`} />}
                   </div>
-                  <p className={`text-sm font-bold pt-1 pb-4 ${done ? 'text-green-600' : cur ? 'text-orange-500' : 'text-gray-400'}`}>{label}</p>
+                  <p className={`text-sm font-bold pt-1 pb-4 ${done ? 'text-green-600' : cur ? 'text-orange-500' : 'text-gray-500'}`}>{label}</p>
                 </div>
               );
             })}
@@ -418,15 +418,15 @@ function TrackingPanel({ order, onClose }: { order: Order; onClose: () => void }
           {/* Driver card */}
           {showDriver ? (
             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Delivery Partner</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-700 mb-3">Delivery Partner</p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center shrink-0 font-black text-white text-sm">
                   {driver.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-black text-gray-900">{driver.name}</p>
-                  <p className="text-[11px] text-gray-500">{driver.platform} · ⭐ {driver.rating}</p>
-                  <p className="text-[11px] text-gray-400 truncate">{driver.vehicle}</p>
+                  <p className="text-[11px] text-gray-700">{driver.platform} · ⭐ {driver.rating}</p>
+                  <p className="text-[11px] text-gray-600 truncate">{driver.vehicle}</p>
                 </div>
                 <a href={`tel:${driver.phone}`} className="flex items-center justify-center w-9 h-9 bg-green-50 border border-green-200 rounded-xl text-green-600 hover:bg-green-100 transition-colors">
                   <PhoneCall className="w-4 h-4" />
@@ -435,15 +435,15 @@ function TrackingPanel({ order, onClose }: { order: Order; onClose: () => void }
               <div className="mt-3 flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
                 <Clock className="w-3.5 h-3.5 text-orange-500 shrink-0" />
                 <p className="text-xs font-black text-orange-600">ETA {driver.eta} minutes</p>
-                <p className="text-[10px] text-gray-400 ml-auto">{driver.phone}</p>
+                <p className="text-[10px] text-gray-600 ml-auto">{driver.phone}</p>
               </div>
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center gap-3">
               <User className="w-5 h-5 text-gray-400 shrink-0" />
               <div>
-                <p className="text-sm font-bold text-gray-500">Driver not assigned yet</p>
-                <p className="text-xs text-gray-400">Assigned once the order is ready for pickup.</p>
+                <p className="text-sm font-bold text-gray-800">Driver not assigned yet</p>
+                <p className="text-xs text-gray-600">Assigned once the order is ready for pickup.</p>
               </div>
             </div>
           )}
@@ -465,7 +465,7 @@ const STATUS_META: Record<string, { label: string; color: string; bg: string }> 
 };
 
 function StatusPill({ status }: { status: string }) {
-  const m = STATUS_META[status] ?? { label: status, color: 'text-stone-400', bg: 'bg-white/5 border border-white/10' };
+  const m = STATUS_META[status] ?? { label: status, color: 'text-gray-600', bg: 'bg-gray-100 border border-gray-300' };
   return <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${m.bg} ${m.color}`}>{m.label}</span>;
 }
 
@@ -524,18 +524,18 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
           ['history',   'History',   historyOrders.length ],
         ] as const).map(([v, l, count]) => (
           <button key={v} onClick={() => setView(v)}
-            className={`pb-3 text-sm font-black flex items-center gap-1.5 border-b-2 transition-all ${view===v ? 'border-red-500 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-700'}`}>
+            className={`pb-3 text-sm font-black flex items-center gap-1.5 border-b-2 transition-all ${view===v ? 'border-red-500 text-gray-900' : 'border-transparent text-gray-700 hover:text-gray-900'}`}>
             {l}
-            {(count as number) > 0 && <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${view===v ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500'}`}>{count}</span>}
+            {(count as number) > 0 && <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${view===v ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}>{count}</span>}
           </button>
         ))}
       </div>
 
       {/* Refresh row */}
       <div className="flex items-center justify-between mb-4">
-        <p className="text-[11px] text-gray-400">Last updated just now</p>
+        <p className="text-[11px] text-gray-600">Last updated just now</p>
         <button onClick={() => { setLastRefresh(p=>p+1); flash('Refreshed'); }}
-          className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 hover:text-gray-700 transition-colors">
+          className="flex items-center gap-1.5 text-[11px] font-bold text-gray-600 hover:text-gray-900 transition-colors">
           <RefreshCw className="w-3 h-3" /> Refresh
         </button>
       </div>
@@ -548,10 +548,10 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search orders…"
               className="w-full bg-white border border-gray-200 rounded-xl pl-8 pr-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100" />
           </div>
-          <button className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors">
+          <button className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 hover:text-black transition-colors">
             All Channels <ChevronDown className="w-3 h-3" />
           </button>
-          <button className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors">
+          <button className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-700 hover:text-black transition-colors">
             <Filter className="w-3 h-3" /> Status
           </button>
         </div>
@@ -560,7 +560,7 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
       {/* Active — 3-column kanban */}
       {view === 'active' && (
         activeOrders.length === 0
-          ? <div className="bg-gray-50 border border-gray-200 rounded-2xl p-10 text-center text-gray-400 text-sm">No active orders right now.</div>
+          ? <div className="bg-gray-50 border border-gray-200 rounded-2xl p-10 text-center text-gray-600 text-sm">No active orders right now.</div>
           : <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {([
                 { label: 'New Orders',        items: newOrders,       accent: 'border-red-200 bg-red-50'     },
@@ -569,11 +569,11 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
               ] as const).map(col => (
                 <div key={col.label} className="flex flex-col gap-3">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{col.label}</p>
-                    {col.items.length > 0 && <span className="text-[9px] font-black bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">{col.items.length}</span>}
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-700">{col.label}</p>
+                    {col.items.length > 0 && <span className="text-[9px] font-black bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">{col.items.length}</span>}
                   </div>
                   {col.items.length === 0 && (
-                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center text-gray-300 text-xs">—</div>
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center text-gray-500 text-xs">—</div>
                   )}
                   {col.items.map(o => {
                     const isNew = o.orderStatus === 'placed';
@@ -583,18 +583,18 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
                           <p className="text-xs font-black text-gray-900">#{o.id.replace('o','').padStart(3,'0')}</p>
                           <StatusPill status={o.orderStatus} />
                         </div>
-                        <div className="text-[11px] text-gray-500 mb-3 space-y-0.5">
+                        <div className="text-[11px] text-gray-700 mb-3 space-y-0.5">
                           {o.items.map((it,i) => <p key={i}>{it.qty}× {it.name}</p>)}
                         </div>
                         <p className="text-sm font-black text-gray-900 mb-2">{money(o.finalTotal)}</p>
                         {o.deliveryAddress && (
-                          <p className="text-[10px] text-gray-400 flex items-center gap-1 mb-3">
+                          <p className="text-[10px] text-gray-600 flex items-center gap-1 mb-3">
                             <MapPin className="w-2.5 h-2.5 shrink-0" /> {o.deliveryAddress}
                           </p>
                         )}
                         {isNew ? (
                           <div>
-                            <p className="text-[9px] font-black uppercase text-gray-400 mb-1.5 flex items-center gap-1"><Timer className="w-2.5 h-2.5" /> Prep time:</p>
+                            <p className="text-[9px] font-black uppercase text-gray-700 mb-1.5 flex items-center gap-1"><Timer className="w-2.5 h-2.5" /> Prep time:</p>
                             <div className="flex flex-wrap gap-1.5 mb-2">
                               {PREP_OPTIONS.map(p => (
                                 <button key={p} onClick={() => accept(o.id, p)}
@@ -631,14 +631,14 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
         <div className="bg-gray-50 border border-gray-200 rounded-2xl p-12 text-center">
           <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
           <p className="text-sm font-black text-gray-500 mb-1">No scheduled orders</p>
-          <p className="text-xs text-gray-400">Pre-orders will appear here when customers schedule deliveries.</p>
+          <p className="text-xs text-gray-600">Pre-orders will appear here when customers schedule deliveries.</p>
         </div>
       )}
 
       {/* History — table */}
       {view === 'history' && (
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="grid grid-cols-[80px_90px_120px_1fr_100px_70px_80px] text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 py-3 bg-gray-50 border-b border-gray-200">
+          <div className="grid grid-cols-[80px_90px_120px_1fr_100px_70px_80px] text-[9px] font-black uppercase tracking-widest text-gray-700 px-4 py-3 bg-gray-50 border-b border-gray-200">
             <span>Order ID</span>
             <span>Status</span>
             <span>Time</span>
@@ -648,16 +648,16 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
             <span className="text-right">Subtotal</span>
           </div>
           {historyOrders.length === 0 && (
-            <div className="p-10 text-center text-gray-400 text-xs">No orders match your search.</div>
+            <div className="p-10 text-center text-gray-600 text-xs">No orders match your search.</div>
           )}
           {historyOrders.map(o => (
             <div key={o.id} className="grid grid-cols-[80px_90px_120px_1fr_100px_70px_80px] items-center px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors">
               <p className="text-[11px] font-black text-gray-900">#{o.id.replace('o','').padStart(3,'0')}</p>
               <StatusPill status={o.orderStatus} />
-              <p className="text-[10px] text-gray-400">{new Date(o.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</p>
-              <p className="text-[10px] text-gray-500 truncate pr-2">{o.items.map(it => `${it.qty}× ${it.name}`).join(', ')}</p>
-              <p className="text-[10px] text-gray-400 capitalize">{o.deliveryType}</p>
-              <p className="text-[10px] text-gray-400">MiSlice</p>
+              <p className="text-[10px] text-gray-600">{new Date(o.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</p>
+              <p className="text-[10px] text-gray-700 truncate pr-2">{o.items.map(it => `${it.qty}× ${it.name}`).join(', ')}</p>
+              <p className="text-[10px] text-gray-600 capitalize">{o.deliveryType}</p>
+              <p className="text-[10px] text-gray-600">MiSlice</p>
               <p className="text-[11px] font-black text-gray-900 text-right">{money(o.finalTotal)}</p>
             </div>
           ))}
@@ -732,12 +732,12 @@ function DemoMenu({ menu, setMenu, flash }: { menu: MenuItem[]; setMenu: React.D
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white">Menu & Prices</h1>
-          <p className="text-sm text-stone-500">{menu.length} items · changes are local (demo)</p>
+          <h1 className="text-2xl font-black text-gray-900">Menu & Prices</h1>
+          <p className="text-sm text-gray-600">{menu.length} items · changes are local (demo)</p>
         </div>
         <div className="flex gap-2">
           <button onClick={() => { setShowScan(true); setSP('idle'); }}
-            className="inline-flex items-center gap-2 bg-violet-600/20 border border-violet-500/40 hover:bg-violet-600/30 text-violet-300 text-sm font-bold px-4 py-2.5 rounded-xl transition-all">
+            className="inline-flex items-center gap-2 bg-violet-50 border border-violet-300 hover:bg-violet-100 text-violet-700 text-sm font-bold px-4 py-2.5 rounded-xl transition-all">
             <Camera className="w-4 h-4" /> Import Menu
           </button>
           <button onClick={() => setForm({ name:'', description:'', price:0, category:'Pizza', available:true })}
@@ -749,32 +749,32 @@ function DemoMenu({ menu, setMenu, flash }: { menu: MenuItem[]; setMenu: React.D
 
       {CATEGORIES.filter(c => grouped[c]?.length).map(cat => (
         <div key={cat} className="mb-6">
-          <p className="text-[11px] font-black uppercase tracking-widest text-stone-600 mb-2">{cat}</p>
+          <p className="text-[11px] font-black uppercase tracking-widest text-gray-700 mb-2">{cat}</p>
           <div className="space-y-2">
             {grouped[cat].map(it => (
-              <div key={it.id} className={`glass rounded-2xl px-4 py-3 flex items-center gap-4 ${!it.available?'opacity-60':''}`}>
+              <div key={it.id} className={`bg-white border border-gray-200 rounded-2xl px-4 py-3 flex items-center gap-4 shadow-sm ${!it.available?'opacity-60':''}`}>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white truncate">{it.name}</p>
-                  {it.description && <p className="text-[11px] text-stone-500 truncate">{it.description}</p>}
+                  <p className="text-sm font-bold text-gray-900 truncate">{it.name}</p>
+                  {it.description && <p className="text-[11px] text-gray-500 truncate">{it.description}</p>}
                 </div>
                 {priceEdit?.id === it.id ? (
                   <div className="flex items-center gap-1">
-                    <span className="text-stone-500 text-sm">$</span>
-                    <input autoFocus type="number" step="0.01" value={priceEdit.value} onChange={e=>setPE({id:it.id,value:e.target.value})} onKeyDown={e=>e.key==='Enter'&&savePrice(it.id)} className="w-20 bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-sm text-white" />
+                    <span className="text-gray-500 text-sm">$</span>
+                    <input autoFocus type="number" step="0.01" value={priceEdit.value} onChange={e=>setPE({id:it.id,value:e.target.value})} onKeyDown={e=>e.key==='Enter'&&savePrice(it.id)} className="w-20 bg-white border border-gray-300 rounded-lg px-2 py-1 text-sm text-gray-900" />
                     <button onClick={()=>savePrice(it.id)} className="text-green-400 p-1"><Check className="w-4 h-4" /></button>
-                    <button onClick={()=>setPE(null)} className="text-stone-500 p-1"><X className="w-4 h-4" /></button>
+                    <button onClick={()=>setPE(null)} className="text-gray-400 p-1"><X className="w-4 h-4" /></button>
                   </div>
                 ) : (
-                  <button onClick={()=>setPE({id:it.id,value:String(it.price)})} className="text-sm font-black text-white hover:text-orange-300 transition-colors flex items-center gap-1 group">
+                  <button onClick={()=>setPE({id:it.id,value:String(it.price)})} className="text-sm font-black text-gray-900 hover:text-orange-600 transition-colors flex items-center gap-1 group">
                     {money(it.price)} <Edit2 className="w-3 h-3 opacity-0 group-hover:opacity-100" />
                   </button>
                 )}
                 <button onClick={()=>setMenu(m=>m.map(x=>x.id===it.id?{...x,available:!it.available}:x))}
-                  className={`text-[9px] font-black px-2 py-1 rounded-full border ${it.available?'bg-green-500/15 text-green-400 border-green-500/25':'bg-stone-500/15 text-stone-500 border-white/10'}`}>
+                  className={`text-[9px] font-black px-2 py-1 rounded-full border ${it.available?'bg-green-100 text-green-700 border-green-300':'bg-gray-100 text-gray-500 border-gray-300'}`}>
                   {it.available?'LIVE':'OFF'}
                 </button>
-                <button onClick={()=>setForm({...it})} className="text-stone-500 hover:text-white p-1"><Edit2 className="w-4 h-4" /></button>
-                <button onClick={()=>{setMenu(m=>m.filter(x=>x.id!==it.id));flash('Item removed');}} className="text-stone-500 hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={()=>setForm({...it})} className="text-gray-400 hover:text-gray-700 p-1"><Edit2 className="w-4 h-4" /></button>
+                <button onClick={()=>{setMenu(m=>m.filter(x=>x.id!==it.id));flash('Item removed');}} className="text-gray-400 hover:text-red-500 p-1"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </div>
@@ -786,16 +786,16 @@ function DemoMenu({ menu, setMenu, flash }: { menu: MenuItem[]; setMenu: React.D
         {showScan && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={closeScan} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-            <motion.div initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.95}} className="relative w-full max-w-md glass rounded-3xl p-6">
+            <motion.div initial={{opacity:0,scale:0.95}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.95}} className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl">
               <div className="flex justify-between items-center mb-5">
-                <h3 className="text-base font-black text-white">Import Menu via Camera</h3>
-                <button onClick={closeScan} className="text-stone-500 hover:text-white"><X className="w-5 h-5" /></button>
+                <h3 className="text-base font-black text-gray-900">Import Menu via Camera</h3>
+                <button onClick={closeScan} className="text-gray-500 hover:text-gray-900"><X className="w-5 h-5" /></button>
               </div>
               {scanPhase === 'idle' && (
                 <>
-                  <div className="bg-black/60 border border-white/10 rounded-2xl aspect-video flex flex-col items-center justify-center gap-3 mb-5">
-                    <Camera className="w-12 h-12 text-stone-600" />
-                    <p className="text-xs font-bold text-stone-400 text-center px-4">MiSlice AI will scan your menu and extract all items, categories, and prices automatically.</p>
+                  <div className="bg-gray-100 border border-gray-200 rounded-2xl aspect-video flex flex-col items-center justify-center gap-3 mb-5">
+                    <Camera className="w-12 h-12 text-gray-400" />
+                    <p className="text-xs font-bold text-gray-500 text-center px-4">MiSlice AI will scan your menu and extract all items, categories, and prices automatically.</p>
                     {camError && <p className="text-xs text-red-400 font-bold text-center px-4">{camError}</p>}
                   </div>
                   <button onClick={openCamera} className="w-full py-3 bg-violet-600 hover:bg-violet-700 text-white font-black text-sm rounded-xl flex items-center justify-center gap-2">
@@ -823,10 +823,10 @@ function DemoMenu({ menu, setMenu, flash }: { menu: MenuItem[]; setMenu: React.D
                 <div className="py-8 text-center space-y-5">
                   <ScanLine className="w-10 h-10 text-violet-400 animate-pulse mx-auto" />
                   <div>
-                    <p className="text-sm font-black text-white mb-1">Scanning your menu…</p>
-                    <p className="text-xs text-stone-500">{scanPct<40?'Detecting items…':scanPct<70?'Reading prices…':'Organizing categories…'}</p>
+                    <p className="text-sm font-black text-gray-900 mb-1">Scanning your menu…</p>
+                    <p className="text-xs text-gray-500">{scanPct<40?'Detecting items…':scanPct<70?'Reading prices…':'Organizing categories…'}</p>
                   </div>
-                  <div className="h-2 bg-white/8 rounded-full overflow-hidden">
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-violet-600 to-violet-400 rounded-full transition-all" style={{width:`${scanPct}%`}} />
                   </div>
                   <p className="text-xs font-black text-violet-400">{scanPct}%</p>
@@ -836,14 +836,14 @@ function DemoMenu({ menu, setMenu, flash }: { menu: MenuItem[]; setMenu: React.D
                 <div className="py-4 text-center space-y-4">
                   <CheckCircle2 className="w-12 h-12 text-green-400 mx-auto" />
                   <div>
-                    <p className="text-sm font-black text-white">Scan Complete!</p>
-                    <p className="text-xs text-stone-500 mt-1">Found 4 categories · {SCAN_ITEMS.length} items · all prices detected</p>
+                    <p className="text-sm font-black text-gray-900">Scan Complete!</p>
+                    <p className="text-xs text-gray-500 mt-1">Found 4 categories · {SCAN_ITEMS.length} items · all prices detected</p>
                   </div>
-                  <div className="bg-black/40 border border-white/10 rounded-xl p-3 text-left text-xs font-bold text-stone-400 space-y-1">
+                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-left text-xs font-bold text-gray-600 space-y-1">
                     {['🍕 Pizza — 2 items','🍗 Sides — 2 items','🥤 Drinks — 2 items','🍰 Desserts — 1 item'].map(l=><div key={l}>{l}</div>)}
                   </div>
                   <div className="flex gap-3">
-                    <button onClick={closeScan} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-stone-400 glass-soft hover:text-white">Cancel</button>
+                    <button onClick={closeScan} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200">Cancel</button>
                     <button onClick={importScanned} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-green-600 hover:bg-green-700">Import All</button>
                   </div>
                 </div>
@@ -858,26 +858,26 @@ function DemoMenu({ menu, setMenu, flash }: { menu: MenuItem[]; setMenu: React.D
         {form && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={()=>setForm(null)} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-            <motion.div initial={{opacity:0,scale:0.95,y:20}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.95}} className="relative w-full max-w-md glass rounded-3xl p-6">
-              <h3 className="text-lg font-black text-white mb-4">{form.id?'Edit Item':'Add Item'}</h3>
+            <motion.div initial={{opacity:0,scale:0.95,y:20}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.95}} className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl">
+              <h3 className="text-lg font-black text-gray-900 mb-4">{form.id?'Edit Item':'Add Item'}</h3>
               <div className="space-y-3">
-                <input placeholder="Item name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500" />
-                <input placeholder="Description" value={form.description||''} onChange={e=>setForm({...form,description:e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500" />
+                <input placeholder="Item name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100" />
+                <input placeholder="Description" value={form.description||''} onChange={e=>setForm({...form,description:e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100" />
                 <div className="flex gap-3">
-                  <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-xl px-3">
-                    <span className="text-stone-500 text-sm">$</span>
-                    <input type="number" step="0.01" value={form.price||''} onChange={e=>setForm({...form,price:e.target.value})} className="w-full bg-transparent px-2 py-3 text-white text-sm outline-none" />
+                  <div className="flex-1 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3">
+                    <span className="text-gray-500 text-sm">$</span>
+                    <input type="number" step="0.01" value={form.price||''} onChange={e=>setForm({...form,price:e.target.value})} className="w-full bg-transparent px-2 py-3 text-gray-900 text-sm outline-none" />
                   </div>
-                  <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white text-sm">
-                    {CATEGORIES.map(c=><option key={c} value={c} className="bg-stone-900">{c}</option>)}
+                  <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})} className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 text-gray-900 text-sm">
+                    {CATEGORIES.map(c=><option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
-                <label className="flex items-center gap-2 text-sm text-stone-300 font-bold cursor-pointer">
+                <label className="flex items-center gap-2 text-sm text-gray-700 font-bold cursor-pointer">
                   <input type="checkbox" checked={form.available??true} onChange={e=>setForm({...form,available:e.target.checked})} /> Available for ordering
                 </label>
               </div>
               <div className="flex gap-3 mt-5">
-                <button onClick={()=>setForm(null)} className="flex-1 py-3 rounded-xl text-sm font-bold glass-soft text-stone-300">Cancel</button>
+                <button onClick={()=>setForm(null)} className="flex-1 py-3 rounded-xl text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200">Cancel</button>
                 <button onClick={save} className="flex-1 py-3 rounded-xl text-sm font-black bg-gradient-to-r from-orange-500 to-red-600 text-white flex items-center justify-center gap-2">
                   <Save className="w-4 h-4" /> Save
                 </button>
@@ -912,8 +912,8 @@ function DemoDeals({ deals, setDeals, flash }: { deals: Deal[]; setDeals: React.
     <div>
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h1 className="text-2xl font-black text-white">Deals & Promotions</h1>
-          <p className="text-sm text-stone-500">Published deals appear on the MiSlice customer Deals page.</p>
+          <h1 className="text-2xl font-black text-gray-900">Deals & Promotions</h1>
+          <p className="text-sm text-gray-600">Published deals appear on the MiSlice customer Deals page.</p>
         </div>
         <button onClick={()=>setForm({title:'',description:'',original_price:0,discounted_price:0,is_active:true,coupon_code:''})}
           className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-600 text-white text-sm font-black px-4 py-2.5 rounded-xl">
@@ -923,11 +923,11 @@ function DemoDeals({ deals, setDeals, flash }: { deals: Deal[]; setDeals: React.
 
       {/* Templates */}
       <div className="mb-6">
-        <p className="text-[9px] font-black uppercase tracking-widest text-stone-600 mb-3">Quick Templates</p>
+        <p className="text-[9px] font-black uppercase tracking-widest text-gray-700 mb-3">Quick Templates</p>
         <div className="flex flex-wrap gap-2">
           {[{e:'🔟',l:'10% Off'},{e:'💥',l:'20% Off'},{e:'🍕',l:'BOGO Pizza'},{e:'🛵',l:'Free Delivery'},{e:'💵',l:'$5 Off'}].map((t,i) => (
             <button key={t.l} onClick={()=>setForm({...DEAL_TEMPLATES[i]})}
-              className="flex items-center gap-1.5 px-3 py-2 glass border border-white/10 hover:bg-white/10 rounded-xl text-sm font-bold text-stone-300 hover:text-white transition-all">
+              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl text-sm font-bold text-gray-700 hover:text-gray-900 transition-all">
               {t.e} {t.l}
             </button>
           ))}
@@ -936,28 +936,28 @@ function DemoDeals({ deals, setDeals, flash }: { deals: Deal[]; setDeals: React.
 
       <div className="space-y-3">
         {deals.map(d => (
-          <div key={d.id} className={`glass rounded-2xl px-5 py-4 ${!d.is_active?'opacity-60':''}`}>
+          <div key={d.id} className={`bg-white border border-gray-200 rounded-2xl px-5 py-4 shadow-sm ${!d.is_active?'opacity-60':''}`}>
             <div className="flex items-start gap-4">
               <Tag className="w-4 h-4 text-orange-400 shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white">{d.title}</p>
-                <p className="text-[11px] text-stone-500 truncate">{d.description}</p>
+                <p className="text-sm font-bold text-gray-900">{d.title}</p>
+                <p className="text-[11px] text-gray-500 truncate">{d.description}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <div className="flex items-center bg-white/5 border border-white/10 rounded-lg px-2.5 py-1">
-                    <span className="text-[10px] font-black text-stone-300 font-mono tracking-wider">{d.coupon_code}</span>
+                  <div className="flex items-center bg-gray-100 border border-gray-200 rounded-lg px-2.5 py-1">
+                    <span className="text-[10px] font-black text-gray-800 font-mono tracking-wider">{d.coupon_code}</span>
                   </div>
-                  <button onClick={()=>copyCode(d.coupon_code)} className="text-stone-600 hover:text-white transition-colors">
+                  <button onClick={()=>copyCode(d.coupon_code)} className="text-gray-400 hover:text-gray-700 transition-colors">
                     {copied===d.coupon_code ? <CheckCircle2 className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
                   </button>
                 </div>
               </div>
-              {!!d.discounted_price && <p className="text-sm font-black text-green-400 shrink-0">{money(d.discounted_price)}{!!d.original_price&&<span className="text-stone-600 line-through ml-1 text-xs">{money(d.original_price)}</span>}</p>}
+              {!!d.discounted_price && <p className="text-sm font-black text-green-700 shrink-0">{money(d.discounted_price)}{!!d.original_price&&<span className="text-gray-400 line-through ml-1 text-xs">{money(d.original_price)}</span>}</p>}
               <div className="flex items-center gap-2 shrink-0">
                 <button onClick={()=>setDeals(ds=>ds.map(x=>x.id===d.id?{...x,is_active:!x.is_active}:x))}>
-                  {d.is_active?<ToggleRight className="w-6 h-6 text-green-400"/>:<ToggleLeft className="w-6 h-6 text-stone-600"/>}
+                  {d.is_active?<ToggleRight className="w-6 h-6 text-green-600"/>:<ToggleLeft className="w-6 h-6 text-gray-400"/>}
                 </button>
-                <button onClick={()=>setForm({...d})} className="text-stone-500 hover:text-white p-1"><Edit2 className="w-4 h-4" /></button>
-                <button onClick={()=>{setDeals(ds=>ds.filter(x=>x.id!==d.id));flash('Deal removed');}} className="text-stone-500 hover:text-red-400 p-1"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={()=>setForm({...d})} className="text-gray-400 hover:text-gray-700 p-1"><Edit2 className="w-4 h-4" /></button>
+                <button onClick={()=>{setDeals(ds=>ds.filter(x=>x.id!==d.id));flash('Deal removed');}} className="text-gray-400 hover:text-red-500 p-1"><Trash2 className="w-4 h-4" /></button>
               </div>
             </div>
           </div>
@@ -968,31 +968,31 @@ function DemoDeals({ deals, setDeals, flash }: { deals: Deal[]; setDeals: React.
         {form && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
             <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={()=>setForm(null)} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-            <motion.div initial={{opacity:0,scale:0.95,y:20}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.95}} className="relative w-full max-w-md glass rounded-3xl p-6">
-              <h3 className="text-lg font-black text-white mb-4">{form.id?'Edit Deal':'New Deal'}</h3>
+            <motion.div initial={{opacity:0,scale:0.95,y:20}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.95}} className="relative w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl">
+              <h3 className="text-lg font-black text-gray-900 mb-4">{form.id?'Edit Deal':'New Deal'}</h3>
               <div className="space-y-3">
-                <input placeholder="Deal title" value={form.title||''} onChange={e=>setForm({...form,title:e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-red-500" />
-                <textarea placeholder="Description" value={form.description||''} onChange={e=>setForm({...form,description:e.target.value})} rows={2} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm resize-none focus:outline-none focus:border-red-500" />
-                <input placeholder="Coupon code (auto-generated if blank)" value={form.coupon_code||''} onChange={e=>setForm({...form,coupon_code:e.target.value.toUpperCase()})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-mono focus:outline-none focus:border-red-500" />
+                <input placeholder="Deal title" value={form.title||''} onChange={e=>setForm({...form,title:e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100" />
+                <textarea placeholder="Description" value={form.description||''} onChange={e=>setForm({...form,description:e.target.value})} rows={2} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm resize-none focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100" />
+                <input placeholder="Coupon code (auto-generated if blank)" value={form.coupon_code||''} onChange={e=>setForm({...form,coupon_code:e.target.value.toUpperCase()})} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm font-mono focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100" />
                 <div className="flex gap-3">
-                  <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-xl px-3">
-                    <span className="text-stone-500 text-xs">Was $</span>
+                  <div className="flex-1 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3">
+                    <span className="text-gray-500 text-xs">Was $</span>
                     <input type="number" step="0.01" value={form.original_price||''} onChange={e=>setForm({...form,original_price:e.target.value})} className="w-full bg-transparent px-2 py-3 text-white text-sm outline-none" />
                   </div>
-                  <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-xl px-3">
-                    <span className="text-stone-500 text-xs">Now $</span>
-                    <input type="number" step="0.01" value={form.discounted_price||''} onChange={e=>setForm({...form,discounted_price:e.target.value})} className="w-full bg-transparent px-2 py-3 text-white text-sm outline-none" />
+                  <div className="flex-1 flex items-center bg-gray-50 border border-gray-200 rounded-xl px-3">
+                    <span className="text-gray-500 text-xs">Now $</span>
+                    <input type="number" step="0.01" value={form.discounted_price||''} onChange={e=>setForm({...form,discounted_price:e.target.value})} className="w-full bg-transparent px-2 py-3 text-gray-900 text-sm outline-none" />
                   </div>
                 </div>
                 <label className="flex items-center gap-3 cursor-pointer">
-                  <span className="text-sm font-bold text-stone-300">Active immediately</span>
+                  <span className="text-sm font-bold text-gray-700">Active immediately</span>
                   <button type="button" onClick={()=>setForm({...form,is_active:!form.is_active})}>
-                    {form.is_active?<ToggleRight className="w-7 h-7 text-green-400"/>:<ToggleLeft className="w-7 h-7 text-stone-600"/>}
+                    {form.is_active?<ToggleRight className="w-7 h-7 text-green-600"/>:<ToggleLeft className="w-7 h-7 text-gray-400"/>}
                   </button>
                 </label>
               </div>
               <div className="flex gap-3 mt-5">
-                <button onClick={()=>setForm(null)} className="flex-1 py-3 rounded-xl text-sm font-bold glass-soft text-stone-300">Cancel</button>
+                <button onClick={()=>setForm(null)} className="flex-1 py-3 rounded-xl text-sm font-bold bg-gray-100 text-gray-700 hover:bg-gray-200">Cancel</button>
                 <button onClick={save} className="flex-1 py-3 rounded-xl text-sm font-black bg-gradient-to-r from-orange-500 to-red-600 text-white">Publish</button>
               </div>
             </motion.div>
@@ -1066,16 +1066,16 @@ function DemoInsights({ orders }: { orders: Order[] }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h1 className="text-2xl font-black text-white flex items-center gap-2"><Zap className="w-6 h-6 text-yellow-400" /> AI Insights</h1>
-        <button onClick={()=>{setRefreshing(true);setTimeout(()=>setRefreshing(false),900);}} className="flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-white px-3 py-2 glass rounded-xl transition-all">
+        <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2"><Zap className="w-6 h-6 text-yellow-400" /> AI Insights</h1>
+        <button onClick={()=>{setRefreshing(true);setTimeout(()=>setRefreshing(false),900);}} className="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 px-3 py-2 bg-white border border-gray-200 rounded-xl transition-all">
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing?'animate-spin':''}`} /> Refresh
         </button>
       </div>
-      <p className="text-sm text-stone-500 mb-6">Real-time intelligence computed from your order history.</p>
+      <p className="text-sm text-gray-600 mb-6">Real-time intelligence computed from your order history.</p>
 
       <div className="flex gap-2 flex-wrap mb-6">
         {(['all','sales','operations','suggestions'] as InsightCat[]).map(f=>(
-          <button key={f} onClick={()=>setFilter(f)} className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${filter===f?'bg-red-600 text-white':'glass text-stone-500 hover:text-white'}`}>{f}</button>
+          <button key={f} onClick={()=>setFilter(f)} className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${filter===f?'bg-red-600 text-white':'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}`}>{f}</button>
         ))}
       </div>
 
@@ -1083,18 +1083,18 @@ function DemoInsights({ orders }: { orders: Order[] }) {
         {shown.map(ins => {
           const Icon=ins.icon;
           return (
-            <div key={ins.id} className={`${ins.bg} border border-white/10 rounded-2xl p-4 flex gap-4`}>
+            <div key={ins.id} className="bg-white border border-gray-200 rounded-2xl p-4 flex gap-4 shadow-sm">
               <div className={`w-9 h-9 rounded-xl ${ins.bg} flex items-center justify-center shrink-0`}>
                 <Icon className={`w-4 h-4 ${ins.color}`} />
               </div>
               <div>
-                <p className="text-sm font-black text-white mb-1">{ins.title}</p>
-                <p className="text-xs text-stone-400 leading-relaxed">{ins.detail}</p>
+                <p className="text-sm font-black text-gray-900 mb-1">{ins.title}</p>
+                <p className="text-xs text-gray-600 leading-relaxed">{ins.detail}</p>
               </div>
             </div>
           );
         })}
-        {shown.length===0 && <div className="glass-soft rounded-2xl p-10 text-center text-stone-500 text-sm">No insights for this filter yet.</div>}
+        {shown.length===0 && <div className="bg-gray-50 border border-gray-200 rounded-2xl p-10 text-center text-gray-500 text-sm">No insights for this filter yet.</div>}
       </div>
     </div>
   );
@@ -1154,39 +1154,39 @@ function DemoEarnings({ orders }: { orders: Order[] }) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-black text-white">Earnings</h1>
-          <p className="text-sm text-stone-500">Revenue after {Math.round(PLATFORM_FEE*100)}% MiSlice commission.</p>
+          <h1 className="text-2xl font-black text-gray-900">Earnings</h1>
+          <p className="text-sm text-gray-600">Revenue after {Math.round(PLATFORM_FEE*100)}% MiSlice commission.</p>
         </div>
-        <div className="flex gap-1 glass p-1 rounded-xl border border-white/10">
+        <div className="flex gap-1 bg-white border border-gray-200 p-1 rounded-xl">
           {(['daily','weekly','monthly','yearly'] as EarningsPeriod[]).map(p=>(
-            <button key={p} onClick={()=>setPeriod(p)} className={`px-3 py-1.5 rounded-lg text-xs font-black capitalize transition-all ${period===p?'bg-white/15 text-white':'text-stone-500 hover:text-white'}`}>{p}</button>
+            <button key={p} onClick={()=>setPeriod(p)} className={`px-3 py-1.5 rounded-lg text-xs font-black capitalize transition-all ${period===p?'bg-gray-100 text-gray-900':'text-gray-600 hover:text-gray-900'}`}>{p}</button>
           ))}
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          {label:'Gross Sales',                           val:money(gross), color:'text-white'      },
-          {label:`Fee (${Math.round(PLATFORM_FEE*100)}%)`,val:`−${money(fees)}`, color:'text-red-400'   },
-          {label:'Your Net',                              val:money(net),   color:'text-green-400'  },
-          {label:'Avg Order',                             val:money(aov),   color:'text-blue-400'   },
+          {label:'Gross Sales',                           val:money(gross), color:'text-gray-900'      },
+          {label:`Fee (${Math.round(PLATFORM_FEE*100)}%)`,val:`−${money(fees)}`, color:'text-red-600'   },
+          {label:'Your Net',                              val:money(net),   color:'text-green-700'  },
+          {label:'Avg Order',                             val:money(aov),   color:'text-blue-600'   },
         ].map(k=>(
-          <div key={k.label} className="glass rounded-2xl p-5">
-            <p className="text-[10px] font-black uppercase text-stone-500 mb-2">{k.label}</p>
+          <div key={k.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <p className="text-[10px] font-black uppercase text-gray-600 mb-2">{k.label}</p>
             <p className={`text-2xl font-black ${k.color}`}>{k.val}</p>
           </div>
         ))}
       </div>
 
       {/* 7-day chart */}
-      <div className="glass rounded-2xl p-5 mb-6">
-        <p className="text-xs font-black text-stone-500 uppercase tracking-widest mb-4">Revenue — Last 7 Days</p>
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
+        <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-4">Revenue — Last 7 Days</p>
         <div className="flex items-end justify-between gap-2 h-36">
           {days.map((d,i)=>(
             <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              {d.total>0&&<p className="text-[8px] font-bold text-stone-500">${d.total.toFixed(0)}</p>}
+              {d.total>0&&<p className="text-[8px] font-bold text-gray-600">${d.total.toFixed(0)}</p>}
               <div className="w-full bg-gradient-to-t from-orange-500 to-red-500 rounded-t-md transition-all" style={{height:`${(d.total/maxDay)*100}%`,minHeight:d.total>0?4:0}} />
-              <span className="text-[9px] text-stone-500 font-bold">{d.label}</span>
+              <span className="text-[9px] text-gray-600 font-bold">{d.label}</span>
             </div>
           ))}
         </div>
@@ -1194,16 +1194,16 @@ function DemoEarnings({ orders }: { orders: Order[] }) {
 
       {/* Category breakdown */}
       {cats.length>0 && (
-        <div className="glass rounded-2xl p-5 mb-6">
-          <p className="text-xs font-black text-stone-500 uppercase tracking-widest mb-4">Revenue by Category</p>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
+          <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-4">Revenue by Category</p>
           <div className="space-y-3">
             {cats.map(([cat,rev])=>(
               <div key={cat}>
                 <div className="flex justify-between text-xs font-bold mb-1">
-                  <span className="text-white">{cat}</span>
-                  <span className="text-stone-400">{money(rev)} · {gross>0?((rev/gross)*100).toFixed(0):0}%</span>
+                  <span className="text-gray-900">{cat}</span>
+                  <span className="text-gray-500">{money(rev)} · {gross>0?((rev/gross)*100).toFixed(0):0}%</span>
                 </div>
-                <div className="h-2 bg-white/8 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                   <div className={`h-full bg-gradient-to-r ${CAT_COLORS[cat]||'from-stone-600 to-stone-400'} rounded-full`} style={{width:`${(rev/maxCat)*100}%`}} />
                 </div>
               </div>
@@ -1213,20 +1213,20 @@ function DemoEarnings({ orders }: { orders: Order[] }) {
       )}
 
       {/* Transactions */}
-      <h2 className="text-sm font-black text-white mb-3">Transactions</h2>
+      <h2 className="text-sm font-black text-gray-900 mb-3">Transactions</h2>
       {paid.length===0
-        ? <div className="glass-soft rounded-2xl p-6 text-center text-stone-500 text-sm">No transactions for this period.</div>
+        ? <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-center text-gray-500 text-sm">No transactions for this period.</div>
         : (
-          <div className="glass rounded-2xl divide-y divide-white/5">
+          <div className="bg-white border border-gray-200 rounded-2xl divide-y divide-gray-100 shadow-sm">
             {[...paid].sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).slice(0,20).map(o=>(
               <div key={o.id} className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p className="text-sm font-bold text-white">#{o.id.replace('o','').padStart(3,'0')}</p>
-                  <p className="text-[11px] text-stone-500">{new Date(o.createdAt).toLocaleString()}</p>
+                  <p className="text-sm font-bold text-gray-900">#{o.id.replace('o','').padStart(3,'0')}</p>
+                  <p className="text-[11px] text-gray-500">{new Date(o.createdAt).toLocaleString()}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-black text-green-400">+{money(o.finalTotal*(1-PLATFORM_FEE))}</p>
-                  <p className="text-[9px] text-stone-600">of {money(o.finalTotal)} gross</p>
+                  <p className="text-sm font-black text-green-700">+{money(o.finalTotal*(1-PLATFORM_FEE))}</p>
+                  <p className="text-[9px] text-gray-500">of {money(o.finalTotal)} gross</p>
                 </div>
               </div>
             ))}

@@ -10,6 +10,7 @@ export default defineConfig(() => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+      dedupe: ['react', 'react-dom', 'three'],
     },
     server: {
       port: process.env.PORT ? parseInt(process.env.PORT) : undefined,

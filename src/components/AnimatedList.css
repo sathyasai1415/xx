@@ -1,0 +1,53 @@
+.al-container {
+  position: relative;
+  width: 100%;
+}
+
+.al-list {
+  overflow-y: auto;
+  padding: 4px 2px;
+}
+
+.al-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.al-list::-webkit-scrollbar-track {
+  background: #0A0D18;
+}
+
+.al-list::-webkit-scrollbar-thumb {
+  background: #2F293A;
+  border-radius: 4px;
+}
+
+.al-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.al-no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.al-top-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(to bottom, #0A0D18, transparent);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.al-bottom-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to top, #0A0D18, transparent);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
