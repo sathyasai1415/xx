@@ -299,13 +299,13 @@ export default function App() {
     prevCustomerDemo.current = customerDemoMode;
   }, [customerDemoMode]);
 
-  // Register FCM token for store owners so they get push notifications on new orders.
+  // Register FCM token for all signed-in users so they get push notifications.
   useEffect(() => {
-    if (!uid || !isStoreOwner) return;
+    if (!uid) return;
     registerFcmToken().catch(() => {});
     const unsub = listenForMessages((title, body) => showToast(`${title}: ${body}`));
     return unsub;
-  }, [uid, isStoreOwner]);
+  }, [uid]);
 
   // Reviews
   const [userReviews, setUserReviews] = useState<Record<string, Review[]>>({});

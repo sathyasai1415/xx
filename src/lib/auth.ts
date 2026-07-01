@@ -43,7 +43,7 @@ const friendly = (code: string): string => {
     case 'auth/invalid-credential': return 'Incorrect email or password.';
     case 'auth/too-many-requests': return 'Too many attempts. Please wait a moment and try again.';
     case 'auth/operation-not-allowed': return 'Email/password sign-in is not enabled for this project.';
-    default: return 'Something went wrong. Please try again.';
+    default: return `Something went wrong. (${code || 'unknown'}) Please try again.`;
   }
 };
 
@@ -150,7 +150,7 @@ export async function signIn(email: string, password: string): Promise<UserProfi
   }
 }
 
-export async function signInWithGoogle(): Promise<UserProfile> {
+export async function signInWithGoogle(role: UserRole = 'customer'): Promise<UserProfile> {
   try {
     const provider = new GoogleAuthProvider();
     const cred = await signInWithPopup(auth, provider);
@@ -159,8 +159,8 @@ export async function signInWithGoogle(): Promise<UserProfile> {
       profile = {
         uid: cred.user.uid,
         email: cred.user.email ?? '',
-        fullName: cred.user.displayName ?? 'Customer',
-        role: 'customer',
+        fullName: cred.user.displayName ?? 'User',
+        role,
         phone: cred.user.phoneNumber ?? '',
       };
       await setDoc(doc(db, 'users', cred.user.uid), { ...profile, createdAt: serverTimestamp() });

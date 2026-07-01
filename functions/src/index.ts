@@ -78,6 +78,55 @@ export const onOrderCreated = functions.firestore.onDocumentCreated(
   }
 );
 
+// ── onOrderStatusChanged: notify customer when their order status changes ──
+
+const STATUS_MESSAGES: Record<string, { title: string; body: string }> = {
+  confirmed:        { title: '✅ Order Confirmed!',    body: 'Your pizza is being prepared.' },
+  preparing:        { title: '👨‍🍳 Preparing your order', body: 'The kitchen is on it!' },
+  READY:            { title: '📦 Ready for Pickup!',   body: 'Your order is ready.' },
+  ready:            { title: '📦 Ready for Pickup!',   body: 'Your order is ready.' },
+  ready_for_pickup: { title: '📦 Ready for Pickup!',   body: 'Your order is ready.' },
+  OUT_FOR_DELIVERY: { title: '🛵 On the Way!',         body: 'Your pizza is out for delivery.' },
+  out_for_delivery: { title: '🛵 On the Way!',         body: 'Your pizza is out for delivery.' },
+  DELIVERED:        { title: '🍕 Delivered!',          body: 'Enjoy your pizza!' },
+  delivered:        { title: '🍕 Delivered!',          body: 'Enjoy your pizza!' },
+  CANCELLED:        { title: '❌ Order Cancelled',      body: 'Your order was cancelled. Contact support if needed.' },
+  cancelled:        { title: '❌ Order Cancelled',      body: 'Your order was cancelled. Contact support if needed.' },
+};
+
+export const onOrderStatusChanged = functions.firestore.onDocumentUpdated(
+  'orders/{orderId}',
+  async (event) => {
+    const before = event.data?.before.data();
+    const after  = event.data?.after.data();
+    if (!before || !after) return;
+
+    const prevStatus = before.status ?? before.orderStatus;
+    const newStatus  = after.status  ?? after.orderStatus;
+    if (prevStatus === newStatus) return;
+
+    const msg = STATUS_MESSAGES[newStatus];
+    if (!msg) return;
+
+    const customerId: string = after.customerId ?? after.userId;
+    if (!customerId) return;
+
+    try {
+      const userSnap = await db.collection('users').doc(customerId).get();
+      const fcmToken: string | undefined = userSnap.data()?.fcmToken;
+      if (!fcmToken) return;
+
+      await admin.messaging().send({
+        token: fcmToken,
+        notification: { title: msg.title, body: msg.body },
+        data: { orderId: event.params.orderId, status: newStatus },
+      });
+    } catch (err) {
+      functions.logger.warn('Customer FCM failed', { orderId: event.params.orderId, err });
+    }
+  }
+);
+
 // ── verifyDeliveryPartnerScan: HTTP callable ───────────────────────────────
 //
 // Called by the delivery partner app when they scan the QR code on the
@@ -246,5 +295,83 @@ export const weeklyAIInsights = functions.scheduler.onSchedule(
     }, { merge: false });
 
     functions.logger.info('Weekly AI insights written', { orderCount: recentOrders.length, totalRevenue });
+  }
+);
+
+// ── sendBroadcastNotification: admin sends a custom push to all customers ──
+//
+// Called from the admin dashboard. Collects all customer FCM tokens and
+// sends them a custom title + body in batches of 500 (FCM multicast limit).
+
+export const sendBroadcastNotification = functions.https.onCall(
+  async (request) => {
+    if (!request.auth) {
+      throw new functions.https.HttpsError('unauthenticated', 'Must be signed in.');
+    }
+
+    // Only admins or store owners can send broadcasts
+    const callerSnap = await db.collection('users').doc(request.auth.uid).get();
+    const callerRole = callerSnap.data()?.role;
+    if (!['admin', 'store_owner'].includes(callerRole)) {
+      throw new functions.https.HttpsError('permission-denied', 'Only admins and store owners can send broadcasts.');
+    }
+
+    const { title, body, targetRole = 'customer', storeId } = request.data as {
+      title: string;
+      body: string;
+      targetRole?: 'customer' | 'all';
+      storeId?: string;
+    };
+
+    if (!title?.trim() || !body?.trim()) {
+      throw new functions.https.HttpsError('invalid-argument', 'title and body are required.');
+    }
+
+    // Collect FCM tokens from users
+    let query: FirebaseFirestore.Query = db.collection('users');
+    if (targetRole === 'customer') {
+      query = query.where('role', '==', 'customer');
+    }
+
+    const usersSnap = await query.get();
+    const tokens: string[] = usersSnap.docs
+      .map(d => d.data()?.fcmToken as string | undefined)
+      .filter((t): t is string => !!t);
+
+    if (tokens.length === 0) {
+      return { sent: 0, message: 'No users with FCM tokens found.' };
+    }
+
+    // Send in batches of 500 (FCM limit)
+    const BATCH = 500;
+    let successCount = 0;
+    let failCount = 0;
+
+    for (let i = 0; i < tokens.length; i += BATCH) {
+      const batch = tokens.slice(i, i + BATCH);
+      const result = await admin.messaging().sendEachForMulticast({
+        tokens: batch,
+        notification: { title, body },
+        data: { storeId: storeId ?? '', type: 'broadcast' },
+      });
+      successCount += result.successCount;
+      failCount += result.failureCount;
+    }
+
+    // Log the broadcast
+    await db.collection('broadcasts').add({
+      title,
+      body,
+      targetRole,
+      storeId: storeId ?? null,
+      sentBy: request.auth.uid,
+      sentAt: admin.firestore.FieldValue.serverTimestamp(),
+      successCount,
+      failCount,
+      totalTokens: tokens.length,
+    });
+
+    functions.logger.info('Broadcast sent', { title, successCount, failCount });
+    return { sent: successCount, failed: failCount, total: tokens.length };
   }
 );

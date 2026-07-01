@@ -84,11 +84,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await fbUpdateProfile(firebaseUser, { displayName: fullName });
       }
     } catch (err: any) {
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
-        // New user — register
-        const cred = await createUserWithEmailAndPassword(auth, email, password);
-        firebaseUser = cred.user;
-        await fbUpdateProfile(firebaseUser, { displayName: fullName });
+      if (
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/invalid-email'
+      ) {
+        // New user — try to register. If the password is wrong for an existing
+        // account, createUserWithEmailAndPassword will throw auth/email-already-in-use.
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          firebaseUser = cred.user;
+          await fbUpdateProfile(firebaseUser, { displayName: fullName });
+        } catch (regErr: any) {
+          if (regErr.code === 'auth/email-already-in-use') {
+            // Email exists but password was wrong — re-throw the original sign-in error
+            throw err;
+          }
+          throw regErr;
+        }
       } else {
         throw err;
       }
