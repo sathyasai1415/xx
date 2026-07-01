@@ -641,8 +641,8 @@ export function PremiumPizzaBuilder({ onConfigChange, currentConfig, onSaveFavor
         ))}
       </div>
 
-      {/* ── Main grid: LEFT summary | CENTER builder | RIGHT prices ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr_270px] gap-6">
+      {/* ── Main grid: LEFT summary | CENTER builder ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr] gap-6">
 
         {/* ══════════════════════════════════════════════════════════
             LEFT — Flat Pizza Visual + Price + Cart
@@ -1194,91 +1194,6 @@ export function PremiumPizzaBuilder({ onConfigChange, currentConfig, onSaveFavor
             </div>
           </Section>
 
-        </div>
-
-        {/* ══════════════════════════════════════════════════════════
-            RIGHT — Live Price Comparison
-        ══════════════════════════════════════════════════════════ */}
-        <div className="lg:sticky lg:top-24 h-fit">
-          <div className="bg-gradient-to-br from-white/6 to-white/2 backdrop-blur-2xl border border-white/10 rounded-3xl p-5 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-xs font-black text-white">Live Prices</p>
-                <p className="text-[9px] text-stone-500 mt-0.5">Updates as you build</p>
-              </div>
-              <motion.div
-                animate={{ opacity: [1, 0.4, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="flex items-center gap-1 text-[9px] font-bold text-green-400"
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                Live
-              </motion.div>
-            </div>
-
-            <div className="space-y-2">
-              <AnimatePresence>
-                {storePrices.map((s, i) => (
-                  <StorePriceRow
-                    key={s.store.id}
-                    store={s.store}
-                    price={s.price}
-                    rank={i}
-                    onOrder={() => {
-                      if (onAddToCart) {
-                        onAddToCart({
-                          store_id: s.store.id,
-                          store_name: s.store.name,
-                          item_name: `${config.size} Pizza from ${s.store.name}`,
-                          config: { ...config, quantity: qty },
-                          quantity: qty,
-                          price_per_item: s.price,
-                          total_price: s.price * qty,
-                          delivery_type: 'store-delivery' as any,
-                        }, true);
-                      }
-                    }}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-white/8">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-[10px] text-stone-500">Most expensive</span>
-                <AnimatedPrice value={storePrices[storePrices.length - 1]?.price || 0} className="text-[10px] font-bold text-stone-400 line-through" />
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] text-stone-500">Cheapest</span>
-                <AnimatedPrice value={storePrices[0]?.price || 0} className="text-[10px] font-black text-green-400" />
-              </div>
-              {storePrices.length > 1 && (
-                <div className="mt-2 bg-green-500/8 border border-green-500/20 rounded-xl px-3 py-2 flex items-center gap-2">
-                  <Zap className="w-3 h-3 text-green-400 shrink-0" />
-                  <p className="text-[9px] text-green-300 font-bold">
-                    Save up to ${(((storePrices[storePrices.length - 1]?.price || 0) - (storePrices[0]?.price || 0)) * qty).toFixed(2)} by choosing the cheapest option
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-3 p-3 bg-violet-500/8 border border-violet-500/20 rounded-2xl">
-              <p className="text-[9px] font-black text-violet-400 uppercase tracking-wide mb-1 flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5" /> AI Insight
-              </p>
-              <p className="text-[10px] text-stone-400 leading-relaxed">
-                {config.meats.includes('Pepperoni')
-                  ? 'Customers who added Pepperoni also love a Garlic Parmesan Drizzle 🧄'
-                  : config.veggies.length > 2
-                  ? 'Great veggie combo! Try Balsamic Glaze for a gourmet finish ✨'
-                  : (config.drizzles?.length || 0) > 0
-                  ? `Nice drizzle! ${config.drizzles![0]} pairs perfectly with your ${config.crust} 🍕`
-                  : allSelected.length === 0
-                  ? 'Start adding toppings to see personalised suggestions 🍕'
-                  : `${config.size} pizzas with ${allSelected.length} toppings are trending right now 🔥`}
-              </p>
-            </div>
-          </div>
         </div>
 
       </div>

@@ -5,6 +5,7 @@ import {
   Pizza, BarChart3, Tag, X, Sparkles, Play, Pause, Volume2, VolumeX,
   Lock, Crown,
 } from 'lucide-react';
+import MagicBento, { BentoCardData } from './MagicBento';
 import { SmartSearchBar, ParsedQuery } from './SmartSearchBar';
 import { PremiumUpgradeModal } from './PremiumUpgradeModal';
 import { StoreGrid } from './StoreGrid';
@@ -69,6 +70,7 @@ interface HomeViewProps {
   userPreferences?: { isVegetarian: boolean; allowedMeats: string[] } | null;
   isPremium?: boolean;
   onUpgrade?: () => void;
+  isLight?: boolean;
 }
 
 // ── Quick action card ─────────────────────────────────────────────────────────
@@ -81,15 +83,22 @@ function QuickAction({ icon: Icon, title, sub, onClick }: {
       whileTap={{ scale: 0.97 }}
       whileHover={{ y: -2 }}
       onClick={onClick}
-      className="group rounded-[20px] sm:rounded-[28px] p-4 sm:p-6 bg-gradient-to-br from-orange-600 to-red-600 border border-orange-400/50 shadow-[0_20px_60px_-30px_rgba(220,38,38,0.75)] text-left transition w-full"
+      className="group rounded-[20px] sm:rounded-[28px] p-4 sm:p-6 text-left transition w-full"
+      style={{
+        background: 'rgba(18,15,28,0.9)',
+        border: '1px solid rgba(139,92,246,0.2)',
+        boxShadow: '0 8px 32px -8px rgba(0,0,0,0.5)',
+        backdropFilter: 'blur(8px)',
+      }}
     >
-      <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl sm:rounded-3xl flex items-center justify-center mb-3 sm:mb-5 bg-blue-500/30 border border-blue-300/50 transition-transform group-hover:scale-105">
-        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-200" />
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 transition-transform group-hover:scale-105"
+        style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(139,92,246,0.3)' }}>
+        <Icon className="w-5 h-5 sm:w-5 sm:h-5 text-violet-300" />
       </div>
-      <p className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2 leading-tight">{title}</p>
-      <p className="text-xs sm:text-sm text-blue-100 leading-relaxed hidden sm:block">{sub}</p>
-      <div className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-200 mt-3 sm:mt-6">
-        <span>Open</span> <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+      <p className="text-sm sm:text-sm font-bold text-white mb-1 leading-tight">{title}</p>
+      <p className="text-xs text-white/40 leading-relaxed hidden sm:block">{sub}</p>
+      <div className="flex items-center gap-1 text-xs font-semibold text-violet-400 mt-3 sm:mt-4">
+        <span>Open</span> <ChevronRight className="w-3 h-3" />
       </div>
     </motion.button>
   );
@@ -122,7 +131,6 @@ function HeroVideo() {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.14),transparent_35%)] pointer-events-none z-10" />
 
       {videoFailed ? (
-        /* Fallback: animated pizza gradient when video is unavailable */
         <div className="w-full h-[200px] sm:h-[300px] lg:h-[420px] bg-gradient-to-br from-orange-900 via-red-900 to-blue-900 flex items-center justify-center relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(59,130,246,0.18),transparent_60%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_65%,rgba(255,69,0,0.1),transparent_50%)]" />
@@ -154,18 +162,12 @@ function HeroVideo() {
 
       {!videoFailed && (
         <div className="absolute top-3 right-3 sm:top-5 sm:right-5 flex items-center gap-2 sm:gap-3 z-20">
-          <button
-            onClick={togglePlay}
-            aria-label={playing ? 'Pause video' : 'Play video'}
-            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center transition hover:bg-black/50"
-          >
+          <button onClick={togglePlay} aria-label={playing ? 'Pause video' : 'Play video'}
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center transition hover:bg-black/50">
             {playing ? <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
-          <button
-            onClick={toggleMute}
-            aria-label={muted ? 'Unmute video' : 'Mute video'}
-            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center transition hover:bg-black/50"
-          >
+          <button onClick={toggleMute} aria-label={muted ? 'Unmute video' : 'Mute video'}
+            className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center transition hover:bg-black/50">
             {muted ? <VolumeX className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
         </div>
@@ -177,7 +179,7 @@ function HeroVideo() {
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function HomeView({
-  onCompare, onNavigate, currentConfig, onAddToCart, isPremium = false, onUpgrade,
+  onCompare, onNavigate, currentConfig, onAddToCart, isPremium = false, onUpgrade, isLight = false,
 }: HomeViewProps) {
   const { state, setSearch } = useApp();
   const [activeCity, setActiveCity] = useState('All');
@@ -205,43 +207,65 @@ export function HomeView({
 
   const storeCount = state.searchResults.length;
 
+  const bentoPizzaCards: BentoCardData[] = [
+    { color: '#1A0A0A', title: 'Compare Prices', description: 'See live quotes from every pizza chain near you — Dominos, Pizza Hut, Jets and more.', label: 'Compare', icon: '📊', accent: '#FF6B35', onClick: () => onCompare(DEFAULT_CONFIG) },
+    { color: '#0F1020', title: 'AI Pizza Builder', description: 'Describe your perfect pizza in plain English and let AI configure it for you.', label: 'Build', icon: '🤖', accent: '#818CF8', onClick: () => onCompare(DEFAULT_CONFIG) },
+    { color: '#120A18', title: 'Best Deals Near You', description: 'Michigan-exclusive flash deals, BOGO offers, and student discounts updated in real time from local pizzerias.', label: 'Deals', icon: '🏷️', accent: '#F59E0B', onClick: () => onNavigate('local-deals') },
+    { color: '#071510', title: 'Local Michigan Stores', description: 'Discover independent pizzerias — Bunty\'s, Shamz, Motor City Slice and more hidden gems.', label: 'Discover', icon: '📍', accent: '#34D399', onClick: () => onNavigate('local-deals') },
+    { color: '#15080A', title: 'Smart Search', description: 'Search by price, topping, delivery time or diet. MiSlice Pro unlocks AI-powered precision results.', label: 'Search', icon: '🔍', accent: '#F87171', onClick: () => {} },
+    { color: '#0A0F18', title: 'Track Orders', description: 'Follow your order from oven to door with live status updates across all delivery platforms.', label: 'Track', icon: '🛵', accent: '#60A5FA', onClick: () => onNavigate('orders') },
+  ];
+
   return (
-    <div className="w-full flex-1 min-h-screen overflow-x-hidden bg-gradient-to-br from-orange-900 via-red-900 to-blue-900 text-white relative">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_35%),radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.04),transparent_30%)] pointer-events-none" />
+    <div
+      className="w-full flex-1 min-h-screen overflow-x-hidden text-white relative"
+      style={isLight ? {
+        background: '#f8f8f8',
+        backgroundImage: 'radial-gradient(circle, #d1d5db 1px, transparent 1px)',
+        backgroundSize: '22px 22px',
+      } : { background: 'transparent' }}
+    >
       {/* ── Live deal ticker ───────────────────────────────────────────────── */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-4 sm:pt-5">
         <button
           onClick={() => onNavigate('local-deals')}
           className="w-full max-w-3xl mx-auto block"
         >
-          <div className="rounded-full border border-orange-400/50 bg-orange-500/20 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-white shadow-[0_18px_40px_-24px_rgba(220,38,38,0.85)] transition hover:bg-orange-500/30">
-            <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-blue-200">
-              <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" /> Live
+          <div className={`rounded-full border border-orange-500/30 px-3 sm:px-4 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-3 text-xs sm:text-sm shadow-[0_18px_40px_-24px_rgba(220,38,38,0.4)] transition ${isLight ? 'bg-white/80 backdrop-blur-sm text-gray-900 hover:bg-white' : 'bg-orange-500/10 text-white hover:bg-orange-500/20'}`}>
+            <span className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.28em] text-orange-500">
+              <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" /> Live
             </span>
             <div className="flex-1 overflow-hidden text-left">
               <AnimatePresence mode="wait">
-                <motion.p
-                  key={tickerIdx}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.25 }}
-                  className="font-semibold text-stone-200 truncate"
-                >
+                <motion.p key={tickerIdx} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.25 }} className={`font-semibold truncate ${isLight ? 'text-gray-700' : 'text-stone-200'}`}>
                   {DEAL_TICKER[tickerIdx]}
                 </motion.p>
               </AnimatePresence>
             </div>
-            <ChevronRight className="w-4 h-4 text-blue-200" />
+            <ChevronRight className="w-4 h-4 text-orange-400" />
           </div>
         </button>
       </div>
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8 lg:py-16">
-        <section className="grid gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)] items-start lg:items-center">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-5 sm:py-8 lg:py-12">
+        <section className="grid gap-5 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] items-start lg:items-center">
 
-          {/* Video — shown first on mobile for visual impact */}
-          <div className="relative order-1 lg:order-2">
+          {/* HeroVideo + MagicBento — shown first on mobile */}
+          <div className="relative order-1 lg:order-2 -mx-4 sm:mx-0 flex flex-col gap-4 sm:gap-5">
             <HeroVideo />
+            <MagicBento
+              cards={bentoPizzaCards}
+              textAutoHide={false}
+              enableStars
+              enableSpotlight
+              enableBorderGlow
+              enableTilt={false}
+              enableMagnetism={false}
+              clickEffect
+              spotlightRadius={350}
+              particleCount={10}
+              glowColor="220, 38, 38"
+              disableAnimations={false}
+            />
           </div>
 
           {/* Text + search + actions */}
@@ -254,7 +278,7 @@ export function HomeView({
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: 'easeOut' }}
-              className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.02] text-white"
+              className={`text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.02] ${isLight ? 'text-gray-900' : 'text-white'}`}
             >
               Find better pizza deals near you.
             </motion.h1>
@@ -262,7 +286,7 @@ export function HomeView({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08, duration: 0.45, ease: 'easeOut' }}
-              className="mt-4 sm:mt-6 text-base sm:text-lg text-blue-100 max-w-xl leading-7 sm:leading-8"
+              className={`mt-4 sm:mt-6 text-base sm:text-lg max-w-xl leading-7 sm:leading-8 ${isLight ? 'text-gray-600' : 'text-blue-100'}`}
             >
               Compare prices, discover local pizza deals, and build pizza with AI — all from one fast, trustworthy marketplace.
             </motion.p>
@@ -306,17 +330,6 @@ export function HomeView({
                 </div>
               )}
             </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.18, duration: 0.45, ease: 'easeOut' }}
-              className="grid grid-cols-2 gap-3 sm:gap-4 mt-5 sm:mt-10"
-            >
-              <QuickAction icon={Pizza} title="AI Pizza Builder" sub="Create a pizza and compare it to local store prices." onClick={() => onNavigate('pizza-builder')} />
-              <QuickAction icon={BarChart3} title="Compare Prices" sub="See the cheapest local pizza offers instantly." onClick={() => onNavigate('compare')} />
-              <QuickAction icon={Tag} title="Best Deals" sub="Track live promotions and delivery savings." onClick={() => onNavigate('local-deals')} />
-              <QuickAction icon={Map} title="Nearby Stores" sub="Browse open pizza shops by price and speed." onClick={revealStores} />
-            </motion.div>
           </div>
         </section>
       </div>
@@ -330,19 +343,32 @@ export function HomeView({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="clay bg-gradient-to-br from-orange-600 to-red-600 rounded-[2.5rem] px-8 py-16 sm:py-20 text-center max-w-2xl mx-auto"
+              className="rounded-[2rem] px-6 py-12 sm:py-16 text-center max-w-2xl mx-auto"
+              style={{
+                background: 'rgba(15,12,25,0.85)',
+                border: '1px solid rgba(139,92,246,0.2)',
+                boxShadow: '0 24px 80px -20px rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(12px)',
+              }}
             >
-              <div className="clay-soft w-16 h-16 rounded-3xl mx-auto flex items-center justify-center mb-6 bg-blue-500/30 border border-blue-400/50">
-                <Navigation className="w-7 h-7 text-white" />
+              <div className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-5"
+                style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(139,92,246,0.35)' }}>
+                <MapPin className="w-6 h-6 text-violet-300" />
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white mb-3">Find Pizza Near You</h2>
-              <p className="text-white text-sm max-w-sm mx-auto mb-8 leading-relaxed">
-                Discover open pizza shops across Michigan, sorted by price and delivery time.
+              <h2 className="text-xl sm:text-2xl font-black text-white mb-2">Nearby Pizza Stores</h2>
+              <p className="text-white/50 text-sm max-w-xs mx-auto mb-7 leading-relaxed">
+                Browse open pizzerias across Michigan sorted by price and delivery time.
               </p>
               <motion.button
                 whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.02 }}
                 onClick={revealStores}
-                className="inline-flex items-center gap-2.5 text-white font-black text-sm px-8 py-4 bg-blue-500/40 border border-blue-400/50 rounded-2xl hover:bg-blue-500/60 transition"
+                className="inline-flex items-center gap-2 font-black text-sm px-7 py-3.5 rounded-full transition"
+                style={{
+                  background: 'rgba(124,58,237,0.85)',
+                  color: '#fff',
+                  boxShadow: '0 8px 24px rgba(124,58,237,0.4)',
+                }}
               >
                 <Navigation className="w-4 h-4" /> Find Nearby Stores
               </motion.button>
@@ -355,21 +381,22 @@ export function HomeView({
               exit={{ opacity: 0 }}
             >
               {/* City filter + header */}
-              <div className="clay bg-gradient-to-br from-orange-600 to-red-600 rounded-3xl p-5 sm:p-6 mb-8">
+              <div className="rounded-3xl p-5 sm:p-6 mb-8" style={{ background: 'rgba(18,15,28,0.9)', border: '1px solid rgba(139,92,246,0.2)', backdropFilter: 'blur(12px)' }}>
                 <div className="flex items-center justify-between gap-3 mb-4">
                   <div>
                     <h2 className="text-lg font-black text-white flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-blue-200" />
+                      <MapPin className="w-4 h-4 text-violet-300" />
                       Stores Near You
                     </h2>
-                    <p className="text-[11px] text-blue-100 mt-1">
+                    <p className="text-[11px] text-white/50 mt-1">
                       {activeCity !== 'All' ? `${activeCity}, MI` : 'Michigan'} · {storeCount} open
                     </p>
                   </div>
                   <button
                     onClick={() => setShowStores(false)}
                     title="Close stores panel"
-                    className="clay-btn w-9 h-9 rounded-full bg-blue-500/30 flex items-center justify-center text-white hover:text-orange-200"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-white/60 hover:text-white transition"
+                    style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -381,9 +408,16 @@ export function HomeView({
                       onClick={() => { setActiveCity(city.value); setSearch(''); }}
                       className={`text-[11px] font-bold px-3.5 py-2 rounded-full transition-all ${
                         activeCity === city.value
-                          ? 'bg-blue-500/40 text-white shadow-[0_4px_14px_-4px_rgba(59,130,246,0.6)]'
-                          : 'bg-orange-500/20 text-white hover:text-orange-50'
+                          ? 'text-white'
+                          : 'text-white/50 hover:text-white/80'
                       }`}
+                      style={activeCity === city.value ? {
+                        background: 'rgba(124,58,237,0.5)',
+                        border: '1px solid rgba(139,92,246,0.5)',
+                      } : {
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                      }}
                     >
                       {city.label}
                     </button>

@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { MinionsBackground } from './components/MinionsBackground';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { motion } from 'motion/react';
 import './utils/debug';
 import { AppProvider } from './store/AppContext';
 import { PremiumPizzaBuilder } from './components/PremiumPizzaBuilder';
@@ -37,10 +37,134 @@ import {
   saveCustomerOrder, getCustomerOrders,
 } from './lib/db';
 import { registerFcmToken, listenForMessages } from './lib/fcm';
+import Lightfall from './components/Lightfall';
+import DotField from './components/DotField';
+import TextCursor from './components/TextCursor';
+import Hyperspeed from './components/Hyperspeed';
+import { VideoIntro } from './components/VideoIntro';
+
+const HYPERSPEED_OPTS = {
+  distortion: 'turbulentDistortion',
+  length: 400,
+  roadWidth: 10,
+  islandWidth: 2,
+  lanesPerRoad: 3,
+  fov: 90,
+  fovSpeedUp: 150,
+  speedUp: 2,
+  carLightsFade: 0.4,
+  totalSideLightSticks: 20,
+  lightPairsPerRoadWay: 40,
+  shoulderLinesWidthPercentage: 0.05,
+  brokenLinesWidthPercentage: 0.1,
+  brokenLinesLengthPercentage: 0.5,
+  lightStickWidth: [0.12, 0.5] as [number, number],
+  lightStickHeight: [1.3, 1.7] as [number, number],
+  movingAwaySpeed: [60, 80] as [number, number],
+  movingCloserSpeed: [-120, -160] as [number, number],
+  carLightsLength: [400 * 0.03, 400 * 0.2] as [number, number],
+  carLightsRadius: [0.05, 0.14] as [number, number],
+  carWidthPercentage: [0.3, 0.5] as [number, number],
+  carShiftX: [-0.8, 0.8] as [number, number],
+  carFloorSeparation: [0, 5] as [number, number],
+  colors: {
+    roadColor: 0x080808,
+    islandColor: 0x0a0a0a,
+    background: 0x000000,
+    shoulderLines: 0x131318,
+    brokenLines: 0x131318,
+    leftCars: [0xd856bf, 0x6750a2, 0xc247ac] as number[],
+    rightCars: [0x03b3c3, 0x0e5ea5, 0x324555] as number[],
+    sticks: 0x03b3c3,
+  },
+};
+
+const SHOWCASE_CARDS = [
+  { store: "Domino's",    price: '$14.99', time: '25 min', rating: 4.2, best: false },
+  { store: 'Pizza Hut',  price: '$13.49', time: '30 min', rating: 4.0, best: false },
+  { store: "Papa John's",price: '$15.99', time: '35 min', rating: 4.3, best: false },
+  { store: 'Shamz Pizza',price: '$11.99', time: '18 min', rating: 4.8, best: true  },
+];
+
+const SHOWCASE_INGREDIENTS = [
+  { emoji: '🌿', x: '6%',  y: '10%', delay: 0,   dur: 4.2 },
+  { emoji: '🧀', x: '84%', y: '8%',  delay: 0.6, dur: 3.8 },
+  { emoji: '🍅', x: '4%',  y: '70%', delay: 1.1, dur: 4.5 },
+  { emoji: '🫒', x: '88%', y: '65%', delay: 0.3, dur: 3.5 },
+  { emoji: '🌶️', x: '50%', y: '3%',  delay: 0.8, dur: 4.0 },
+  { emoji: '🧅', x: '16%', y: '86%', delay: 1.5, dur: 3.9 },
+];
+
+function PizzaShowcase() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+      className="relative overflow-hidden rounded-[24px] select-none mb-8 max-w-2xl mx-auto"
+      style={{
+        background: 'radial-gradient(ellipse at 60% 40%, rgba(180,40,0,0.22) 0%, rgba(10,13,24,0) 70%), #0A0D18',
+        border: '1px solid rgba(220,80,0,0.25)',
+        boxShadow: '0 40px_120px_-40px rgba(220,38,0,0.5)',
+      }}
+    >
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full"
+          style={{ background: 'radial-gradient(circle, rgba(255,100,30,0.13) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+      </div>
+      {SHOWCASE_INGREDIENTS.map((ing, i) => (
+        <motion.span key={i} className="absolute text-lg pointer-events-none z-10"
+          style={{ left: ing.x, top: ing.y }}
+          animate={{ y: [0, -10, 0], rotate: [-8, 8, -8], opacity: [0.55, 0.9, 0.55] }}
+          transition={{ duration: ing.dur, delay: ing.delay, repeat: Infinity, ease: 'easeInOut' }}>
+          {ing.emoji}
+        </motion.span>
+      ))}
+      <div className="flex justify-center pt-8 pb-2 relative z-20">
+        <motion.div animate={{ rotate: 360 }} transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
+          style={{ fontSize: 'clamp(80px, 18vw, 130px)', lineHeight: 1, filter: 'drop-shadow(0 8px 32px rgba(255,100,30,0.55))' }}>
+          🍕
+        </motion.div>
+      </div>
+      <div className="flex justify-center mb-4 z-20 relative">
+        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest text-orange-300"
+          style={{ background: 'rgba(255,100,30,0.12)', border: '1px solid rgba(255,100,30,0.25)' }}>
+          🔥 Pepperoni Large · Live Price Comparison
+        </div>
+      </div>
+      <div className="px-4 pb-5 space-y-2 z-20 relative">
+        {SHOWCASE_CARDS.map((card, i) => (
+          <motion.div key={card.store}
+            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 + i * 0.08, duration: 0.4, ease: 'easeOut' }}
+            className="flex items-center gap-3 rounded-2xl px-4 py-2.5"
+            style={{
+              background: card.best ? 'linear-gradient(135deg,rgba(220,80,0,0.28) 0%,rgba(255,150,50,0.12) 100%)' : 'rgba(255,255,255,0.04)',
+              border: card.best ? '1px solid rgba(255,120,30,0.55)' : '1px solid rgba(255,255,255,0.07)',
+            }}>
+            <span className="text-base">🍕</span>
+            <span className="flex-1 text-xs sm:text-sm font-bold text-white truncate">{card.store}</span>
+            <span className="text-[10px] text-white/50">{card.time}</span>
+            <span className="text-[10px] text-amber-400">★ {card.rating}</span>
+            <span className={`text-sm font-black ${card.best ? 'text-orange-300' : 'text-white/80'}`}>{card.price}</span>
+            {card.best && (
+              <motion.span animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                className="text-[9px] font-black uppercase tracking-wider rounded-full px-2 py-0.5 shrink-0"
+                style={{ background: 'rgba(255,120,30,0.85)', color: '#fff' }}>
+                Best Deal
+              </motion.span>
+            )}
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
 
 export default function App() {
   const [demoMode, setDemoMode] = useState(false);
   const [customerDemoMode, setCustomerDemoMode] = useState(false);
+  const [showVideoIntro, setShowVideoIntro] = useState(false);
   const [pizzaConfig, setPizzaConfig] = useState<PizzaConfig | null>(null);
   const [deliveryType, setDeliveryType] = useState<DeliveryType | 'auto'>('auto');
   const [view, setView] = useState<ViewState>('home');
@@ -155,6 +279,25 @@ export default function App() {
     })();
     return () => { active = false; };
   }, [uid]);
+
+  // Show video intro once per customer login session (real or demo).
+  const shownIntroForRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (uid && !isStoreOwner && !isAdmin && uid !== shownIntroForRef.current) {
+      shownIntroForRef.current = uid;
+      setShowVideoIntro(true);
+    }
+    if (!uid) shownIntroForRef.current = null;
+  }, [uid, isStoreOwner, isAdmin]);
+
+  // Show intro for customer demo mode entry.
+  const prevCustomerDemo = useRef(false);
+  useEffect(() => {
+    if (customerDemoMode && !prevCustomerDemo.current) {
+      setShowVideoIntro(true);
+    }
+    prevCustomerDemo.current = customerDemoMode;
+  }, [customerDemoMode]);
 
   // Register FCM token for store owners so they get push notifications on new orders.
   useEffect(() => {
@@ -364,7 +507,48 @@ export default function App() {
 
   return (
     <AppProvider>
-    <div className={`relative min-h-screen font-sans flex overflow-x-hidden bg-[#0A0D18] transition-colors duration-300 ${isLight ? 'light-theme' : ''}`}>
+    {showVideoIntro && <VideoIntro onDismiss={() => setShowVideoIntro(false)} />}
+    <TextCursor spacing={75} followMouseDirection randomFloat exitDuration={0.35} removalInterval={22} maxPoints={8} />
+    <div className={`relative min-h-screen font-sans flex overflow-x-hidden transition-colors duration-300 ${isLight ? 'light-theme bg-white' : 'bg-[#0A0D18]'}`}>
+      {/* Light theme: DotField background */}
+      {isLight && (
+        <div className="fixed inset-0 z-0 pointer-events-none" style={{ height: '100vh' }}>
+          <DotField
+            dotRadius={1.5}
+            dotSpacing={14}
+            bulgeStrength={67}
+            glowRadius={160}
+            sparkle={false}
+            waveAmplitude={0}
+            cursorRadius={500}
+            cursorForce={0.1}
+            bulgeOnly
+            gradientFrom="#A855F7"
+            gradientTo="#B497CF"
+            glowColor="#120F17"
+          />
+        </div>
+      )}
+      {/* Dark theme: Lightfall background */}
+      {!isLight && (
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <Lightfall
+            colors={['#FF6B35', '#DC2626', '#F97316']}
+            backgroundColor="#0A0D18"
+            speed={0.35}
+            streakCount={4}
+            streakWidth={0.8}
+            streakLength={1.2}
+            glow={0.6}
+            density={0.4}
+            twinkle={0.7}
+            zoom={3}
+            backgroundGlow={0.15}
+            opacity={0.35}
+            mouseInteraction={false}
+          />
+        </div>
+      )}
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] clay bg-white text-stone-800 text-sm font-bold px-6 py-3 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 whitespace-nowrap">
@@ -378,9 +562,10 @@ export default function App() {
         cartItemCount={cart.length}
         onCartClick={() => setView('cart')}
         onFavoritesClick={() => setView('saved-pizzas')}
+        onFavoriteStoresClick={() => setView('favorite-stores')}
         onLogoClick={() => setView('home')}
       />
-      <MinionsBackground />
+
 
       <SidebarNavigation
         currentView={view}
@@ -416,6 +601,7 @@ export default function App() {
               onAddToCart={addToCart}
               isPremium={isPremium}
               onUpgrade={activatePremium}
+              isLight={isLight}
             />
           </div>
         )}
@@ -498,14 +684,25 @@ export default function App() {
           {view === 'contact' && <ContactView />}
 
           {view === 'favorite-stores' && (
-            <FavoriteStoresPicker
-              favoriteStores={favoriteStores}
-              onToggle={toggleFavoriteStore}
-            />
+            <div className="relative w-full min-h-screen overflow-hidden">
+              {/* Hyperspeed background */}
+              <div className="absolute inset-0 z-0" style={{ height: '100%' }}>
+                <Hyperspeed effectOptions={HYPERSPEED_OPTS} />
+              </div>
+              {/* Overlay to dim the background */}
+              <div className="absolute inset-0 z-10 bg-black/55 pointer-events-none" />
+              {/* Content */}
+              <div className="relative z-20 w-full">
+                <FavoriteStoresPicker
+                  favoriteStores={favoriteStores}
+                  onToggle={toggleFavoriteStore}
+                />
+              </div>
+            </div>
           )}
 
           {view === 'profile' && (
-            <CustomerProfile onNavigate={(v) => setView(v as ViewState)} orders={pastOrders} meatPreferences={meatPreferences} onSaveMeatPreferences={saveMeatPreferences} />
+            <CustomerProfile onNavigate={(v) => setView(v as ViewState)} orders={pastOrders} meatPreferences={meatPreferences} onSaveMeatPreferences={saveMeatPreferences} isLight={isLight} />
           )}
 
           {view === 'order-tracking' && currentOrder && (
@@ -632,6 +829,9 @@ export default function App() {
                   ← Edit pizza configuration
                 </button>
               </div>
+
+              {/* Pizza price showcase */}
+              <PizzaShowcase />
 
               {pizzaConfig && (
                 <div className="mb-8 z-10 flex justify-center w-full animate-in fade-in duration-500">

@@ -10,6 +10,7 @@ import {
   Wallet, TrendingUp, TrendingDown, Timer, Menu as MenuIcon, Zap, Camera,
   ScanLine, Copy, CheckCircle2, ToggleLeft, ToggleRight, Lightbulb,
   RefreshCw, Navigation, User, Bike, PhoneCall, ChevronRight,
+  Search, Truck, ChevronDown, Filter, BarChart2, Star, Globe, AlarmClock, Users, Settings2,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -18,7 +19,7 @@ interface MenuItem { id: string; name: string; description: string; price: numbe
 interface Deal     { id: string; title: string; description: string; original_price: number; discounted_price: number; is_active: boolean; coupon_code: string; }
 interface Order    { id: string; createdAt: string; orderStatus: string; items: { name: string; qty: number; itemTotal: number }[]; finalTotal: number; deliveryAddress: string; deliveryType: string; prepMinutes?: number; }
 
-type Tab = 'overview' | 'orders' | 'menu' | 'deals' | 'insights' | 'earnings';
+type Tab = 'overview' | 'orders' | 'menu' | 'deals' | 'insights' | 'earnings' | 'reports' | 'marketing' | 'ratings' | 'online' | 'hours' | 'team';
 type EarningsPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
 
 const money = (n: number) => `$${(Number(n)||0).toFixed(2)}`;
@@ -158,57 +159,63 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
   const ACTIVE = ['placed','confirmed','preparing','ready_for_pickup','out_for_delivery'];
   const liveCount = orders.filter(o => ACTIVE.includes(o.orderStatus)).length;
 
-  const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: 'overview',  label: 'Overview',     icon: LayoutDashboard },
-    { id: 'orders',    label: 'Orders',        icon: ShoppingBag     },
-    { id: 'menu',      label: 'Menu & Prices', icon: Pizza           },
-    { id: 'deals',     label: 'Deals',         icon: Tag             },
-    { id: 'insights',  label: 'AI Insights',   icon: Zap             },
-    { id: 'earnings',  label: 'Earnings',      icon: Wallet          },
+  const NAV: { id: Tab; label: string; icon: React.ElementType; section?: string }[] = [
+    { id: 'overview',  label: 'Home',             icon: LayoutDashboard },
+    { id: 'insights',  label: 'Insights',          icon: TrendingUp      },
+    { id: 'reports',   label: 'Reports',           icon: BarChart2       },
+    { id: 'orders',    label: 'Orders',            icon: ShoppingBag     },
+    { id: 'menu',      label: 'Menu & Prices',     icon: Pizza           },
+    { id: 'deals',     label: 'Deals',             icon: Tag             },
+    { id: 'marketing', label: 'Marketing',         icon: Zap             },
+    { id: 'ratings',   label: 'Ratings & Reviews', icon: Star            },
+    { id: 'earnings',  label: 'Financials',        icon: Wallet          },
+    { id: 'online',    label: 'Online Ordering',   icon: Globe           },
+    { id: 'hours',     label: 'Store Hours',       icon: AlarmClock      },
+    { id: 'team',      label: 'Team',              icon: Users           },
   ];
 
   return (
-    <div className="min-h-screen w-full bg-[#080808] text-stone-100 lg:flex">
+    <div className="min-h-screen w-full bg-white text-gray-900 lg:flex">
 
       {/* Mobile top bar */}
-      <div className="lg:hidden sticky top-0 z-50 bg-[#0b0b0b] border-b border-white/8 px-4 py-3 flex items-center gap-3">
-        <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl hover:bg-white/8 transition-colors">
-          <MenuIcon className="w-5 h-5 text-stone-300" />
+      <div className="lg:hidden sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+          <MenuIcon className="w-5 h-5 text-gray-500" />
         </button>
         <div className="w-7 h-7 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center shrink-0">
           <Store className="w-4 h-4 text-white" />
         </div>
-        <p className="flex-1 text-sm font-black text-white truncate">{store.store_name}</p>
-        <span className="text-[9px] font-black px-2.5 py-1 rounded-full border bg-green-500/15 text-green-400 border-green-500/25 shrink-0">● DEMO</span>
+        <p className="flex-1 text-sm font-black text-gray-900 truncate">{store.store_name}</p>
+        <span className="text-[9px] font-black px-2.5 py-1 rounded-full border bg-green-50 text-green-600 border-green-200 shrink-0">● DEMO</span>
       </div>
 
-      {sidebarOpen && <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 bottom-0 left-0 z-50 w-60 shrink-0 bg-[#0b0b0b] border-r border-white/8 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 lg:h-screen lg:sticky lg:top-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex items-center gap-3 px-5 py-5 border-b border-white/8">
+      <aside className={`fixed top-0 bottom-0 left-0 z-50 w-60 shrink-0 bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 lg:h-screen lg:sticky lg:top-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center gap-3 px-5 py-5 border-b border-gray-200">
           <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center shrink-0">
             <Store className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-black text-white truncate">{store.store_name}</p>
+            <p className="text-sm font-black text-gray-900 truncate">{store.store_name}</p>
             <p className="text-[9px] text-orange-500 font-black uppercase tracking-widest">Demo Mode</p>
           </div>
-          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1.5 rounded-lg hover:bg-white/8 transition-colors">
-            <X className="w-4 h-4 text-stone-400" />
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
+            <X className="w-4 h-4 text-gray-400" />
           </button>
         </div>
 
         {/* Demo banner */}
-        <div className="mx-3 mt-3 bg-orange-500/10 border border-orange-500/20 rounded-xl px-3 py-2.5">
-          <p className="text-[9px] font-black text-orange-400 uppercase tracking-widest">Preview Mode</p>
-          <p className="text-[10px] text-stone-500 mt-0.5">Mock data — changes don't persist</p>
+        <div className="mx-3 mt-3 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2.5">
+          <p className="text-[9px] font-black text-orange-500 uppercase tracking-widest">Preview Mode</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">Mock data — changes don't persist</p>
         </div>
 
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto mt-2">
           {NAV.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => goTab(id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === id ? 'bg-gradient-to-r from-red-600/90 to-orange-600/70 text-white' : 'text-stone-400 hover:bg-white/6 hover:text-white'}`}>
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === id ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white' : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'}`}>
               <Icon className="w-4 h-4 shrink-0" />
               <span className="flex-1 text-left">{label}</span>
               {id === 'orders' && liveCount > 0 && (
@@ -218,11 +225,11 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
           ))}
         </nav>
 
-        <div className="p-3 border-t border-white/8 space-y-1">
-          <div className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black ${store.accepting_orders ? 'bg-green-500/15 text-green-400 border border-green-500/25' : 'bg-stone-500/15 text-stone-400 border border-white/10'}`}>
+        <div className="p-3 border-t border-gray-200 space-y-1">
+          <div className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-black ${store.accepting_orders ? 'bg-green-50 text-green-600 border border-green-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}`}>
             <Power className="w-3.5 h-3.5" /> {store.accepting_orders ? 'Accepting Orders' : 'Orders Paused'}
           </div>
-          <button onClick={onExit} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-stone-500 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+          <button onClick={onExit} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors">
             <LogOut className="w-3.5 h-3.5" /> Exit Demo
           </button>
         </div>
@@ -237,6 +244,13 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
           {tab === 'deals'     && <DemoDeals     deals={deals} setDeals={setDeals} flash={flash} />}
           {tab === 'insights'  && <DemoInsights  orders={orders} />}
           {tab === 'earnings'  && <DemoEarnings  orders={orders} />}
+          {['reports','marketing','ratings','online','hours','team'].includes(tab) && (
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-12 text-center">
+              <Settings2 className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm font-black text-gray-500 mb-1">Coming Soon</p>
+              <p className="text-xs text-gray-400">This section is not available in demo mode.</p>
+            </div>
+          )}
         </div>
       </main>
 
@@ -265,50 +279,50 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
   return (
     <div>
       <div className="flex items-center gap-3 mb-1">
-        <h1 className="text-2xl font-black text-white">Welcome back 👋</h1>
-        <span className="text-[9px] font-black bg-orange-500/15 text-orange-400 border border-orange-500/25 px-2.5 py-1 rounded-full uppercase">Demo</span>
+        <h1 className="text-2xl font-black text-gray-900">Welcome back 👋</h1>
+        <span className="text-[9px] font-black bg-orange-50 text-orange-500 border border-orange-200 px-2.5 py-1 rounded-full uppercase">Demo</span>
       </div>
-      <p className="text-sm text-stone-500 mb-6">Here's what's happening at {store.store_name}.</p>
+      <p className="text-sm text-gray-400 mb-6">Here's what's happening at {store.store_name}.</p>
 
       {pending.length > 0 && (
-        <button onClick={() => onGoTab('orders')} className="w-full mb-6 bg-gradient-to-r from-orange-600/20 to-red-600/15 border border-orange-500/30 rounded-2xl px-5 py-4 flex items-center justify-between text-left hover:border-orange-500/50 transition-colors">
+        <button onClick={() => onGoTab('orders')} className="w-full mb-6 bg-orange-50 border border-orange-200 rounded-2xl px-5 py-4 flex items-center justify-between text-left hover:border-orange-300 transition-colors">
           <div className="flex items-center gap-3">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500" />
             </span>
-            <p className="text-sm font-black text-white">{pending.length} new order{pending.length !== 1 ? 's' : ''} need action</p>
+            <p className="text-sm font-black text-gray-900">{pending.length} new order{pending.length !== 1 ? 's' : ''} need action</p>
           </div>
-          <span className="text-xs font-bold text-red-300">Review →</span>
+          <span className="text-xs font-bold text-red-500">Review →</span>
         </button>
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Today's Orders", value: todayOrders.length,  icon: ShoppingBag, color: 'text-red-400'    },
-          { label: 'Total Orders',   value: orders.length,        icon: ShoppingBag, color: 'text-blue-400'   },
-          { label: 'Net Earnings',   value: money(net),           icon: DollarSign,  color: 'text-green-400'  },
-          { label: 'Menu Items',     value: menu.length,          icon: Pizza,       color: 'text-orange-400' },
+          { label: "Today's Orders", value: todayOrders.length,  icon: ShoppingBag, color: 'text-red-500'    },
+          { label: 'Total Orders',   value: orders.length,        icon: ShoppingBag, color: 'text-blue-500'   },
+          { label: 'Net Earnings',   value: money(net),           icon: DollarSign,  color: 'text-green-500'  },
+          { label: 'Menu Items',     value: menu.length,          icon: Pizza,       color: 'text-orange-500' },
         ].map(s => (
-          <div key={s.label} className="glass rounded-2xl p-5">
+          <div key={s.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <s.icon className={`w-5 h-5 ${s.color} mb-3`} />
-            <p className="text-2xl font-black text-white">{s.value}</p>
-            <p className="text-[11px] text-stone-500 font-bold mt-0.5">{s.label}</p>
+            <p className="text-2xl font-black text-gray-900">{s.value}</p>
+            <p className="text-[11px] text-gray-400 font-bold mt-0.5">{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Fee breakdown */}
-      <div className="glass rounded-2xl p-5 mb-6">
-        <p className="text-xs font-black text-stone-500 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
+      <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
+        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
         <div className="flex h-8 rounded-xl overflow-hidden mb-3">
-          <div className="flex items-center justify-center bg-green-600/70 text-[10px] font-black text-white" style={{ width: '80%' }}>Your 80% — {money(net)}</div>
-          <div className="flex items-center justify-center bg-red-600/70 text-[10px] font-black text-white" style={{ width: '20%' }}>20%</div>
+          <div className="flex items-center justify-center bg-green-500 text-[10px] font-black text-white" style={{ width: '80%' }}>Your 80% — {money(net)}</div>
+          <div className="flex items-center justify-center bg-red-500 text-[10px] font-black text-white" style={{ width: '20%' }}>20%</div>
         </div>
         <div className="flex gap-6 text-xs font-bold">
-          <span className="text-stone-400">Gross: <span className="text-white">{money(gross)}</span></span>
-          <span className="text-stone-400">MiSlice fee: <span className="text-red-400">−{money(gross * PLATFORM_FEE)}</span></span>
-          <span className="text-stone-400">Your payout: <span className="text-green-400">{money(net)}</span></span>
+          <span className="text-gray-400">Gross: <span className="text-gray-900">{money(gross)}</span></span>
+          <span className="text-gray-400">MiSlice fee: <span className="text-red-500">−{money(gross * PLATFORM_FEE)}</span></span>
+          <span className="text-gray-400">Your payout: <span className="text-green-600">{money(net)}</span></span>
         </div>
       </div>
 
@@ -320,22 +334,22 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
           { emoji:'🏷️', label:'Create Deal',  tab:'deals'    as Tab },
           { emoji:'📊', label:'AI Insights',  tab:'insights' as Tab },
         ].map(q => (
-          <button key={q.label} onClick={() => onGoTab(q.tab)} className="glass hover:bg-white/10 rounded-2xl p-4 text-left transition-all group">
+          <button key={q.label} onClick={() => onGoTab(q.tab)} className="bg-white border border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-2xl p-4 text-left transition-all group shadow-sm">
             <span className="text-2xl mb-2 block">{q.emoji}</span>
-            <p className="text-sm font-black text-white group-hover:text-red-300 transition-colors">{q.label}</p>
+            <p className="text-sm font-black text-gray-900 group-hover:text-red-600 transition-colors">{q.label}</p>
           </button>
         ))}
       </div>
 
-      <h2 className="text-sm font-black text-white mb-3">Recent Orders</h2>
+      <h2 className="text-sm font-black text-gray-900 mb-3">Recent Orders</h2>
       <div className="space-y-2">
         {orders.slice(0, 6).map(o => (
-          <div key={o.id} className="glass rounded-2xl px-5 py-3 flex items-center justify-between">
+          <div key={o.id} className="bg-white border border-gray-200 rounded-2xl px-5 py-3 flex items-center justify-between shadow-sm">
             <div>
-              <p className="text-sm font-bold text-white">{o.items[0].name}{o.items.length > 1 ? ` +${o.items.length-1}` : ''}</p>
-              <p className="text-[11px] text-stone-500 capitalize">{o.orderStatus.replace(/_/g,' ')}</p>
+              <p className="text-sm font-bold text-gray-900">{o.items[0].name}{o.items.length > 1 ? ` +${o.items.length-1}` : ''}</p>
+              <p className="text-[11px] text-gray-400 capitalize">{o.orderStatus.replace(/_/g,' ')}</p>
             </div>
-            <p className="font-black text-white">{money(o.finalTotal)}</p>
+            <p className="font-black text-gray-900">{money(o.finalTotal)}</p>
           </div>
         ))}
       </div>
@@ -355,81 +369,81 @@ function TrackingPanel({ order, onClose }: { order: Order; onClose: () => void }
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center px-0 sm:px-4">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-        className="relative w-full sm:max-w-md glass rounded-t-3xl sm:rounded-3xl overflow-hidden">
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/8">
+        className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-200">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-stone-500">Live Tracking</p>
-            <p className="text-base font-black text-white">Order #{order.id.slice(-3).toUpperCase()}</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Live Tracking</p>
+            <p className="text-base font-black text-gray-900">Order #{order.id.slice(-3).toUpperCase()}</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/8 text-stone-400 hover:text-white"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-gray-700"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-5 space-y-5">
           {/* Stepper */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-4">Order Progress</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Order Progress</p>
             {STAGE_LABELS.map((label, i) => {
               const done = i < stageIdx; const cur = i === stageIdx;
               return (
                 <div key={i} className="flex gap-3 items-start">
                   <div className="flex flex-col items-center">
-                    <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2 ${done ? 'bg-green-500 border-green-500' : cur ? 'bg-orange-500 border-orange-500 animate-pulse' : 'bg-transparent border-white/15'}`}>
-                      {done ? <Check className="w-3.5 h-3.5 text-white" /> : <div className={`w-2 h-2 rounded-full ${cur ? 'bg-white' : 'bg-stone-700'}`} />}
+                    <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border-2 ${done ? 'bg-green-500 border-green-500' : cur ? 'bg-orange-500 border-orange-500 animate-pulse' : 'bg-transparent border-gray-200'}`}>
+                      {done ? <Check className="w-3.5 h-3.5 text-white" /> : <div className={`w-2 h-2 rounded-full ${cur ? 'bg-white' : 'bg-gray-300'}`} />}
                     </div>
-                    {i < 5 && <div className={`w-0.5 h-5 ${i < stageIdx ? 'bg-green-500/60' : 'bg-white/8'}`} />}
+                    {i < 5 && <div className={`w-0.5 h-5 ${i < stageIdx ? 'bg-green-400' : 'bg-gray-200'}`} />}
                   </div>
-                  <p className={`text-sm font-bold pt-1 pb-4 ${done ? 'text-green-400' : cur ? 'text-orange-300' : 'text-stone-600'}`}>{label}</p>
+                  <p className={`text-sm font-bold pt-1 pb-4 ${done ? 'text-green-600' : cur ? 'text-orange-500' : 'text-gray-400'}`}>{label}</p>
                 </div>
               );
             })}
           </div>
 
           {/* Map placeholder */}
-          <div className="rounded-2xl h-36 bg-stone-900 border border-white/8 relative flex items-center justify-center overflow-hidden">
-            <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+          <div className="rounded-2xl h-36 bg-gray-100 border border-gray-200 relative flex items-center justify-center overflow-hidden">
+            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             {showDriver ? (
               <div className="relative z-10 flex flex-col items-center gap-2">
                 <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg shadow-orange-500/40">
                   <Bike className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-xs font-black text-white bg-black/60 px-3 py-1 rounded-full">{driver.name} · ETA {driver.eta} min</p>
+                <p className="text-xs font-black text-gray-900 bg-white/80 px-3 py-1 rounded-full shadow">{driver.name} · ETA {driver.eta} min</p>
               </div>
             ) : (
               <div className="relative z-10 text-center">
-                <Navigation className="w-6 h-6 text-stone-600 mx-auto mb-1" />
-                <p className="text-xs text-stone-600 font-bold">Driver assigned at pickup</p>
+                <Navigation className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+                <p className="text-xs text-gray-400 font-bold">Driver assigned at pickup</p>
               </div>
             )}
           </div>
 
           {/* Driver card */}
           {showDriver ? (
-            <div className="bg-white/5 border border-white/8 rounded-2xl p-4">
-              <p className="text-[10px] font-black uppercase tracking-widest text-stone-500 mb-3">Delivery Partner</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Delivery Partner</p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center shrink-0 font-black text-white text-sm">
                   {driver.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-black text-white">{driver.name}</p>
-                  <p className="text-[11px] text-stone-500">{driver.platform} · ⭐ {driver.rating}</p>
-                  <p className="text-[11px] text-stone-500 truncate">{driver.vehicle}</p>
+                  <p className="text-sm font-black text-gray-900">{driver.name}</p>
+                  <p className="text-[11px] text-gray-500">{driver.platform} · ⭐ {driver.rating}</p>
+                  <p className="text-[11px] text-gray-400 truncate">{driver.vehicle}</p>
                 </div>
-                <a href={`tel:${driver.phone}`} className="flex items-center justify-center w-9 h-9 bg-green-500/15 border border-green-500/25 rounded-xl text-green-400 hover:bg-green-500/25 transition-colors">
+                <a href={`tel:${driver.phone}`} className="flex items-center justify-center w-9 h-9 bg-green-50 border border-green-200 rounded-xl text-green-600 hover:bg-green-100 transition-colors">
                   <PhoneCall className="w-4 h-4" />
                 </a>
               </div>
-              <div className="mt-3 flex items-center gap-2 bg-orange-500/8 border border-orange-500/20 rounded-xl px-3 py-2">
-                <Clock className="w-3.5 h-3.5 text-orange-400 shrink-0" />
-                <p className="text-xs font-black text-orange-300">ETA {driver.eta} minutes</p>
-                <p className="text-[10px] text-stone-500 ml-auto">{driver.phone}</p>
+              <div className="mt-3 flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-xl px-3 py-2">
+                <Clock className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+                <p className="text-xs font-black text-orange-600">ETA {driver.eta} minutes</p>
+                <p className="text-[10px] text-gray-400 ml-auto">{driver.phone}</p>
               </div>
             </div>
           ) : (
-            <div className="bg-white/5 border border-white/8 rounded-2xl p-4 flex items-center gap-3">
-              <User className="w-5 h-5 text-stone-600 shrink-0" />
+            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-center gap-3">
+              <User className="w-5 h-5 text-gray-400 shrink-0" />
               <div>
-                <p className="text-sm font-bold text-stone-400">Driver not assigned yet</p>
-                <p className="text-xs text-stone-600">Assigned once the order is ready for pickup.</p>
+                <p className="text-sm font-bold text-gray-500">Driver not assigned yet</p>
+                <p className="text-xs text-gray-400">Assigned once the order is ready for pickup.</p>
               </div>
             </div>
           )}
@@ -439,12 +453,41 @@ function TrackingPanel({ order, onClose }: { order: Order; onClose: () => void }
   );
 }
 
+const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+  delivered:        { label: 'Delivered',       color: 'text-green-700',  bg: 'bg-green-100 border border-green-300'  },
+  picked_up:        { label: 'Picked Up',        color: 'text-green-700',  bg: 'bg-green-100 border border-green-300'  },
+  out_for_delivery: { label: 'On the Way',       color: 'text-blue-700',   bg: 'bg-blue-100 border border-blue-300'   },
+  ready_for_pickup: { label: 'Ready for Pickup', color: 'text-teal-700',   bg: 'bg-teal-100 border border-teal-300'   },
+  preparing:        { label: 'Preparing',        color: 'text-orange-700', bg: 'bg-orange-100 border border-orange-300'},
+  confirmed:        { label: 'Confirmed',        color: 'text-yellow-700', bg: 'bg-yellow-100 border border-yellow-300'},
+  placed:           { label: 'New Order',        color: 'text-red-700',    bg: 'bg-red-100 border border-red-300'     },
+  cancelled:        { label: 'Cancelled',        color: 'text-gray-500',   bg: 'bg-gray-100 border border-gray-300'   },
+};
+
+function StatusPill({ status }: { status: string }) {
+  const m = STATUS_META[status] ?? { label: status, color: 'text-stone-400', bg: 'bg-white/5 border border-white/10' };
+  return <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${m.bg} ${m.color}`}>{m.label}</span>;
+}
+
 function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: React.Dispatch<React.SetStateAction<Order[]>>; flash: (m: string) => void }) {
-  const [view, setView] = useState<'active'|'past'|'receipts'>('active');
+  const [view, setView]             = useState<'active'|'scheduled'|'history'>('active');
+  const [search, setSearch]         = useState('');
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
-  const ACTIVE = ['placed','confirmed','preparing','ready_for_pickup','out_for_delivery'];
-  const active = orders.filter(o => ACTIVE.includes(o.orderStatus));
-  const past   = orders.filter(o => ['delivered','cancelled'].includes(o.orderStatus)).sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+  const [lastRefresh, setLastRefresh] = useState(0);
+
+  const ACTIVE_STATUSES = ['placed','confirmed','preparing','ready_for_pickup','out_for_delivery'];
+  const activeOrders  = useMemo(() => orders.filter(o => ACTIVE_STATUSES.includes(o.orderStatus)), [orders]);
+  const historyOrders = useMemo(() => {
+    const hist = orders.filter(o => ['delivered','cancelled'].includes(o.orderStatus))
+      .sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+    if (!search) return hist;
+    const q = search.toLowerCase();
+    return hist.filter(o => o.id.includes(q) || o.items.some(it => it.name.toLowerCase().includes(q)));
+  }, [orders, search]);
+
+  const newOrders      = activeOrders.filter(o => o.orderStatus === 'placed');
+  const preparingOrders= activeOrders.filter(o => ['confirmed','preparing'].includes(o.orderStatus));
+  const outOrders      = activeOrders.filter(o => ['ready_for_pickup','out_for_delivery'].includes(o.orderStatus));
 
   const advance = (id: string, status: string) => {
     setOrders(os => os.map(o => o.id === id ? { ...o, orderStatus: status } : o));
@@ -459,121 +502,165 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
     <div>
       <AnimatePresence>{trackingOrder && <TrackingPanel order={trackingOrder} onClose={() => setTrackingOrder(null)} />}</AnimatePresence>
 
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-black text-white">Orders</h1>
-          <p className="text-sm text-stone-500">{active.length} active · {past.length} past</p>
-        </div>
-        <div className="flex gap-1 bg-white/5 border border-white/10 p-1 rounded-xl">
-          {([['active','Active'],['past','Past'],['receipts','Receipts']] as const).map(([v,l]) => (
-            <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${view===v?'bg-white/15 text-white':'text-stone-500 hover:text-white'}`}>
-              {l}{v==='active'&&active.length>0&&<span className="ml-1.5 w-4 h-4 inline-flex items-center justify-center bg-red-500 rounded-full text-[9px] font-black text-white">{active.length}</span>}
-            </button>
-          ))}
-        </div>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-2xl font-black text-gray-900">Orders</h1>
+        <button className="flex items-center gap-2 bg-red-600 hover:bg-red-500 text-white text-xs font-black px-4 py-2 rounded-xl transition-colors">
+          <Truck className="w-3.5 h-3.5" /> Request a Delivery
+        </button>
       </div>
 
-      {view === 'active' && (
-        active.length === 0
-          ? <div className="glass-soft rounded-2xl p-10 text-center text-stone-500 text-sm">No active orders.</div>
-          : <div className="space-y-3">
-              {active.sort((a,b) => b.createdAt.localeCompare(a.createdAt)).map(o => {
-                const status = o.orderStatus;
-                const isNew  = status === 'placed';
-                return (
-                  <div key={o.id} className={`glass rounded-2xl p-5 ${isNew?'border border-orange-500/40':''}`}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <p className="text-sm font-black text-white flex items-center gap-2">
-                          Order #{o.id.replace('o','').padStart(3,'0')}
-                          {isNew && <span className="text-[8px] font-black bg-orange-500 text-white px-1.5 py-0.5 rounded-full">NEW</span>}
-                        </p>
-                        <p className="text-[11px] text-stone-500">{new Date(o.createdAt).toLocaleTimeString()} · {o.deliveryType}{o.prepMinutes ? ` · ${o.prepMinutes}min prep` : ''}</p>
-                      </div>
-                      <p className="font-black text-white">{money(o.finalTotal)}</p>
-                    </div>
-                    <div className="text-xs text-stone-400 mb-3 space-y-0.5">
-                      {o.items.map((it,i) => <p key={i}>{it.qty}× {it.name}</p>)}
-                    </div>
-                    {o.deliveryAddress && <p className="text-[11px] text-stone-500 flex items-center gap-1 mb-3"><MapPin className="w-3 h-3" /> {o.deliveryAddress}</p>}
-                    {isNew ? (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-stone-500 flex items-center gap-1"><Timer className="w-3 h-3" /> Prep:</span>
-                        {PREP_OPTIONS.map(p => (
-                          <button key={p} onClick={() => accept(o.id, p)} className="text-[11px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 hover:bg-green-500/25 px-2.5 py-1.5 rounded-lg transition-colors">{p}m</button>
-                        ))}
-                        <button onClick={() => advance(o.id, 'cancelled')} className="ml-auto text-[11px] font-bold text-red-400 hover:bg-red-500/10 border border-red-500/25 px-3 py-1.5 rounded-lg flex items-center gap-1"><X className="w-3 h-3" /> Reject</button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <button onClick={() => setTrackingOrder(o)} className="flex items-center gap-1.5 text-[11px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/25 hover:bg-blue-500/25 px-3 py-1.5 rounded-lg transition-colors">
-                          <Navigation className="w-3 h-3" /> Track
-                        </button>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-orange-300">{status.replace(/_/g,' ')}</span>
-                        <select value={status} onChange={e => advance(o.id, e.target.value)} className="ml-auto bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-bold">
-                          {ORDER_STAGES.map(s => <option key={s} value={s} className="bg-stone-900">{s.replace(/_/g,' ')}</option>)}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-      )}
+      {/* Promo banner */}
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-5 flex items-center justify-between gap-3">
+        <p className="text-xs text-amber-700 font-bold">💡 Boost afternoon sales by up to 33% with a Happy Hour discount</p>
+        <button className="shrink-0 text-xs font-black text-amber-700 border border-amber-300 px-3 py-1.5 rounded-lg hover:bg-amber-100 transition-colors">Set Up</button>
+      </div>
 
-      {view === 'past' && (
-        <div className="glass rounded-2xl divide-y divide-white/5 overflow-hidden">
-          <div className="grid grid-cols-[1fr_70px_100px_90px] text-[9px] font-black uppercase tracking-widest text-stone-600 px-5 py-3 bg-black/40">
-            <span>Order</span><span className="text-center">Items</span><span className="text-center">Total</span><span className="text-center">Status</span>
+      {/* Sub-tabs */}
+      <div className="flex gap-6 border-b border-gray-200 mb-5">
+        {([
+          ['active',    'Active',    activeOrders.length  ],
+          ['scheduled', 'Scheduled', 0                    ],
+          ['history',   'History',   historyOrders.length ],
+        ] as const).map(([v, l, count]) => (
+          <button key={v} onClick={() => setView(v)}
+            className={`pb-3 text-sm font-black flex items-center gap-1.5 border-b-2 transition-all ${view===v ? 'border-red-500 text-gray-900' : 'border-transparent text-gray-400 hover:text-gray-700'}`}>
+            {l}
+            {(count as number) > 0 && <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-full ${view===v ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-500'}`}>{count}</span>}
+          </button>
+        ))}
+      </div>
+
+      {/* Refresh row */}
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-[11px] text-gray-400">Last updated just now</p>
+        <button onClick={() => { setLastRefresh(p=>p+1); flash('Refreshed'); }}
+          className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 hover:text-gray-700 transition-colors">
+          <RefreshCw className="w-3 h-3" /> Refresh
+        </button>
+      </div>
+
+      {/* Filters row (history only) */}
+      {view === 'history' && (
+        <div className="flex items-center gap-2 mb-5 flex-wrap">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search orders…"
+              className="w-full bg-white border border-gray-200 rounded-xl pl-8 pr-3 py-2 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-100" />
           </div>
-          {past.map(o => (
-            <div key={o.id} className="grid grid-cols-[1fr_70px_100px_90px] items-center px-5 py-3 hover:bg-white/3 transition-colors">
-              <div>
-                <p className="text-xs font-black text-white">#{o.id.replace('o','').padStart(3,'0')}</p>
-                <p className="text-[9px] text-stone-600">{new Date(o.createdAt).toLocaleDateString()}</p>
-              </div>
-              <p className="text-xs text-stone-500 text-center">{o.items.length}</p>
-              <p className="text-sm font-black text-white text-center">{money(o.finalTotal)}</p>
-              <p className={`text-[9px] font-black uppercase text-center ${o.orderStatus==='delivered'?'text-green-400':'text-red-400'}`}>{o.orderStatus.replace(/_/g,' ')}</p>
-            </div>
-          ))}
+          <button className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors">
+            All Channels <ChevronDown className="w-3 h-3" />
+          </button>
+          <button className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-900 transition-colors">
+            <Filter className="w-3 h-3" /> Status
+          </button>
         </div>
       )}
 
-      {view === 'receipts' && (
-        <div className="space-y-3">
-          <div className="glass rounded-2xl p-4 mb-4">
-            <p className="text-xs font-black text-stone-500 mb-3 uppercase tracking-widest">Commission Summary (All Time)</p>
-            {(() => {
-              const completed = orders.filter(o => o.orderStatus !== 'cancelled');
-              const gross = completed.reduce((s,o) => s+o.finalTotal, 0);
-              const fee   = gross * PLATFORM_FEE;
-              const net   = gross - fee;
-              return (
-                <div className="flex gap-6">
-                  <div><p className="text-[9px] text-stone-500 font-bold uppercase">Gross</p><p className="text-lg font-black text-white">{money(gross)}</p></div>
-                  <div><p className="text-[9px] text-stone-500 font-bold uppercase">MiSlice 20%</p><p className="text-lg font-black text-red-400">−{money(fee)}</p></div>
-                  <div><p className="text-[9px] text-stone-500 font-bold uppercase">Your Payout</p><p className="text-lg font-black text-green-400">{money(net)}</p></div>
+      {/* Active — 3-column kanban */}
+      {view === 'active' && (
+        activeOrders.length === 0
+          ? <div className="bg-gray-50 border border-gray-200 rounded-2xl p-10 text-center text-gray-400 text-sm">No active orders right now.</div>
+          : <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {([
+                { label: 'New Orders',        items: newOrders,       accent: 'border-red-200 bg-red-50'     },
+                { label: 'Preparing',          items: preparingOrders, accent: 'border-orange-200 bg-orange-50' },
+                { label: 'Ready / On the Way', items: outOrders,       accent: 'border-blue-200 bg-blue-50'   },
+              ] as const).map(col => (
+                <div key={col.label} className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">{col.label}</p>
+                    {col.items.length > 0 && <span className="text-[9px] font-black bg-gray-200 text-gray-500 px-1.5 py-0.5 rounded-full">{col.items.length}</span>}
+                  </div>
+                  {col.items.length === 0 && (
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 text-center text-gray-300 text-xs">—</div>
+                  )}
+                  {col.items.map(o => {
+                    const isNew = o.orderStatus === 'placed';
+                    return (
+                      <div key={o.id} className={`rounded-2xl p-4 border shadow-sm ${col.accent}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-xs font-black text-gray-900">#{o.id.replace('o','').padStart(3,'0')}</p>
+                          <StatusPill status={o.orderStatus} />
+                        </div>
+                        <div className="text-[11px] text-gray-500 mb-3 space-y-0.5">
+                          {o.items.map((it,i) => <p key={i}>{it.qty}× {it.name}</p>)}
+                        </div>
+                        <p className="text-sm font-black text-gray-900 mb-2">{money(o.finalTotal)}</p>
+                        {o.deliveryAddress && (
+                          <p className="text-[10px] text-gray-400 flex items-center gap-1 mb-3">
+                            <MapPin className="w-2.5 h-2.5 shrink-0" /> {o.deliveryAddress}
+                          </p>
+                        )}
+                        {isNew ? (
+                          <div>
+                            <p className="text-[9px] font-black uppercase text-gray-400 mb-1.5 flex items-center gap-1"><Timer className="w-2.5 h-2.5" /> Prep time:</p>
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              {PREP_OPTIONS.map(p => (
+                                <button key={p} onClick={() => accept(o.id, p)}
+                                  className="text-[10px] font-bold bg-green-100 text-green-700 border border-green-300 hover:bg-green-200 px-2 py-1 rounded-lg transition-colors">{p}m</button>
+                              ))}
+                            </div>
+                            <button onClick={() => advance(o.id, 'cancelled')}
+                              className="w-full text-[10px] font-bold text-red-600 border border-red-200 hover:bg-red-50 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors bg-white">
+                              <X className="w-2.5 h-2.5" /> Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button onClick={() => setTrackingOrder(o)}
+                              className="flex-1 text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 py-1.5 rounded-lg flex items-center justify-center gap-1 transition-colors">
+                              <Navigation className="w-2.5 h-2.5" /> Track
+                            </button>
+                            <select value={o.orderStatus} onChange={e => advance(o.id, e.target.value)}
+                              className="flex-1 bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-[10px] text-gray-700 font-bold">
+                              {ORDER_STAGES.map(s => <option key={s} value={s}>{s.replace(/_/g,' ')}</option>)}
+                            </select>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })()}
+              ))}
+            </div>
+      )}
+
+      {/* Scheduled */}
+      {view === 'scheduled' && (
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-12 text-center">
+          <Clock className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-sm font-black text-gray-500 mb-1">No scheduled orders</p>
+          <p className="text-xs text-gray-400">Pre-orders will appear here when customers schedule deliveries.</p>
+        </div>
+      )}
+
+      {/* History — table */}
+      {view === 'history' && (
+        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+          <div className="grid grid-cols-[80px_90px_120px_1fr_100px_70px_80px] text-[9px] font-black uppercase tracking-widest text-gray-400 px-4 py-3 bg-gray-50 border-b border-gray-200">
+            <span>Order ID</span>
+            <span>Status</span>
+            <span>Time</span>
+            <span>Items</span>
+            <span>Method</span>
+            <span>Channel</span>
+            <span className="text-right">Subtotal</span>
           </div>
-          {orders.filter(o => o.orderStatus !== 'cancelled').map(o => {
-            const fee = o.finalTotal * PLATFORM_FEE;
-            return (
-              <div key={o.id} className="glass rounded-2xl px-5 py-4 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold text-white">#{o.id.replace('o','').padStart(3,'0')}</p>
-                  <p className="text-[10px] text-stone-500">{new Date(o.createdAt).toLocaleString()}</p>
-                  <p className="text-[9px] text-stone-600 mt-0.5">MiSlice fee: −{money(fee)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-base font-black text-green-400">+{money(o.finalTotal - fee)}</p>
-                  <p className="text-[9px] text-stone-600">of {money(o.finalTotal)} gross</p>
-                </div>
-              </div>
-            );
-          })}
+          {historyOrders.length === 0 && (
+            <div className="p-10 text-center text-gray-400 text-xs">No orders match your search.</div>
+          )}
+          {historyOrders.map(o => (
+            <div key={o.id} className="grid grid-cols-[80px_90px_120px_1fr_100px_70px_80px] items-center px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+              <p className="text-[11px] font-black text-gray-900">#{o.id.replace('o','').padStart(3,'0')}</p>
+              <StatusPill status={o.orderStatus} />
+              <p className="text-[10px] text-gray-400">{new Date(o.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</p>
+              <p className="text-[10px] text-gray-500 truncate pr-2">{o.items.map(it => `${it.qty}× ${it.name}`).join(', ')}</p>
+              <p className="text-[10px] text-gray-400 capitalize">{o.deliveryType}</p>
+              <p className="text-[10px] text-gray-400">MiSlice</p>
+              <p className="text-[11px] font-black text-gray-900 text-right">{money(o.finalTotal)}</p>
+            </div>
+          ))}
         </div>
       )}
     </div>
