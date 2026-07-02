@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Pizza, User, Store, ArrowRight, Lock, Eye, EyeOff, Mail, PlayCircle, Bike, X, Phone } from 'lucide-react';
+import { Pizza, User, Store, ArrowRight, Lock, Eye, EyeOff, Mail, PlayCircle, Bike, X, Phone, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../store/AuthContext';
 import { signInWithGoogle } from '../lib/auth';
 import Lightfall from './Lightfall';
@@ -16,14 +16,15 @@ const FIREBASE_ERRORS: Record<string, string> = {
   'auth/network-request-failed': 'Network error. Check your connection.',
   'auth/operation-not-allowed': 'Sign-in method not enabled. Contact support.',
   'auth/popup-closed-by-user': 'Sign-in cancelled.',
+  'auth/not-admin': 'This account is not an administrator.',
 };
 
 const LIGHTFALL_COLORS = ['#ff6b6b', '#dc2626', '#f97316', '#fbbf24', '#ff4444'];
 
-type Mode = 'login' | 'store' | 'demo';
+type Mode = 'login' | 'store' | 'demo' | 'admin';
 
 export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; onCustomerDemo: () => void }) {
-  const { loginOrRegister } = useAuth();
+  const { loginOrRegister, loginAsAdmin } = useAuth();
   const [mode, setMode] = useState<Mode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -61,6 +62,20 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
     } catch (err: any) {
       const code: string = err?.code ?? '';
       setError(FIREBASE_ERRORS[code] || err?.message || 'Something went wrong. Try again.');
+    } finally { setLoading(false); }
+  };
+
+  const submitAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!email.trim()) { setError('Please enter your email.'); return; }
+    if (!password) { setError('Please enter your password.'); return; }
+    setLoading(true);
+    try {
+      await loginAsAdmin(email.trim().toLowerCase(), password);
+    } catch (err: any) {
+      const code: string = err?.code ?? '';
+      setError(FIREBASE_ERRORS[code] || err?.message || 'Admin sign-in failed. Try again.');
     } finally { setLoading(false); }
   };
 
@@ -133,11 +148,72 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
                   <DemoCard icon={Store} title="Store Owner Demo" desc="Full dashboard with mock data" color="from-orange-600 to-orange-500" onClick={onDemo} />
                   <DemoCard icon={User} title="Customer Demo" desc="Browse & compare pizzas" color="from-red-600 to-pink-500" onClick={onCustomerDemo} />
                   <DemoCard icon={Bike} title="Delivery Partner" desc="Coming soon" color="from-emerald-600 to-emerald-500" onClick={() => { setMode('login'); setShowDriverModal(true); }} />
+                  <DemoCard icon={ShieldCheck} title="Platform Admin" desc="Approve stores & manage platform" color="from-red-700 to-red-900" onClick={() => { setMode('admin'); clearForm(); }} />
+                </motion.div>
+              )}
+
+              {/* ── Admin sign-in ── */}
+              {mode === 'admin' && (
+                <motion.div key="admin"
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                >
+                  <button onClick={() => { setMode('login'); clearForm(); }} className="text-xs font-bold text-white/40 hover:text-white/70 mb-5 flex items-center gap-1">
+                    ← Back
+                  </button>
+
+                  <div className="flex flex-col items-center text-center mb-6">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                      style={{ background: 'linear-gradient(135deg,#dc2626,#7f1d1d)', boxShadow: '0 6px 20px rgba(220,38,38,0.4)' }}>
+                      <ShieldCheck className="w-7 h-7 text-white" />
+                    </div>
+                    <p className="text-lg font-black text-white">Platform Admin</p>
+                    <p className="text-xs text-white/40 mt-1">Restricted access — administrators only</p>
+                  </div>
+
+                  {error && (
+                    <div className="mb-4 p-3 rounded-2xl text-xs font-bold"
+                      style={{ background: 'rgba(220,38,38,0.15)', border: '1px solid rgba(220,38,38,0.3)', color: '#fca5a5' }}>
+                      {error}
+                    </div>
+                  )}
+
+                  <form onSubmit={submitAdmin} className="space-y-3">
+                    <DarkField icon={Mail} placeholder="Admin email" value={email} onChange={setEmail} type="email" autoFocus />
+                    <div className="flex items-center gap-2.5 px-4 rounded-2xl"
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      <Lock className="w-4 h-4 text-white/30 shrink-0" />
+                      <input
+                        type={showPw ? 'text' : 'password'}
+                        placeholder="Password"
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        required
+                        className="w-full bg-transparent py-3.5 text-white text-sm placeholder:text-white/25 outline-none"
+                      />
+                      <button type="button" onClick={() => setShowPw(s => !s)} className="text-white/30 hover:text-white/60 transition-colors">
+                        {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+
+                    <motion.button
+                      type="submit"
+                      disabled={loading}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.97 }}
+                      className="w-full py-4 font-black text-white flex items-center justify-center gap-2 rounded-2xl disabled:opacity-50 transition-all"
+                      style={{ background: 'linear-gradient(135deg,#dc2626,#7f1d1d)', boxShadow: '0 6px 24px rgba(220,38,38,0.4)' }}
+                    >
+                      {loading
+                        ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        : <><ShieldCheck className="w-4 h-4" /> Sign in as Admin</>
+                      }
+                    </motion.button>
+                  </form>
                 </motion.div>
               )}
 
               {/* ── Main login/register form ── */}
-              {mode !== 'demo' && (
+              {(mode === 'login' || mode === 'store') && (
                 <motion.div key="form"
                   initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                 >
@@ -248,7 +324,16 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
           </div>
         </BorderGlow>
 
-        <p className="text-center text-white/15 text-[10px] font-bold mt-6">MiSlice © 2026 · Michigan</p>
+        {mode !== 'admin' && (
+          <button
+            onClick={() => { setMode('admin'); clearForm(); }}
+            className="mx-auto mt-6 flex items-center gap-1.5 text-[11px] font-bold text-white/25 hover:text-white/60 transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" /> Admin sign in
+          </button>
+        )}
+
+        <p className="text-center text-white/15 text-[10px] font-bold mt-4">MiSlice © 2026 · Michigan</p>
       </div>
 
       {/* Delivery Partner Modal */}

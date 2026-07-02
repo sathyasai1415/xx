@@ -1,9 +1,10 @@
-import React, { createContext, useContext, useReducer, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   MarketplaceStore, StoreFilters, DEFAULT_FILTERS,
-  searchStores, applyFilters, MARKETPLACE_STORES,
+  searchStores, applyFilters, MARKETPLACE_STORES, firestoreStoreToMarketplace,
 } from '../data/marketplace';
 import { PizzaConfig } from '../types';
+import { watchApprovedStores } from '../lib/db';
 
 // ── State shape ───────────────────────────────────────────────────────────────
 
@@ -38,6 +39,9 @@ interface AppState {
 
   // Toast
   toast: string;
+
+  // Live Firestore stores (real registered stores)
+  liveStores: MarketplaceStore[];
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────────
@@ -53,28 +57,43 @@ type Action =
   | { type: 'SET_BUILDER_CONFIG'; config: PizzaConfig | null }
   | { type: 'TOGGLE_FAVORITE_STORE'; id: string }
   | { type: 'SHOW_TOAST'; msg: string }
-  | { type: 'CLEAR_TOAST' };
+  | { type: 'CLEAR_TOAST' }
+  | { type: 'SET_LIVE_STORES'; stores: MarketplaceStore[] };
 
 // ── Reducer ───────────────────────────────────────────────────────────────────
 
-function computeResults(query: string, filters: StoreFilters): MarketplaceStore[] {
-  const searched = searchStores(query, MARKETPLACE_STORES);
+// Merges real (Firestore) stores with mock stores. Real stores come first and
+// override any mock store with the same ID. Mock stores act as demo data when
+// no real stores are registered yet.
+function mergeStores(live: MarketplaceStore[]): MarketplaceStore[] {
+  const liveIds = new Set(live.map(s => s.id));
+  const mocks = MARKETPLACE_STORES.filter(s => !liveIds.has(s.id));
+  return [...live, ...mocks];
+}
+
+function computeResults(query: string, filters: StoreFilters, liveStores: MarketplaceStore[]): MarketplaceStore[] {
+  const all = mergeStores(liveStores);
+  const searched = searchStores(query, all);
   return applyFilters(searched, filters);
 }
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
+    case 'SET_LIVE_STORES': {
+      const results = computeResults(state.searchQuery, state.filters, action.stores);
+      return { ...state, liveStores: action.stores, searchResults: results };
+    }
     case 'SET_SEARCH': {
-      const results = computeResults(action.query, state.filters);
+      const results = computeResults(action.query, state.filters, state.liveStores);
       return { ...state, searchQuery: action.query, searchResults: results, isSearching: action.query.trim().length > 0 };
     }
     case 'SET_FILTER': {
       const filters = { ...state.filters, ...action.filter };
-      const results = computeResults(state.searchQuery, filters);
+      const results = computeResults(state.searchQuery, filters, state.liveStores);
       return { ...state, filters, searchResults: results };
     }
     case 'RESET_FILTERS': {
-      const results = computeResults(state.searchQuery, DEFAULT_FILTERS);
+      const results = computeResults(state.searchQuery, DEFAULT_FILTERS, state.liveStores);
       return { ...state, filters: DEFAULT_FILTERS, searchResults: results };
     }
     case 'SET_LOCATION':
@@ -93,7 +112,7 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SELECT_STORE':
       return { ...state, selectedStoreId: action.id };
     case 'SET_BUILDER_CONFIG': {
-      const results = state.isSearching ? state.searchResults : computeResults('', state.filters);
+      const results = state.isSearching ? state.searchResults : computeResults('', state.filters, state.liveStores);
       return { ...state, builderConfig: action.config, searchResults: results };
     }
     case 'TOGGLE_FAVORITE_STORE': {
@@ -131,6 +150,7 @@ function buildInitialState(): AppState {
     builderConfig: null,
     favoriteStoreIds: new Set(favIds),
     toast: '',
+    liveStores: [],
   };
 }
 
@@ -153,6 +173,16 @@ const AppCtx = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, buildInitialState);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Live store sync from Firestore ──────────────────────────────────────────
+  useEffect(() => {
+    const unsub = watchApprovedStores(docs => {
+      const converted = docs.map(firestoreStoreToMarketplace);
+      dispatch({ type: 'SET_LIVE_STORES', stores: converted });
+    });
+    return unsub;
+  }, []);
 
   const setSearch = useCallback((q: string) => dispatch({ type: 'SET_SEARCH', query: q }), []);
   const setFilter = useCallback((f: Partial<StoreFilters>) => dispatch({ type: 'SET_FILTER', filter: f }), []);
@@ -162,7 +192,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setLocation = useCallback((loc: string) => dispatch({ type: 'SET_LOCATION', location: loc }), []);
   const showToast = useCallback((msg: string) => {
     dispatch({ type: 'SHOW_TOAST', msg });
-    setTimeout(() => dispatch({ type: 'CLEAR_TOAST' }), 2800);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => dispatch({ type: 'CLEAR_TOAST' }), 2800);
   }, []);
 
   const value = useMemo(() => ({ state, dispatch, setSearch, setFilter, resetFilters, selectStore, toggleFavorite, showToast, setLocation }), [state]);

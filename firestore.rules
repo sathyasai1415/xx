@@ -8,12 +8,14 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
     // Store ownership is tracked via ownerUid field on the store document.
     function isStoreOwner(storeId) {
       return isSignedIn() &&
+        exists(/databases/$(database)/documents/stores/$(storeId)) &&
         get(/databases/$(database)/documents/stores/$(storeId)).data.ownerUid == request.auth.uid;
     }
 
@@ -25,30 +27,34 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // ── Roles ─────────────────────────────────────────────────────────────
+    match /roles/{roleId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     // ── Stores (public catalog) ───────────────────────────────────────────
     match /stores/{storeId} {
       allow read: if true;
       allow create: if isSignedIn();
       allow update: if isStoreOwner(storeId) || isAdmin();
       allow delete: if isAdmin();
+    }
 
-      match /menu/{itemId} {
-        allow read: if true;
-        allow write: if isStoreOwner(storeId) || isAdmin();
-      }
-      match /settings/{settingId} {
-        allow read: if true;
-        allow write: if isStoreOwner(storeId) || isAdmin();
-      }
+    // ── Menu Items (top-level collection) ─────────────────────────────────
+    match /menu_items/{itemId} {
+      allow read: if true;
+      allow create: if isSignedIn() && (isStoreOwner(request.resource.data.storeId) || isAdmin());
+      allow update, delete: if isSignedIn() && (
+        (resource != null && isStoreOwner(resource.data.storeId)) || isAdmin()
+      );
     }
 
     // ── Deals (public read; store owner or admin writes) ───────────────────
     match /deals/{dealId} {
       allow read: if true;
-      allow create: if isSignedIn() &&
-        isStoreOwner(request.resource.data.store_id);
-      allow update, delete: if resource != null &&
-        (isStoreOwner(resource.data.store_id) || isAdmin());
+      allow create: if isSignedIn() && (isStoreOwner(request.resource.data.store_id) || isAdmin());
+      allow update, delete: if resource != null && (isStoreOwner(resource.data.store_id) || isAdmin());
     }
 
     // ── Coupons (public read; admin-only writes) ───────────────────────────
@@ -59,27 +65,16 @@ service cloud.firestore {
 
     // ── Orders ────────────────────────────────────────────────────────────
     match /orders/{orderId} {
-      // Customer creates their own order
-      allow create: if isSignedIn() &&
-        (request.resource.data.userId == request.auth.uid ||
-         request.resource.data.customerId == request.auth.uid);
-
-      // Customer or store owner or admin can read
-      allow read: if isSignedIn() && (
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid ||
+        request.resource.data.customerId == request.auth.uid
+      );
+      allow read, update: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
         resource.data.customerId == request.auth.uid ||
         isStoreOwner(resource.data.storeId) ||
         isAdmin()
       );
-
-      // Customer can cancel; store owner can advance status; admin can do anything
-      allow update: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.customerId == request.auth.uid ||
-        isStoreOwner(resource.data.storeId) ||
-        isAdmin()
-      );
-
       allow delete: if false;
     }
 
@@ -90,10 +85,51 @@ service cloud.firestore {
       allow update, delete: if isSignedIn() && isSelf(resource.data.userId);
     }
 
-    // ── Audit log (admin reads; Cloud Functions write) ────────────────────
-    match /audit/{logId} {
+    // ── Favorites (decoupled) ─────────────────────────────────────────────
+    match /favorites/{favId} {
+      allow read, update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ── Categories ────────────────────────────────────────────────────────
+    match /categories/{catId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ── Notifications ─────────────────────────────────────────────────────
+    match /notifications/{notId} {
+      allow read, update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+
+    // ── Audit Logs ────────────────────────────────────────────────────────
+    match /audit_logs/{logId} {
       allow read: if isAdmin();
-      allow write: if false;
+      allow write: if false; // Admin SDK / server-only writes
+    }
+
+    // ── Price History ─────────────────────────────────────────────────────
+    match /price_history/{histId} {
+      allow read: if true;
+      allow write: if isSignedIn() && (isStoreOwner(request.resource.data.storeId) || isAdmin());
+    }
+
+    // ── Store Locations ───────────────────────────────────────────────────
+    match /store_locations/{locId} {
+      allow read: if true;
+      allow write: if isSignedIn() && (isStoreOwner(locId) || isAdmin());
+    }
+
+    // ── User Preferences ──────────────────────────────────────────────────
+    match /user_preferences/{prefId} {
+      allow read, write: if isSelf(prefId);
+    }
+
+    // ── Reports ───────────────────────────────────────────────────────────
+    match /reports/{repId} {
+      allow read, update, delete: if isAdmin();
+      allow create: if isSignedIn();
     }
 
     // Default deny

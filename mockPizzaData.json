@@ -71,83 +71,1106 @@
       "is_setup_complete": true,
       "application_status": "approved",
       "ownerUid": "PLACEHOLDER_UID_3"
+    },
+    {
+      "id": "rambos-pizza",
+      "store_name": "Rambo's Pizza",
+      "description": "Action-packed flavor! The best pizzas in town, baked to perfection.",
+      "city": "Detroit",
+      "state": "MI",
+      "address": "777 Action Way, Detroit, MI 48201",
+      "phone": "313-555-7777",
+      "logo_url": "/images/stores/rambos-pizza.png",
+      "brand_color": "#FF3B30",
+      "latitude": 42.3314,
+      "longitude": -83.0458,
+      "rating_avg": 4.8,
+      "rating_count": 120,
+      "delivery_fee": 1.99,
+      "delivery_radius": 5,
+      "minimum_order": 10.00,
+      "average_eta": 20,
+      "accepting_orders": true,
+      "is_approved": true,
+      "is_setup_complete": true,
+      "application_status": "approved",
+      "ownerUid": "owner-rambos-pizza"
+    },
+    {
+      "id": "zumbos-pizza",
+      "store_name": "Zumbo's Pizza",
+      "description": "Detroit's hidden gem for artisanal pizzas, including our famous Chicken Parmesan Pizza.",
+      "city": "Detroit",
+      "state": "MI",
+      "address": "999 Zumbo Way, Detroit, MI 48201",
+      "phone": "313-555-9999",
+      "logo_url": "/images/stores/zumbos-pizza.png",
+      "brand_color": "#E63946",
+      "latitude": 42.3314,
+      "longitude": -83.0458,
+      "rating_avg": 4.9,
+      "rating_count": 85,
+      "delivery_fee": 2.49,
+      "delivery_radius": 5,
+      "minimum_order": 12.00,
+      "average_eta": 25,
+      "accepting_orders": true,
+      "is_approved": true,
+      "is_setup_complete": true,
+      "application_status": "approved",
+      "ownerUid": "owner-zumbos-pizza"
     }
   ],
-
   "menu_items": [
-    { "id": "small-cheese",      "storeId": "shamz-pizza",      "name": "Small Pizza (Cheese)",      "category": "base_pizza",    "description": "10\" classic cheese base",                        "price": 9.99,  "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "medium-cheese",     "storeId": "shamz-pizza",      "name": "Medium Pizza (Cheese)",     "category": "base_pizza",    "description": "12\" classic cheese base",                        "price": 12.99, "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "large-cheese",      "storeId": "shamz-pizza",      "name": "Large Pizza (Cheese)",      "category": "base_pizza",    "description": "14\" classic cheese base",                        "price": 15.99, "available": true, "tags": ["base", "popular"], "photo": "" },
-    { "id": "xlarge-cheese",     "storeId": "shamz-pizza",      "name": "XL Pizza (Cheese)",         "category": "base_pizza",    "description": "16\" classic cheese base",                        "price": 18.99, "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "pepperoni",         "storeId": "shamz-pizza",      "name": "Pepperoni",                 "category": "meat",          "description": "Classic sliced pepperoni",                        "price": 1.99,  "available": true, "tags": ["popular", "meat"], "photo": "" },
-    { "id": "chicken",           "storeId": "shamz-pizza",      "name": "Grilled Chicken",           "category": "meat",          "description": "Seasoned grilled chicken pieces",                 "price": 1.99,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "beef",              "storeId": "shamz-pizza",      "name": "Beef",                      "category": "meat",          "description": "Seasoned ground beef",                            "price": 1.79,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "italian-sausage",   "storeId": "shamz-pizza",      "name": "Italian Sausage",           "category": "meat",          "description": "Crumbled spicy Italian sausage",                  "price": 1.69,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "lamb",              "storeId": "shamz-pizza",      "name": "Lamb",                      "category": "meat",          "description": "Premium spiced lamb pieces",                      "price": 2.29,  "available": true, "tags": ["meat", "premium"], "photo": "" },
-    { "id": "anchovies",         "storeId": "shamz-pizza",      "name": "Anchovies",                 "category": "meat",          "description": "Salted anchovy fillets",                          "price": 1.99,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "mushrooms",         "storeId": "shamz-pizza",      "name": "Mushrooms",                 "category": "veggie",        "description": "Sliced baby bella mushrooms",                     "price": 1.29,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "onions",            "storeId": "shamz-pizza",      "name": "Onions",                    "category": "veggie",        "description": "Diced white onions",                              "price": 0.99,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "bell-peppers",      "storeId": "shamz-pizza",      "name": "Bell Peppers",              "category": "veggie",        "description": "Mixed red and green bell peppers",                "price": 1.09,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "black-olives",      "storeId": "shamz-pizza",      "name": "Black Olives",              "category": "veggie",        "description": "Sliced black olives",                             "price": 1.09,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "spinach",           "storeId": "shamz-pizza",      "name": "Spinach",                   "category": "veggie",        "description": "Fresh baby spinach",                              "price": 0.99,  "available": true, "tags": ["veggie", "healthy"], "photo": "" },
-    { "id": "extra-cheese",      "storeId": "shamz-pizza",      "name": "Extra Cheese",              "category": "cheese",        "description": "Extra layer of mozzarella",                       "price": 1.49,  "available": true, "tags": ["cheese", "popular"], "photo": "" },
-    { "id": "feta",              "storeId": "shamz-pizza",      "name": "Feta",                      "category": "cheese",        "description": "Crumbled Greek feta",                             "price": 1.79,  "available": true, "tags": ["cheese"],        "photo": "" },
-    { "id": "cheddar",           "storeId": "shamz-pizza",      "name": "Cheddar",                   "category": "cheese",        "description": "Sharp shredded cheddar",                          "price": 1.29,  "available": true, "tags": ["cheese"],        "photo": "" },
-    { "id": "stuffed-crust",     "storeId": "shamz-pizza",      "name": "Stuffed Crust Upgrade",     "category": "crust_upgrade", "description": "Cheese-stuffed golden crust",                     "price": 3.00,  "available": true, "tags": ["crust", "popular"], "photo": "" },
-    { "id": "gluten-free-crust", "storeId": "shamz-pizza",      "name": "Gluten Free Crust",         "category": "crust_upgrade", "description": "Certified gluten-free base",                      "price": 2.50,  "available": true, "tags": ["crust", "healthy"], "photo": "" },
-    { "id": "garlic-butter",     "storeId": "shamz-pizza",      "name": "Garlic Butter Drizzle",     "category": "drizzle",       "description": "Rich garlic butter finish",                       "price": 0.49,  "available": true, "tags": ["drizzle"],       "photo": "" },
-    { "id": "ranch-drizzle",     "storeId": "shamz-pizza",      "name": "Ranch Drizzle",             "category": "drizzle",       "description": "Creamy ranch swirl",                              "price": 0.49,  "available": true, "tags": ["drizzle"],       "photo": "" },
-    { "id": "buffalo-drizzle",   "storeId": "shamz-pizza",      "name": "Buffalo Drizzle",           "category": "drizzle",       "description": "Spicy buffalo sauce drizzle",                     "price": 0.49,  "available": true, "tags": ["drizzle", "spicy"], "photo": "" },
-
-    { "id": "small-cheese",      "storeId": "motor-city-slice", "name": "Small Pizza (Cheese)",      "category": "base_pizza",    "description": "10\" NY-style cheese base",                       "price": 8.99,  "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "medium-cheese",     "storeId": "motor-city-slice", "name": "Medium Pizza (Cheese)",     "category": "base_pizza",    "description": "12\" NY-style cheese base",                       "price": 11.99, "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "large-cheese",      "storeId": "motor-city-slice", "name": "Large Pizza (Cheese)",      "category": "base_pizza",    "description": "14\" NY-style cheese base",                       "price": 14.99, "available": true, "tags": ["base", "popular"], "photo": "" },
-    { "id": "xlarge-cheese",     "storeId": "motor-city-slice", "name": "XL Pizza (Cheese)",         "category": "base_pizza",    "description": "16\" NY-style cheese base",                       "price": 17.99, "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "pepperoni",         "storeId": "motor-city-slice", "name": "Pepperoni",                 "category": "meat",          "description": "Classic sliced pepperoni",                        "price": 1.49,  "available": true, "tags": ["popular", "meat"], "photo": "" },
-    { "id": "chicken",           "storeId": "motor-city-slice", "name": "Grilled Chicken",           "category": "meat",          "description": "Seasoned grilled chicken pieces",                 "price": 1.69,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "beef",              "storeId": "motor-city-slice", "name": "Beef",                      "category": "meat",          "description": "Seasoned ground beef",                            "price": 1.59,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "italian-sausage",   "storeId": "motor-city-slice", "name": "Italian Sausage",           "category": "meat",          "description": "Crumbled spicy Italian sausage",                  "price": 1.49,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "lamb",              "storeId": "motor-city-slice", "name": "Lamb",                      "category": "meat",          "description": "Premium spiced lamb pieces",                      "price": 1.99,  "available": true, "tags": ["meat", "premium"], "photo": "" },
-    { "id": "anchovies",         "storeId": "motor-city-slice", "name": "Anchovies",                 "category": "meat",          "description": "Salted anchovy fillets",                          "price": 1.69,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "mushrooms",         "storeId": "motor-city-slice", "name": "Mushrooms",                 "category": "veggie",        "description": "Sliced baby bella mushrooms",                     "price": 0.99,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "onions",            "storeId": "motor-city-slice", "name": "Onions",                    "category": "veggie",        "description": "Diced white onions",                              "price": 0.79,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "bell-peppers",      "storeId": "motor-city-slice", "name": "Bell Peppers",              "category": "veggie",        "description": "Mixed red and green bell peppers",                "price": 0.89,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "black-olives",      "storeId": "motor-city-slice", "name": "Black Olives",              "category": "veggie",        "description": "Sliced black olives",                             "price": 0.89,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "spinach",           "storeId": "motor-city-slice", "name": "Spinach",                   "category": "veggie",        "description": "Fresh baby spinach",                              "price": 0.89,  "available": true, "tags": ["veggie", "healthy"], "photo": "" },
-    { "id": "extra-cheese",      "storeId": "motor-city-slice", "name": "Extra Cheese",              "category": "cheese",        "description": "Extra layer of mozzarella",                       "price": 0.99,  "available": true, "tags": ["cheese", "popular"], "photo": "" },
-    { "id": "feta",              "storeId": "motor-city-slice", "name": "Feta",                      "category": "cheese",        "description": "Crumbled Greek feta",                             "price": 1.49,  "available": true, "tags": ["cheese"],        "photo": "" },
-    { "id": "cheddar",           "storeId": "motor-city-slice", "name": "Cheddar",                   "category": "cheese",        "description": "Sharp shredded cheddar",                          "price": 1.09,  "available": true, "tags": ["cheese"],        "photo": "" },
-    { "id": "stuffed-crust",     "storeId": "motor-city-slice", "name": "Stuffed Crust Upgrade",     "category": "crust_upgrade", "description": "Cheese-stuffed golden crust",                     "price": 2.50,  "available": true, "tags": ["crust", "popular"], "photo": "" },
-    { "id": "gluten-free-crust", "storeId": "motor-city-slice", "name": "Gluten Free Crust",         "category": "crust_upgrade", "description": "Certified gluten-free base",                      "price": 2.00,  "available": true, "tags": ["crust", "healthy"], "photo": "" },
-    { "id": "garlic-butter",     "storeId": "motor-city-slice", "name": "Garlic Butter Drizzle",     "category": "drizzle",       "description": "Rich garlic butter finish",                       "price": 0.49,  "available": true, "tags": ["drizzle"],       "photo": "" },
-    { "id": "ranch-drizzle",     "storeId": "motor-city-slice", "name": "Ranch Drizzle",             "category": "drizzle",       "description": "Creamy ranch swirl",                              "price": 0.49,  "available": true, "tags": ["drizzle"],       "photo": "" },
-    { "id": "balsamic",          "storeId": "motor-city-slice", "name": "Balsamic Drizzle",          "category": "drizzle",       "description": "Sweet balsamic glaze finish",                     "price": 0.49,  "available": true, "tags": ["drizzle"],       "photo": "" },
-
-    { "id": "small-cheese",      "storeId": "great-lakes-pies", "name": "Small Pizza (Cheese)",      "category": "base_pizza",    "description": "10\" thin crust cheese base",                     "price": 9.49,  "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "medium-cheese",     "storeId": "great-lakes-pies", "name": "Medium Pizza (Cheese)",     "category": "base_pizza",    "description": "12\" thin crust cheese base",                     "price": 12.49, "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "large-cheese",      "storeId": "great-lakes-pies", "name": "Large Pizza (Cheese)",      "category": "base_pizza",    "description": "14\" thin crust cheese base",                     "price": 15.49, "available": true, "tags": ["base", "popular"], "photo": "" },
-    { "id": "xlarge-cheese",     "storeId": "great-lakes-pies", "name": "XL Pizza (Cheese)",         "category": "base_pizza",    "description": "16\" thin crust cheese base",                     "price": 18.49, "available": true, "tags": ["base"],          "photo": "" },
-    { "id": "pepperoni",         "storeId": "great-lakes-pies", "name": "Pepperoni",                 "category": "meat",          "description": "Classic sliced pepperoni",                        "price": 1.29,  "available": true, "tags": ["popular", "meat"], "photo": "" },
-    { "id": "chicken",           "storeId": "great-lakes-pies", "name": "Grilled Chicken",           "category": "meat",          "description": "Seasoned grilled chicken pieces",                 "price": 1.49,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "beef",              "storeId": "great-lakes-pies", "name": "Beef",                      "category": "meat",          "description": "Seasoned ground beef",                            "price": 1.49,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "italian-sausage",   "storeId": "great-lakes-pies", "name": "Italian Sausage",           "category": "meat",          "description": "Crumbled spicy Italian sausage",                  "price": 1.29,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "lamb",              "storeId": "great-lakes-pies", "name": "Lamb",                      "category": "meat",          "description": "Premium spiced lamb pieces",                      "price": 1.79,  "available": true, "tags": ["meat", "premium"], "photo": "" },
-    { "id": "anchovies",         "storeId": "great-lakes-pies", "name": "Anchovies",                 "category": "meat",          "description": "Salted anchovy fillets",                          "price": 1.49,  "available": true, "tags": ["meat"],          "photo": "" },
-    { "id": "mushrooms",         "storeId": "great-lakes-pies", "name": "Mushrooms",                 "category": "veggie",        "description": "Sliced baby bella mushrooms",                     "price": 1.09,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "onions",            "storeId": "great-lakes-pies", "name": "Onions",                    "category": "veggie",        "description": "Diced white onions",                              "price": 0.89,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "bell-peppers",      "storeId": "great-lakes-pies", "name": "Bell Peppers",              "category": "veggie",        "description": "Mixed red and green bell peppers",                "price": 0.99,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "black-olives",      "storeId": "great-lakes-pies", "name": "Black Olives",              "category": "veggie",        "description": "Sliced black olives",                             "price": 1.29,  "available": true, "tags": ["veggie"],        "photo": "" },
-    { "id": "spinach",           "storeId": "great-lakes-pies", "name": "Spinach",                   "category": "veggie",        "description": "Fresh baby spinach",                              "price": 0.99,  "available": true, "tags": ["veggie", "healthy"], "photo": "" },
-    { "id": "extra-cheese",      "storeId": "great-lakes-pies", "name": "Extra Cheese",              "category": "cheese",        "description": "Extra layer of mozzarella",                       "price": 1.29,  "available": true, "tags": ["cheese", "popular"], "photo": "" },
-    { "id": "feta",              "storeId": "great-lakes-pies", "name": "Feta",                      "category": "cheese",        "description": "Crumbled Greek feta",                             "price": 1.69,  "available": true, "tags": ["cheese"],        "photo": "" },
-    { "id": "cheddar",           "storeId": "great-lakes-pies", "name": "Cheddar",                   "category": "cheese",        "description": "Sharp shredded cheddar",                          "price": 1.19,  "available": true, "tags": ["cheese"],        "photo": "" },
-    { "id": "stuffed-crust",     "storeId": "great-lakes-pies", "name": "Stuffed Crust Upgrade",     "category": "crust_upgrade", "description": "Cheese-stuffed golden crust",                     "price": 2.99,  "available": true, "tags": ["crust", "popular"], "photo": "" },
-    { "id": "gluten-free-crust", "storeId": "great-lakes-pies", "name": "Gluten Free Crust",         "category": "crust_upgrade", "description": "Certified gluten-free base",                      "price": 3.00,  "available": true, "tags": ["crust", "healthy"], "photo": "" },
-    { "id": "garlic-butter",     "storeId": "great-lakes-pies", "name": "Garlic Butter Drizzle",     "category": "drizzle",       "description": "Rich garlic butter finish",                       "price": 0.49,  "available": true, "tags": ["drizzle"],       "photo": "" },
-    { "id": "buffalo-drizzle",   "storeId": "great-lakes-pies", "name": "Buffalo Drizzle",           "category": "drizzle",       "description": "Spicy buffalo sauce drizzle",                     "price": 0.49,  "available": true, "tags": ["drizzle", "spicy"], "photo": "" },
-    { "id": "balsamic",          "storeId": "great-lakes-pies", "name": "Balsamic Drizzle",          "category": "drizzle",       "description": "Sweet balsamic glaze finish",                     "price": 0.49,  "available": true, "tags": ["drizzle"],       "photo": "" }
+    {
+      "id": "small-cheese",
+      "storeId": "shamz-pizza",
+      "name": "Small Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "10\" classic cheese base",
+      "price": 9.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "medium-cheese",
+      "storeId": "shamz-pizza",
+      "name": "Medium Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "12\" classic cheese base",
+      "price": 12.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "large-cheese",
+      "storeId": "shamz-pizza",
+      "name": "Large Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "14\" classic cheese base",
+      "price": 15.99,
+      "available": true,
+      "tags": [
+        "base",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "xlarge-cheese",
+      "storeId": "shamz-pizza",
+      "name": "XL Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "16\" classic cheese base",
+      "price": 18.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "pepperoni",
+      "storeId": "shamz-pizza",
+      "name": "Pepperoni",
+      "category": "meat",
+      "description": "Classic sliced pepperoni",
+      "price": 1.99,
+      "available": true,
+      "tags": [
+        "popular",
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "chicken",
+      "storeId": "shamz-pizza",
+      "name": "Grilled Chicken",
+      "category": "meat",
+      "description": "Seasoned grilled chicken pieces",
+      "price": 1.99,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "beef",
+      "storeId": "shamz-pizza",
+      "name": "Beef",
+      "category": "meat",
+      "description": "Seasoned ground beef",
+      "price": 1.79,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "italian-sausage",
+      "storeId": "shamz-pizza",
+      "name": "Italian Sausage",
+      "category": "meat",
+      "description": "Crumbled spicy Italian sausage",
+      "price": 1.69,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "lamb",
+      "storeId": "shamz-pizza",
+      "name": "Lamb",
+      "category": "meat",
+      "description": "Premium spiced lamb pieces",
+      "price": 2.29,
+      "available": true,
+      "tags": [
+        "meat",
+        "premium"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "anchovies",
+      "storeId": "shamz-pizza",
+      "name": "Anchovies",
+      "category": "meat",
+      "description": "Salted anchovy fillets",
+      "price": 1.99,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "mushrooms",
+      "storeId": "shamz-pizza",
+      "name": "Mushrooms",
+      "category": "veggie",
+      "description": "Sliced baby bella mushrooms",
+      "price": 1.29,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "onions",
+      "storeId": "shamz-pizza",
+      "name": "Onions",
+      "category": "veggie",
+      "description": "Diced white onions",
+      "price": 0.99,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "bell-peppers",
+      "storeId": "shamz-pizza",
+      "name": "Bell Peppers",
+      "category": "veggie",
+      "description": "Mixed red and green bell peppers",
+      "price": 1.09,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "black-olives",
+      "storeId": "shamz-pizza",
+      "name": "Black Olives",
+      "category": "veggie",
+      "description": "Sliced black olives",
+      "price": 1.09,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "spinach",
+      "storeId": "shamz-pizza",
+      "name": "Spinach",
+      "category": "veggie",
+      "description": "Fresh baby spinach",
+      "price": 0.99,
+      "available": true,
+      "tags": [
+        "veggie",
+        "healthy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "extra-cheese",
+      "storeId": "shamz-pizza",
+      "name": "Extra Cheese",
+      "category": "cheese",
+      "description": "Extra layer of mozzarella",
+      "price": 1.49,
+      "available": true,
+      "tags": [
+        "cheese",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "feta",
+      "storeId": "shamz-pizza",
+      "name": "Feta",
+      "category": "cheese",
+      "description": "Crumbled Greek feta",
+      "price": 1.79,
+      "available": true,
+      "tags": [
+        "cheese"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "cheddar",
+      "storeId": "shamz-pizza",
+      "name": "Cheddar",
+      "category": "cheese",
+      "description": "Sharp shredded cheddar",
+      "price": 1.29,
+      "available": true,
+      "tags": [
+        "cheese"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "stuffed-crust",
+      "storeId": "shamz-pizza",
+      "name": "Stuffed Crust Upgrade",
+      "category": "crust_upgrade",
+      "description": "Cheese-stuffed golden crust",
+      "price": 3.00,
+      "available": true,
+      "tags": [
+        "crust",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "gluten-free-crust",
+      "storeId": "shamz-pizza",
+      "name": "Gluten Free Crust",
+      "category": "crust_upgrade",
+      "description": "Certified gluten-free base",
+      "price": 2.50,
+      "available": true,
+      "tags": [
+        "crust",
+        "healthy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "garlic-butter",
+      "storeId": "shamz-pizza",
+      "name": "Garlic Butter Drizzle",
+      "category": "drizzle",
+      "description": "Rich garlic butter finish",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "ranch-drizzle",
+      "storeId": "shamz-pizza",
+      "name": "Ranch Drizzle",
+      "category": "drizzle",
+      "description": "Creamy ranch swirl",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "buffalo-drizzle",
+      "storeId": "shamz-pizza",
+      "name": "Buffalo Drizzle",
+      "category": "drizzle",
+      "description": "Spicy buffalo sauce drizzle",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle",
+        "spicy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "small-cheese",
+      "storeId": "motor-city-slice",
+      "name": "Small Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "10\" NY-style cheese base",
+      "price": 8.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "medium-cheese",
+      "storeId": "motor-city-slice",
+      "name": "Medium Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "12\" NY-style cheese base",
+      "price": 11.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "large-cheese",
+      "storeId": "motor-city-slice",
+      "name": "Large Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "14\" NY-style cheese base",
+      "price": 14.99,
+      "available": true,
+      "tags": [
+        "base",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "xlarge-cheese",
+      "storeId": "motor-city-slice",
+      "name": "XL Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "16\" NY-style cheese base",
+      "price": 17.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "pepperoni",
+      "storeId": "motor-city-slice",
+      "name": "Pepperoni",
+      "category": "meat",
+      "description": "Classic sliced pepperoni",
+      "price": 1.49,
+      "available": true,
+      "tags": [
+        "popular",
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "chicken",
+      "storeId": "motor-city-slice",
+      "name": "Grilled Chicken",
+      "category": "meat",
+      "description": "Seasoned grilled chicken pieces",
+      "price": 1.69,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "beef",
+      "storeId": "motor-city-slice",
+      "name": "Beef",
+      "category": "meat",
+      "description": "Seasoned ground beef",
+      "price": 1.59,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "italian-sausage",
+      "storeId": "motor-city-slice",
+      "name": "Italian Sausage",
+      "category": "meat",
+      "description": "Crumbled spicy Italian sausage",
+      "price": 1.49,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "lamb",
+      "storeId": "motor-city-slice",
+      "name": "Lamb",
+      "category": "meat",
+      "description": "Premium spiced lamb pieces",
+      "price": 1.99,
+      "available": true,
+      "tags": [
+        "meat",
+        "premium"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "anchovies",
+      "storeId": "motor-city-slice",
+      "name": "Anchovies",
+      "category": "meat",
+      "description": "Salted anchovy fillets",
+      "price": 1.69,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "mushrooms",
+      "storeId": "motor-city-slice",
+      "name": "Mushrooms",
+      "category": "veggie",
+      "description": "Sliced baby bella mushrooms",
+      "price": 0.99,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "onions",
+      "storeId": "motor-city-slice",
+      "name": "Onions",
+      "category": "veggie",
+      "description": "Diced white onions",
+      "price": 0.79,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "bell-peppers",
+      "storeId": "motor-city-slice",
+      "name": "Bell Peppers",
+      "category": "veggie",
+      "description": "Mixed red and green bell peppers",
+      "price": 0.89,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "black-olives",
+      "storeId": "motor-city-slice",
+      "name": "Black Olives",
+      "category": "veggie",
+      "description": "Sliced black olives",
+      "price": 0.89,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "spinach",
+      "storeId": "motor-city-slice",
+      "name": "Spinach",
+      "category": "veggie",
+      "description": "Fresh baby spinach",
+      "price": 0.89,
+      "available": true,
+      "tags": [
+        "veggie",
+        "healthy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "extra-cheese",
+      "storeId": "motor-city-slice",
+      "name": "Extra Cheese",
+      "category": "cheese",
+      "description": "Extra layer of mozzarella",
+      "price": 0.99,
+      "available": true,
+      "tags": [
+        "cheese",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "feta",
+      "storeId": "motor-city-slice",
+      "name": "Feta",
+      "category": "cheese",
+      "description": "Crumbled Greek feta",
+      "price": 1.49,
+      "available": true,
+      "tags": [
+        "cheese"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "cheddar",
+      "storeId": "motor-city-slice",
+      "name": "Cheddar",
+      "category": "cheese",
+      "description": "Sharp shredded cheddar",
+      "price": 1.09,
+      "available": true,
+      "tags": [
+        "cheese"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "stuffed-crust",
+      "storeId": "motor-city-slice",
+      "name": "Stuffed Crust Upgrade",
+      "category": "crust_upgrade",
+      "description": "Cheese-stuffed golden crust",
+      "price": 2.50,
+      "available": true,
+      "tags": [
+        "crust",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "gluten-free-crust",
+      "storeId": "motor-city-slice",
+      "name": "Gluten Free Crust",
+      "category": "crust_upgrade",
+      "description": "Certified gluten-free base",
+      "price": 2.00,
+      "available": true,
+      "tags": [
+        "crust",
+        "healthy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "garlic-butter",
+      "storeId": "motor-city-slice",
+      "name": "Garlic Butter Drizzle",
+      "category": "drizzle",
+      "description": "Rich garlic butter finish",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "ranch-drizzle",
+      "storeId": "motor-city-slice",
+      "name": "Ranch Drizzle",
+      "category": "drizzle",
+      "description": "Creamy ranch swirl",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "balsamic",
+      "storeId": "motor-city-slice",
+      "name": "Balsamic Drizzle",
+      "category": "drizzle",
+      "description": "Sweet balsamic glaze finish",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "small-cheese",
+      "storeId": "great-lakes-pies",
+      "name": "Small Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "10\" thin crust cheese base",
+      "price": 9.49,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "medium-cheese",
+      "storeId": "great-lakes-pies",
+      "name": "Medium Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "12\" thin crust cheese base",
+      "price": 12.49,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "large-cheese",
+      "storeId": "great-lakes-pies",
+      "name": "Large Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "14\" thin crust cheese base",
+      "price": 15.49,
+      "available": true,
+      "tags": [
+        "base",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "xlarge-cheese",
+      "storeId": "great-lakes-pies",
+      "name": "XL Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "16\" thin crust cheese base",
+      "price": 18.49,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "pepperoni",
+      "storeId": "great-lakes-pies",
+      "name": "Pepperoni",
+      "category": "meat",
+      "description": "Classic sliced pepperoni",
+      "price": 1.29,
+      "available": true,
+      "tags": [
+        "popular",
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "chicken",
+      "storeId": "great-lakes-pies",
+      "name": "Grilled Chicken",
+      "category": "meat",
+      "description": "Seasoned grilled chicken pieces",
+      "price": 1.49,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "beef",
+      "storeId": "great-lakes-pies",
+      "name": "Beef",
+      "category": "meat",
+      "description": "Seasoned ground beef",
+      "price": 1.49,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "italian-sausage",
+      "storeId": "great-lakes-pies",
+      "name": "Italian Sausage",
+      "category": "meat",
+      "description": "Crumbled spicy Italian sausage",
+      "price": 1.29,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "lamb",
+      "storeId": "great-lakes-pies",
+      "name": "Lamb",
+      "category": "meat",
+      "description": "Premium spiced lamb pieces",
+      "price": 1.79,
+      "available": true,
+      "tags": [
+        "meat",
+        "premium"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "anchovies",
+      "storeId": "great-lakes-pies",
+      "name": "Anchovies",
+      "category": "meat",
+      "description": "Salted anchovy fillets",
+      "price": 1.49,
+      "available": true,
+      "tags": [
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "mushrooms",
+      "storeId": "great-lakes-pies",
+      "name": "Mushrooms",
+      "category": "veggie",
+      "description": "Sliced baby bella mushrooms",
+      "price": 1.09,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "onions",
+      "storeId": "great-lakes-pies",
+      "name": "Onions",
+      "category": "veggie",
+      "description": "Diced white onions",
+      "price": 0.89,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "bell-peppers",
+      "storeId": "great-lakes-pies",
+      "name": "Bell Peppers",
+      "category": "veggie",
+      "description": "Mixed red and green bell peppers",
+      "price": 0.99,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "black-olives",
+      "storeId": "great-lakes-pies",
+      "name": "Black Olives",
+      "category": "veggie",
+      "description": "Sliced black olives",
+      "price": 1.29,
+      "available": true,
+      "tags": [
+        "veggie"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "spinach",
+      "storeId": "great-lakes-pies",
+      "name": "Spinach",
+      "category": "veggie",
+      "description": "Fresh baby spinach",
+      "price": 0.99,
+      "available": true,
+      "tags": [
+        "veggie",
+        "healthy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "extra-cheese",
+      "storeId": "great-lakes-pies",
+      "name": "Extra Cheese",
+      "category": "cheese",
+      "description": "Extra layer of mozzarella",
+      "price": 1.29,
+      "available": true,
+      "tags": [
+        "cheese",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "feta",
+      "storeId": "great-lakes-pies",
+      "name": "Feta",
+      "category": "cheese",
+      "description": "Crumbled Greek feta",
+      "price": 1.69,
+      "available": true,
+      "tags": [
+        "cheese"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "cheddar",
+      "storeId": "great-lakes-pies",
+      "name": "Cheddar",
+      "category": "cheese",
+      "description": "Sharp shredded cheddar",
+      "price": 1.19,
+      "available": true,
+      "tags": [
+        "cheese"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "stuffed-crust",
+      "storeId": "great-lakes-pies",
+      "name": "Stuffed Crust Upgrade",
+      "category": "crust_upgrade",
+      "description": "Cheese-stuffed golden crust",
+      "price": 2.99,
+      "available": true,
+      "tags": [
+        "crust",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "gluten-free-crust",
+      "storeId": "great-lakes-pies",
+      "name": "Gluten Free Crust",
+      "category": "crust_upgrade",
+      "description": "Certified gluten-free base",
+      "price": 3.00,
+      "available": true,
+      "tags": [
+        "crust",
+        "healthy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "garlic-butter",
+      "storeId": "great-lakes-pies",
+      "name": "Garlic Butter Drizzle",
+      "category": "drizzle",
+      "description": "Rich garlic butter finish",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "buffalo-drizzle",
+      "storeId": "great-lakes-pies",
+      "name": "Buffalo Drizzle",
+      "category": "drizzle",
+      "description": "Spicy buffalo sauce drizzle",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle",
+        "spicy"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "balsamic",
+      "storeId": "great-lakes-pies",
+      "name": "Balsamic Drizzle",
+      "category": "drizzle",
+      "description": "Sweet balsamic glaze finish",
+      "price": 0.49,
+      "available": true,
+      "tags": [
+        "drizzle"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "small-cheese",
+      "storeId": "rambos-pizza",
+      "name": "Small Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "10\" classic cheese base",
+      "price": 9.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "medium-cheese",
+      "storeId": "rambos-pizza",
+      "name": "Medium Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "12\" classic cheese base",
+      "price": 12.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "large-cheese",
+      "storeId": "rambos-pizza",
+      "name": "Large Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "14\" classic cheese base",
+      "price": 15.99,
+      "available": true,
+      "tags": [
+        "base",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "xlarge-cheese",
+      "storeId": "rambos-pizza",
+      "name": "XL Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "16\" classic cheese base",
+      "price": 18.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "pepperoni",
+      "storeId": "rambos-pizza",
+      "name": "Pepperoni",
+      "category": "meat",
+      "description": "Classic sliced pepperoni",
+      "price": 1.99,
+      "available": true,
+      "tags": [
+        "popular",
+        "meat"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "small-cheese",
+      "storeId": "zumbos-pizza",
+      "name": "Small Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "10\" classic cheese base",
+      "price": 9.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "medium-cheese",
+      "storeId": "zumbos-pizza",
+      "name": "Medium Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "12\" classic cheese base",
+      "price": 12.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "large-cheese",
+      "storeId": "zumbos-pizza",
+      "name": "Large Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "14\" classic cheese base",
+      "price": 15.99,
+      "available": true,
+      "tags": [
+        "base",
+        "popular"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "xlarge-cheese",
+      "storeId": "zumbos-pizza",
+      "name": "XL Pizza (Cheese)",
+      "category": "base_pizza",
+      "description": "16\" classic cheese base",
+      "price": 18.99,
+      "available": true,
+      "tags": [
+        "base"
+      ],
+      "photo": ""
+    },
+    {
+      "id": "chicken-parm",
+      "storeId": "zumbos-pizza",
+      "name": "Chicken Parmesan Pizza",
+      "category": "specialty",
+      "description": "Crispy chicken, rich marinara, loaded with mozzarella and grated parmesan cheese.", price: 18.99, available: true, tags: ['popular', 'specialty'
+      ], photo: ''
+    }
   ],
-
   "deals": [
     {
       "id": "deal-shamz-001",
@@ -247,9 +1270,19 @@
       "delivery_type": "store-delivery",
       "is_active": true,
       "image_url": ""
+    },
+    {
+      "id": "deal-rambo-001",
+      "store_id": "rambos-pizza",
+      "title": "4 Pizzas for $3",
+      "description": "Action-packed flavor! Get 4 large pizzas with your choice of toppings for just $3.",
+      "original_price": 60.00,
+      "discounted_price": 3.00,
+      "delivery_type": "pickup",
+      "is_active": true,
+      "image_url": ""
     }
   ],
-
   "users": [
     {
       "uid": "SAMPLE_USER_1",
@@ -257,8 +1290,15 @@
       "fullName": "Sathya",
       "role": "customer",
       "phone": "313-555-9901",
-      "meatPreferences": ["Pepperoni", "Chicken", "Lamb"],
-      "favoriteStores": ["shamz-pizza", "great-lakes-pies"],
+      "meatPreferences": [
+        "Pepperoni",
+        "Chicken",
+        "Lamb"
+      ],
+      "favoriteStores": [
+        "shamz-pizza",
+        "great-lakes-pies"
+      ],
       "isPremium": true,
       "theme": "dark",
       "deliveryAddress": "1234 Woodward Ave, Detroit, MI 48201",
@@ -274,13 +1314,28 @@
             "sauce": "Robust Inspired Tomato Sauce",
             "sauceAmount": "Normal",
             "cheeseAmount": "Extra",
-            "cheese": ["Mozzarella"],
-            "meats": ["Pepperoni"],
-            "veggies": ["Mushrooms", "Bell Peppers"],
+            "cheese": [
+              "Mozzarella"
+            ],
+            "meats": [
+              "Pepperoni"
+            ],
+            "veggies": [
+              "Mushrooms",
+              "Bell Peppers"
+            ],
             "extras": [],
-            "drizzles": ["Garlic Butter"],
-            "toppingPlacements": { "Pepperoni": "whole", "Mushrooms": "whole" },
-            "toppingAmounts": { "Pepperoni": "Extra", "Mushrooms": "Moderate" },
+            "drizzles": [
+              "Garlic Butter"
+            ],
+            "toppingPlacements": {
+              "Pepperoni": "whole",
+              "Mushrooms": "whole"
+            },
+            "toppingAmounts": {
+              "Pepperoni": "Extra",
+              "Mushrooms": "Moderate"
+            },
             "bakePreference": "Well Done",
             "cutStyle": "Pie Cut",
             "specialInstructions": "Extra crispy crust please",
@@ -297,8 +1352,13 @@
       "fullName": "Alex Johnson",
       "role": "customer",
       "phone": "734-555-8802",
-      "meatPreferences": ["Chicken", "Italian Sausage"],
-      "favoriteStores": ["motor-city-slice"],
+      "meatPreferences": [
+        "Chicken",
+        "Italian Sausage"
+      ],
+      "favoriteStores": [
+        "motor-city-slice"
+      ],
       "isPremium": false,
       "theme": "light",
       "deliveryAddress": "502 E Liberty St, Ann Arbor, MI 48104",
@@ -314,13 +1374,29 @@
             "sauce": "BBQ Sauce",
             "sauceAmount": "Extra",
             "cheeseAmount": "Normal",
-            "cheese": ["Mozzarella", "Cheddar"],
-            "meats": ["Chicken"],
-            "veggies": ["Onions", "Spinach"],
+            "cheese": [
+              "Mozzarella",
+              "Cheddar"
+            ],
+            "meats": [
+              "Chicken"
+            ],
+            "veggies": [
+              "Onions",
+              "Spinach"
+            ],
             "extras": [],
-            "drizzles": ["Ranch Drizzle"],
-            "toppingPlacements": { "Chicken": "whole", "Onions": "whole" },
-            "toppingAmounts": { "Chicken": "Extra", "Onions": "Light" },
+            "drizzles": [
+              "Ranch Drizzle"
+            ],
+            "toppingPlacements": {
+              "Chicken": "whole",
+              "Onions": "whole"
+            },
+            "toppingAmounts": {
+              "Chicken": "Extra",
+              "Onions": "Light"
+            },
             "bakePreference": "Normal Bake",
             "cutStyle": "Square Cut",
             "specialInstructions": "",
@@ -332,7 +1408,6 @@
       "updatedAt": "2026-06-20T17:45:00Z"
     }
   ],
-
   "orders": [
     {
       "id": "order-001",
@@ -341,9 +1416,21 @@
       "storeId": "shamz-pizza",
       "storeName": "Shamz Pizza",
       "items": [
-        { "name": "Large Pepperoni Pizza", "quantity": 1, "price": 15.99 },
-        { "name": "Extra Cheese Add-on",   "quantity": 1, "price": 1.49 },
-        { "name": "Mushrooms Add-on",      "quantity": 1, "price": 1.29 }
+        {
+          "name": "Large Pepperoni Pizza",
+          "quantity": 1,
+          "price": 15.99
+        },
+        {
+          "name": "Extra Cheese Add-on",
+          "quantity": 1,
+          "price": 1.49
+        },
+        {
+          "name": "Mushrooms Add-on",
+          "quantity": 1,
+          "price": 1.29
+        }
       ],
       "subtotal": 18.77,
       "deliveryFee": 2.99,
@@ -364,9 +1451,21 @@
       "storeId": "motor-city-slice",
       "storeName": "Motor City Slice",
       "items": [
-        { "name": "Medium BBQ Chicken Pizza", "quantity": 2, "price": 11.99 },
-        { "name": "Cheddar Add-on",           "quantity": 1, "price": 1.09 },
-        { "name": "Ranch Drizzle",            "quantity": 1, "price": 0.49 }
+        {
+          "name": "Medium BBQ Chicken Pizza",
+          "quantity": 2,
+          "price": 11.99
+        },
+        {
+          "name": "Cheddar Add-on",
+          "quantity": 1,
+          "price": 1.09
+        },
+        {
+          "name": "Ranch Drizzle",
+          "quantity": 1,
+          "price": 0.49
+        }
       ],
       "subtotal": 25.56,
       "deliveryFee": 1.99,
@@ -379,6 +1478,81 @@
       "deliveryAddress": "502 E Liberty St, Ann Arbor, MI 48104",
       "qrToken": "MCS4R9WQ",
       "createdAt": "2026-06-18T20:10:00Z"
+    },
+    {
+      "id": "order-zumbo-001",
+      "userId": "SAMPLE_USER_1",
+      "customerId": "SAMPLE_USER_1",
+      "storeId": "zumbos-pizza",
+      "storeName": "Zumbo's Pizza",
+      "items": [
+        {
+          "name": "Large Chicken Parmesan Pizza",
+          "quantity": 1,
+          "price": 18.99
+        }
+      ],
+      "subtotal": 18.99,
+      "deliveryFee": 2.49,
+      "tax": 1.57,
+      "tip": 0.00,
+      "total": 25.04,
+      "status": "DELIVERED",
+      "deliveryType": "store-delivery",
+      "deliveryProvider": "store",
+      "deliveryAddress": "1234 Woodward Ave, Detroit, MI 48201",
+      "qrToken": "ZMB1X9WP",
+      "createdAt": "2026-06-15T18:30:00Z"
+    },
+    {
+      "id": "order-zumbo-002",
+      "userId": "SAMPLE_USER_1",
+      "customerId": "SAMPLE_USER_1",
+      "storeId": "zumbos-pizza",
+      "storeName": "Zumbo's Pizza",
+      "items": [
+        {
+          "name": "Medium Chicken Parmesan Pizza",
+          "quantity": 1,
+          "price": 15.99
+        }
+      ],
+      "subtotal": 15.99,
+      "deliveryFee": 2.49,
+      "tax": 1.32,
+      "tip": 0.00,
+      "total": 21.79,
+      "status": "DELIVERED",
+      "deliveryType": "store-delivery",
+      "deliveryProvider": "store",
+      "deliveryAddress": "1234 Woodward Ave, Detroit, MI 48201",
+      "qrToken": "ZMB2X9WP",
+      "createdAt": "2026-06-22T19:15:00Z"
+    },
+    {
+      "id": "order-zumbo-003",
+      "userId": "SAMPLE_USER_1",
+      "customerId": "SAMPLE_USER_1",
+      "storeId": "zumbos-pizza",
+      "storeName": "Zumbo's Pizza",
+      "items": [
+        {
+          "name": "Large Chicken Parmesan Pizza",
+          "quantity": 2,
+          "price": 18.99
+        }
+      ],
+      "subtotal": 37.98,
+      "deliveryFee": 2.49,
+      "tax": 3.13,
+      "tip": 0.00,
+      "total": 45.59,
+      "status": "DELIVERED",
+      "deliveryType": "store-delivery",
+      "deliveryProvider": "store",
+      "deliveryAddress": "1234 Woodward Ave, Detroit, MI 48201",
+      "qrToken": "ZMB3X9WP",
+      "createdAt": "2026-06-29T20:00:00Z"
     }
   ]
 }

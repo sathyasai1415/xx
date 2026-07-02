@@ -1,6 +1,8 @@
 // ─── Central marketplace data layer ──────────────────────────────────────────
 // API-ready: every field maps 1:1 to a DB column or joined relation.
 
+import type { StoreDoc } from '../lib/db';
+
 export type PriceRange = '$' | '$$' | '$$$';
 export type DietaryTag = 'vegan' | 'vegetarian' | 'gluten-free' | 'halal' | 'spicy';
 export type StoreCategory = 'chain' | 'local' | 'artisan' | 'vegan' | 'premium';
@@ -745,3 +747,42 @@ export const RECOMMENDATION_SLICES = {
   newStores: () => MARKETPLACE_STORES.filter(s => s.isNew),
   freeDelivery: () => MARKETPLACE_STORES.filter(s => s.deliveryFee === 0 && s.isOpen),
 };
+
+// ── Firestore → MarketplaceStore adapter ─────────────────────────────────────
+// Converts a live Firestore StoreDoc into the MarketplaceStore shape so the
+// existing StoreGrid / StoreCard UI works with zero changes.
+
+export function firestoreStoreToMarketplace(s: StoreDoc): MarketplaceStore {
+  return {
+    id: s.id,
+    name: s.store_name ?? 'Pizza Store',
+    emoji: '🍕',
+    logoColor: 'bg-red-600',
+    category: 'local' as StoreCategory,
+    address: s.address ?? `${s.city ?? ''}, ${s.state ?? 'MI'}`.trim(),
+    neighborhood: s.city ?? 'Michigan',
+    distance: 0,
+    coordinates: { x: 50, y: 50 },
+    rating: s.rating_avg ?? 4.5,
+    reviewCount: s.rating_count ?? 0,
+    priceRange: '$$' as PriceRange,
+    isOpen: s.accepting_orders ?? true,
+    openUntil: 'Check store',
+    phone: s.phone ?? '',
+    website: undefined,
+    deliveryTime: s.average_eta ?? 30,
+    deliveryFee: s.delivery_fee ?? 0,
+    minOrder: s.minimum_order ?? 0,
+    deliveryPartners: ['store'],
+    tags: [],
+    badges: ['Local'],
+    isFeatured: false,
+    isNew: true,
+    trendScore: 50,
+    popularItems: [],
+    hours: [],
+    menu: [],
+    deals: [],
+    reviews: [],
+  };
+}

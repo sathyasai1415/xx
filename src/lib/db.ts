@@ -3,7 +3,7 @@
 
 import {
   collection, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc,
-  query, where, serverTimestamp, onSnapshot, QueryConstraint,
+  query, where, serverTimestamp, onSnapshot, QueryConstraint, orderBy, limit,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -97,6 +97,19 @@ export async function getStores(): Promise<StoreDoc[]> {
   return snap.docs.map(d => mapId<StoreDoc>(d));
 }
 
+/** Live listener — fires immediately and on every change. Returns unsubscribe fn. */
+export function watchApprovedStores(
+  onUpdate: (stores: StoreDoc[]) => void,
+): () => void {
+  const q = query(
+    collection(db, 'stores'),
+    where('is_approved', '==', true),
+  );
+  return onSnapshot(q, snap => {
+    onUpdate(snap.docs.map(d => mapId<StoreDoc>(d)));
+  });
+}
+
 export async function getStore(storeId: string): Promise<StoreDoc | null> {
   const snap = await getDoc(doc(db, 'stores', storeId));
   return snap.exists() ? mapId<StoreDoc>(snap) : null;
@@ -107,12 +120,12 @@ export async function updateStore(storeId: string, patch: Partial<StoreDoc>): Pr
 }
 
 export async function submitStoreApplication(storeId: string, patch: Partial<StoreDoc>): Promise<void> {
-  await updateDoc(doc(db, 'stores', storeId), {
+  await setDoc(doc(db, 'stores', storeId), {
     ...patch,
     application_status: 'submitted',
     submittedAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  }, { merge: true });
 }
 
 /**
@@ -129,32 +142,47 @@ export async function searchStores(term: string): Promise<StoreDoc[]> {
     s.city?.toLowerCase().includes(t));
 }
 
-// ── Menu (subcollection: stores/{storeId}/menu) ───────────────────────────────
+// ── Menu Items (top-level collection: menu_items) ─────────────────────────────
+
+export async function logPriceHistory(storeId: string, menuItemId: string, price: number): Promise<void> {
+  const docId = `${menuItemId}-${new Date().toISOString().replace(/:/g, '-')}`;
+  await setDoc(doc(db, 'price_history', docId), {
+    menuItemId,
+    storeId,
+    price,
+    capturedAt: new Date().toISOString(),
+    source: 'store_owner'
+  });
+}
 
 export async function getStoreMenu(storeId: string): Promise<MenuItemDoc[]> {
-  const snap = await getDocs(collection(db, 'stores', storeId, 'menu'));
-  return snap.docs.map(d => ({ id: d.id, storeId, ...d.data() }) as MenuItemDoc);
+  const snap = await getDocs(query(collection(db, 'menu_items'), where('storeId', '==', storeId)));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }) as MenuItemDoc);
 }
 
 export async function upsertMenuItem(storeId: string, item: Omit<MenuItemDoc, 'storeId'>): Promise<string> {
+  const data = { ...item, storeId, updatedAt: serverTimestamp() };
   if (item.id) {
-    await setDoc(doc(db, 'stores', storeId, 'menu', item.id), { ...item, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(doc(db, 'menu_items', item.id), data, { merge: true });
+    await logPriceHistory(storeId, item.id, item.price);
     return item.id;
   }
-  const ref = await addDoc(collection(db, 'stores', storeId, 'menu'), { ...item, createdAt: serverTimestamp() });
+  const ref = await addDoc(collection(db, 'menu_items'), { ...data, createdAt: serverTimestamp() });
+  await logPriceHistory(storeId, ref.id, item.price);
   return ref.id;
 }
 
 export async function updateMenuItemPrice(storeId: string, itemId: string, price: number): Promise<void> {
-  await updateDoc(doc(db, 'stores', storeId, 'menu', itemId), { price, updatedAt: serverTimestamp() });
+  await updateDoc(doc(db, 'menu_items', itemId), { price, updatedAt: serverTimestamp() });
+  await logPriceHistory(storeId, itemId, price);
 }
 
 export async function setMenuItemAvailability(storeId: string, itemId: string, available: boolean): Promise<void> {
-  await updateDoc(doc(db, 'stores', storeId, 'menu', itemId), { available, updatedAt: serverTimestamp() });
+  await updateDoc(doc(db, 'menu_items', itemId), { available, updatedAt: serverTimestamp() });
 }
 
 export async function deleteMenuItem(storeId: string, itemId: string): Promise<void> {
-  await deleteDoc(doc(db, 'stores', storeId, 'menu', itemId));
+  await deleteDoc(doc(db, 'menu_items', itemId));
 }
 
 // ── Deals ──────────────────────────────────────────────────────────────────--
@@ -254,10 +282,20 @@ export interface UserData {
 }
 
 export async function getUserData(uid: string): Promise<UserData> {
-  const snap = await getDoc(doc(db, 'users', uid));
-  if (!snap.exists()) return {};
-  const data = snap.data() as any;
-  return { cart: data.cart ?? [], savedPizzas: data.savedPizzas ?? [] };
+  const userSnap = await getDoc(doc(db, 'users', uid));
+  const userData = userSnap.exists() ? userSnap.data() as any : {};
+  
+  // Fetch user favorites from the decoupled 'favorites' collection
+  const favsSnap = await getDocs(query(collection(db, 'favorites'), where('userId', '==', uid)));
+  const savedPizzas = favsSnap.docs.map(d => {
+    const data = d.data();
+    if (data.config) {
+      return { id: d.id, name: data.name || 'Saved Pizza', config: data.config };
+    }
+    return { id: d.id, menuItemId: data.menuItemId, storeId: data.storeId, createdAt: data.createdAt };
+  });
+
+  return { cart: userData.cart ?? [], savedPizzas };
 }
 
 export async function saveUserCart(uid: string, cart: any[]): Promise<void> {
@@ -265,7 +303,24 @@ export async function saveUserCart(uid: string, cart: any[]): Promise<void> {
 }
 
 export async function saveUserSavedPizzas(uid: string, savedPizzas: any[]): Promise<void> {
-  await setDoc(doc(db, 'users', uid), { savedPizzas, updatedAt: serverTimestamp() }, { merge: true });
+  // 1. Delete all existing favorites for this user
+  const snap = await getDocs(query(collection(db, 'favorites'), where('userId', '==', uid)));
+  for (const d of snap.docs) {
+    await deleteDoc(d.ref);
+  }
+
+  // 2. Write new favorites
+  for (const fav of savedPizzas) {
+    const docId = fav.id || `${uid}-${fav.menuItemId || Math.random().toString(36).slice(2, 9)}`;
+    await setDoc(doc(db, 'favorites', docId), {
+      userId: uid,
+      menuItemId: fav.menuItemId || null,
+      storeId: fav.storeId || null,
+      config: fav.config || null,
+      name: fav.name || null,
+      createdAt: fav.createdAt || serverTimestamp(),
+    }, { merge: true });
+  }
 }
 
 // ── Rich customer order persistence (the app's full Order shape) ──────────────
@@ -283,6 +338,32 @@ export async function saveCustomerOrder(order: any): Promise<string> {
 }
 
 export async function getCustomerOrders(uid: string): Promise<any[]> {
-  const snap = await getDocs(query(collection(db, 'orders'), where('userId', '==', uid)));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() })).sort(byCreatedDesc as any);
+  // Indexed server-side sort + limit: fast and scalable. Served instantly from
+  // the local cache on repeat visits, synced in the background.
+  const snap = await getDocs(query(
+    collection(db, 'orders'),
+    where('userId', '==', uid),
+    orderBy('createdAt', 'desc'),
+    limit(50),
+  ));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+/**
+ * Live subscription to a customer's own orders. Fires immediately from the
+ * local cache, then pushes real-time updates as order status changes — so the
+ * order list and tracking screen update without a manual refetch.
+ * Returns an unsubscribe function.
+ */
+export function watchCustomerOrders(uid: string, cb: (orders: any[]) => void): () => void {
+  return onSnapshot(query(
+    collection(db, 'orders'),
+    where('userId', '==', uid),
+    orderBy('createdAt', 'desc'),
+    limit(50),
+  ), (snap) => {
+    cb(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  }, (err) => {
+    console.error('watchCustomerOrders failed', err);
+  });
 }

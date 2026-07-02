@@ -59,6 +59,7 @@ export function AdminOnboarding({ storeData, onComplete, onLogout }: Props) {
   const [avgEta,          setAvgEta]          = useState(storeData?.average_eta      || 45);
 
   const [submitting, setSubmitting] = useState(false);
+  const [agreeCommission, setAgreeCommission] = useState(false);
 
   const applicationStatus = storeData?.application_status || (storeData?.is_approved ? 'approved' : 'draft');
   const isPendingReview = applicationStatus === 'submitted' || applicationStatus === 'under_review';
@@ -428,20 +429,6 @@ export function AdminOnboarding({ storeData, onComplete, onLogout }: Props) {
                 </Field>
               </div>
 
-              <div>
-                <p className="text-xs font-black uppercase tracking-widest text-stone-500 mb-3">3rd Party Delivery</p>
-                <div className="space-y-2">
-                  {['Uber Eats','DoorDash','GrubHub'].map(app => (
-                    <div key={app} className="flex items-center justify-between bg-white/4 border border-white/8 rounded-xl px-4 py-3">
-                      <span className="text-sm font-bold text-white">{app}</span>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" defaultChecked className="sr-only peer" />
-                        <div className="w-9 h-5 bg-white/10 rounded-full peer peer-checked:bg-red-600 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-4 after:h-4 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-4" />
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
 
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setStep(3)} className="px-5 py-3 text-stone-400 hover:text-white font-bold text-sm transition-colors">Back</button>
@@ -481,10 +468,26 @@ export function AdminOnboarding({ storeData, onComplete, onLogout }: Props) {
                 ))}
               </div>
 
+              {/* Commission & Store Agreement */}
+              <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 text-left space-y-3">
+                <p className="text-xs font-black uppercase tracking-widest text-red-400">Commission & Agreement</p>
+                <div className="text-xs text-stone-400 space-y-1.5">
+                  <p>• <strong>MiSlice Commission:</strong> 20% platform fee on completed orders.</p>
+                  <p>• <strong>Registration:</strong> Free onboarding of store into the MiSlice marketplace.</p>
+                </div>
+                <label className="flex items-start gap-2.5 cursor-pointer group mt-2">
+                  <input type="checkbox" checked={agreeCommission} onChange={e => setAgreeCommission(e.target.checked)}
+                    className="mt-0.5 rounded border-white/20 bg-white/5 focus:ring-red-500" />
+                  <span className="text-[11px] font-bold text-stone-300 group-hover:text-white transition-colors">
+                    I agree to the MiSlice Store Merchant Agreement, including the 20% platform commission on orders.
+                  </span>
+                </label>
+              </div>
+
               <div className="flex gap-3">
                 <button onClick={() => setStep(4)} className="px-5 py-3 text-stone-400 hover:text-white font-bold text-sm transition-colors">Back</button>
-                <button onClick={handleSubmit} disabled={submitting}
-                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-60 text-white font-black py-3 rounded-xl transition-colors shadow-[0_0_24px_rgba(220,38,38,0.35)]">
+                <button onClick={handleSubmit} disabled={submitting || !agreeCommission}
+                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-black py-3 rounded-xl transition-colors shadow-[0_0_24px_rgba(220,38,38,0.35)]">
                   {submitting ? 'Submitting…' : 'Submit for Review'}
                 </button>
               </div>

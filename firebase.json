@@ -1,7 +1,8 @@
 {
   "firestore": {
-    "database": "pizza",
-    "rules": "firestore.rules"
+    "database": "(default)",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "functions": [
     {

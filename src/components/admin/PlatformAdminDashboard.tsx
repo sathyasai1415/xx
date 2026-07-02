@@ -5,10 +5,11 @@ import {
   Store as StoreIcon, ShieldCheck, DollarSign, ListOrdered, Ticket, Activity,
   Zap, TrendingUp, TrendingDown, ShoppingBag, Users, CheckCircle2, XCircle,
   Clock, Lightbulb, RefreshCw, AlertTriangle, X, Check, ToggleRight, ToggleLeft,
-  Menu, ChevronRight,
+  Menu, ChevronRight, LogOut,
 } from 'lucide-react';
 import { logAudit } from '../../utils/audit';
 import { initializeCollections } from '../../utils/initDB';
+import { useAuth } from '../../store/AuthContext';
 
 type Tab = 'overview' | 'ai' | 'restaurants' | 'orders' | 'payouts' | 'coupons';
 
@@ -17,6 +18,7 @@ const money = (n: number) => `$${(Number(n)||0).toFixed(2)}`;
 // ─── Platform Admin Dashboard ──────────────────────────────────────────────────
 
 export function PlatformAdminDashboard() {
+  const { logout } = useAuth();
   const [tab, setTab]           = useState<Tab>('overview');
   const [stores, setStores]     = useState<any[]>([]);
   const [orders, setOrders]     = useState<any[]>([]);
@@ -119,8 +121,15 @@ export function PlatformAdminDashboard() {
           ))}
         </nav>
 
-        <div className="p-3 border-t border-white/8">
-          <p className="text-[9px] font-bold text-stone-700 text-center px-2">{auth.currentUser?.email}</p>
+        <div className="p-3 border-t border-white/8 space-y-2">
+          <p className="text-[9px] font-bold text-stone-700 text-center px-2 truncate">{auth.currentUser?.email}</p>
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold text-stone-400 hover:text-white transition-all"
+            style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.2)' }}
+          >
+            <LogOut className="w-4 h-4" /> Sign Out
+          </button>
         </div>
       </aside>
 
@@ -323,80 +332,363 @@ function AIInsightsTab({ stores, orders, approved, completed, cancelled }: any) 
 
 // ─── Restaurants ──────────────────────────────────────────────────────────────
 
-function RestaurantsTab({ stores, pending, approveStore, rejectStore, suspendStore }: any) {
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'suspended'>('all');
-  const shown = filter === 'all' ? stores : stores.filter((s: any) => (s.application_status || (s.is_approved ? 'approved' : 'pending')) === filter);
+// ─── Reject Modal ─────────────────────────────────────────────────────────────
+
+const REJECT_REASONS = [
+  'Incomplete store information',
+  'No menu items added',
+  'Invalid Michigan address',
+  'Phone number unverifiable',
+  'Duplicate store listing',
+  'Violates platform policies',
+];
+
+function RejectModal({ store, onConfirm, onClose }: { store: any; onConfirm: (reason: string) => void; onClose: () => void }) {
+  const [reason, setReason] = useState('');
+  const [custom, setCustom] = useState('');
+
+  const finalReason = reason === '__custom__' ? custom.trim() : reason;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h1 className="text-2xl font-black text-white">Restaurants</h1>
-          <p className="text-sm text-stone-500">{stores.length} total · {pending.length} awaiting review</p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
+      <div className="w-full max-w-md rounded-2xl p-6 space-y-5" style={{ background: '#111', border: '1px solid rgba(220,38,38,0.3)' }}>
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-base font-black text-white">Reject Application</h3>
+            <p className="text-xs text-stone-400 mt-0.5">{store.store_name || 'Unnamed Store'}</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:text-white transition" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <X className="w-4 h-4" />
+          </button>
         </div>
-      </div>
 
-      {pending.length > 0 && (
-        <div className="mb-6 space-y-3">
-          <p className="text-[9px] font-black uppercase tracking-widest text-orange-500">Pending Applications</p>
-          {pending.map((s: any) => (
-            <div key={s.id} className="bg-orange-500/5 border border-orange-500/25 rounded-2xl p-5">
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <div>
-                  <p className="text-sm font-black text-white">{s.store_name || 'Unnamed Store'}</p>
-                  <p className="text-[11px] text-stone-500">{s.address || ''} · {s.city || 'Detroit'}, {s.state || 'MI'}</p>
-                  <p className="text-[11px] text-stone-500">Phone: {s.phone || 'N/A'}</p>
-                </div>
-                <span className="text-[9px] font-black bg-orange-500/15 text-orange-400 border border-orange-500/30 px-2 py-1 rounded-full uppercase">{(s.application_status || 'pending').replace(/_/g, ' ')}</span>
-              </div>
-              <div className="flex gap-2">
-                <button onClick={() => approveStore(s.id)} className="flex items-center gap-1.5 text-xs font-bold bg-green-500/15 border border-green-500/25 text-green-400 hover:bg-green-500/25 px-3 py-2 rounded-xl transition-all">
-                  <Check className="w-3.5 h-3.5" /> Approve
-                </button>
-                <button onClick={async () => { const r = window.prompt('Rejection reason:', 'Incomplete menu details'); if (r) rejectStore(s.id, r); }} className="flex items-center gap-1.5 text-xs font-bold bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 px-3 py-2 rounded-xl transition-all">
-                  <X className="w-3.5 h-3.5" /> Reject
-                </button>
-              </div>
-            </div>
+        <div className="space-y-2">
+          <p className="text-[10px] font-black text-stone-400 uppercase tracking-widest">Select a reason</p>
+          {REJECT_REASONS.map(r => (
+            <button key={r} onClick={() => setReason(r)}
+              className={`w-full text-left text-xs font-medium px-4 py-2.5 rounded-xl transition-all ${reason === r ? 'text-white border border-red-500/50' : 'text-stone-400 border border-white/8 hover:border-white/20 hover:text-white'}`}
+              style={reason === r ? { background: 'rgba(220,38,38,0.15)' } : { background: 'rgba(255,255,255,0.04)' }}>
+              {r}
+            </button>
           ))}
+          <button onClick={() => setReason('__custom__')}
+            className={`w-full text-left text-xs font-medium px-4 py-2.5 rounded-xl transition-all ${reason === '__custom__' ? 'text-white border border-red-500/50' : 'text-stone-400 border border-white/8 hover:border-white/20 hover:text-white'}`}
+            style={reason === '__custom__' ? { background: 'rgba(220,38,38,0.15)' } : { background: 'rgba(255,255,255,0.04)' }}>
+            Write a custom reason…
+          </button>
+          {reason === '__custom__' && (
+            <textarea
+              value={custom}
+              onChange={e => setCustom(e.target.value)}
+              placeholder="Explain why this application is rejected…"
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none resize-none"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}
+            />
+          )}
         </div>
-      )}
 
-      <div className="flex gap-2 mb-4 flex-wrap">
-        {(['all','pending','approved','rejected','suspended'] as const).map(f => (
-          <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${filter === f ? 'bg-red-600 text-white' : 'glass text-stone-500 hover:text-white'}`}>{f}</button>
-        ))}
-      </div>
-
-      <div className="glass rounded-2xl divide-y divide-white/5 overflow-hidden">
-        <div className="grid grid-cols-[1fr_90px_80px_120px] text-[9px] font-black uppercase tracking-widest text-stone-600 px-5 py-3 bg-black/40">
-          <span>Store</span><span className="text-center">Status</span><span className="text-center">Set Up</span><span className="text-center">Actions</span>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-stone-400 transition hover:text-white" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            Cancel
+          </button>
+          <button
+            onClick={() => { if (finalReason) { onConfirm(finalReason); onClose(); } }}
+            disabled={!finalReason}
+            className="flex-1 py-2.5 rounded-xl text-sm font-black text-white transition disabled:opacity-40"
+            style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)' }}>
+            Reject Store
+          </button>
         </div>
-        {shown.map((s: any) => {
-          const status = s.application_status || (s.is_approved ? 'approved' : 'pending');
-          return (
-            <div key={s.id} className="grid grid-cols-[1fr_90px_80px_120px] items-center px-5 py-3 hover:bg-white/3 transition-colors">
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-white truncate">{s.store_name || 'Unknown'}</p>
-                <p className="text-[10px] text-stone-600 truncate">{s.city || 'Detroit'}, {s.state || 'MI'}</p>
-              </div>
-              <div className="text-center">
-                <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${status === 'approved' ? 'bg-green-500/15 text-green-400' : status === 'rejected' ? 'bg-red-500/15 text-red-400' : status === 'suspended' ? 'bg-orange-500/15 text-orange-400' : 'bg-yellow-500/15 text-yellow-400'}`}>
-                  {status.replace(/_/g, ' ').toUpperCase()}
-                </span>
-              </div>
-              <p className="text-xs text-stone-500 text-center">{s.is_setup_complete ? '✓' : '—'}</p>
-              <div className="flex gap-1.5 justify-center">
-                {status !== 'approved' && <button onClick={() => approveStore(s.id)} className="text-[9px] font-black text-green-400 bg-green-500/10 border border-green-500/20 hover:bg-green-500/20 px-2 py-1 rounded-lg">Approve</button>}
-                {status === 'approved' && <button onClick={() => suspendStore(s.id)} className="text-[9px] font-black text-orange-400 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 px-2 py-1 rounded-lg">Suspend</button>}
-                {status !== 'rejected' && status !== 'approved' && <button onClick={async () => { const r = window.prompt('Reason:'); if (r) rejectStore(s.id, r); }} className="text-[9px] font-black text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 px-2 py-1 rounded-lg">Reject</button>}
-              </div>
-            </div>
-          );
-        })}
-        {shown.length === 0 && <div className="px-5 py-8 text-center text-stone-500 text-sm">No stores in this filter.</div>}
       </div>
     </div>
+  );
+}
+
+// ─── Store Detail Drawer ───────────────────────────────────────────────────────
+
+function StoreDetailDrawer({ store, onApprove, onReject, onSuspend, onClose }: {
+  store: any;
+  onApprove: () => void;
+  onReject: (reason: string) => void;
+  onSuspend: () => void;
+  onClose: () => void;
+}) {
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const status = store.application_status || (store.is_approved ? 'approved' : 'draft');
+
+  const Field = ({ label, value }: { label: string; value?: string | number }) => (
+    <div>
+      <p className="text-[9px] font-black text-stone-500 uppercase tracking-widest mb-0.5">{label}</p>
+      <p className="text-sm text-white font-medium">{value || <span className="text-stone-600">Not provided</span>}</p>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="fixed inset-0 z-40" style={{ background: 'rgba(0,0,0,0.6)' }} onClick={onClose} />
+      <div className="fixed right-0 top-0 bottom-0 z-40 w-full max-w-md flex flex-col overflow-hidden"
+        style={{ background: '#0f0f0f', borderLeft: '1px solid rgba(255,255,255,0.08)' }}>
+
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 border-b border-white/8">
+          <div>
+            <h2 className="text-lg font-black text-white">{store.store_name || 'Unnamed Store'}</h2>
+            <p className="text-xs text-stone-500 mt-0.5">{store.city || 'Detroit'}, {store.state || 'MI'}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-[9px] font-black px-2.5 py-1 rounded-full ${
+              status === 'approved' ? 'bg-green-500/15 text-green-400 border border-green-500/25' :
+              status === 'rejected' ? 'bg-red-500/15 text-red-400 border border-red-500/25' :
+              status === 'suspended' ? 'bg-orange-500/15 text-orange-400 border border-orange-500/25' :
+              'bg-yellow-500/15 text-yellow-400 border border-yellow-500/25'
+            }`}>{status.replace(/_/g, ' ').toUpperCase()}</span>
+            <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center text-stone-500 hover:text-white" style={{ background: 'rgba(255,255,255,0.06)' }}>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+
+          {/* Contact */}
+          <div className="rounded-2xl p-4 space-y-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest">Contact Information</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Owner Name" value={store.first_name ? `${store.first_name} ${store.last_name || ''}`.trim() : store.ownerName} />
+              <Field label="Phone" value={store.phone} />
+              <Field label="Email" value={store.email} />
+              <Field label="SMS Opt-In" value={store.smsOptIn ? 'Yes' : 'No'} />
+            </div>
+          </div>
+
+          {/* Store Details */}
+          <div className="rounded-2xl p-4 space-y-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest">Store Details</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Store Name" value={store.store_name} />
+              <Field label="Business Type" value={store.business_type} />
+              <Field label="Cuisine Type" value={store.cuisine_type} />
+              <Field label="Locations" value={store.locations} />
+            </div>
+            <Field label="Address" value={store.address ? `${store.address}, ${store.city}, ${store.state} ${store.zip || ''}`.trim() : undefined} />
+            {store.social_link && <Field label="Social / Website" value={store.social_link} />}
+          </div>
+
+          {/* Delivery Settings */}
+          <div className="rounded-2xl p-4 space-y-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest">Delivery Settings</p>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Delivery Fee" value={store.delivery_fee != null ? `$${Number(store.delivery_fee).toFixed(2)}` : undefined} />
+              <Field label="Delivery Radius" value={store.delivery_radius != null ? `${store.delivery_radius} miles` : undefined} />
+              <Field label="Minimum Order" value={store.minimum_order != null ? `$${Number(store.minimum_order).toFixed(2)}` : undefined} />
+              <Field label="Avg. ETA" value={store.average_eta != null ? `${store.average_eta} min` : undefined} />
+            </div>
+          </div>
+
+          {/* Setup status */}
+          <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-3">Setup Status</p>
+            <div className="space-y-2">
+              {[
+                { label: 'Store info filled', done: !!store.store_name && !!store.address },
+                { label: 'Contact info submitted', done: !!store.phone },
+                { label: 'Delivery settings configured', done: store.delivery_fee != null },
+                { label: 'Application submitted', done: ['submitted','under_review','approved'].includes(store.application_status) },
+                { label: 'Admin approved', done: store.is_approved === true },
+              ].map(({ label, done }) => (
+                <div key={label} className="flex items-center gap-2.5 text-xs">
+                  <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${done ? 'bg-green-500/20 text-green-400' : 'bg-white/6 text-stone-600'}`}>
+                    {done ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                  </div>
+                  <span className={done ? 'text-stone-300' : 'text-stone-600'}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Rejection reason if rejected */}
+          {store.rejection_reason && (
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.2)' }}>
+              <p className="text-[9px] font-black text-red-400 uppercase tracking-widest mb-2">Rejection Reason</p>
+              <p className="text-sm text-red-300">{store.rejection_reason}</p>
+            </div>
+          )}
+
+          {/* Review notes */}
+          {store.review_notes && store.review_notes !== store.rejection_reason && (
+            <div className="rounded-2xl p-4" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest mb-2">Admin Notes</p>
+              <p className="text-sm text-stone-400">{store.review_notes}</p>
+            </div>
+          )}
+
+          {/* Timestamps */}
+          <div className="text-[10px] text-stone-700 space-y-1">
+            {store.createdAt && <p>Applied: {new Date(store.createdAt?.seconds ? store.createdAt.seconds * 1000 : store.createdAt).toLocaleString()}</p>}
+            {store.reviewedAt && <p>Reviewed: {new Date(store.reviewedAt).toLocaleString()}</p>}
+            <p>Store ID: {store.id}</p>
+          </div>
+        </div>
+
+        {/* Action bar */}
+        <div className="p-4 border-t border-white/8 space-y-2">
+          {status !== 'approved' && (
+            <button onClick={() => { onApprove(); onClose(); }}
+              className="w-full py-3 rounded-xl font-black text-sm text-white flex items-center justify-center gap-2 transition"
+              style={{ background: 'linear-gradient(135deg,#16a34a,#15803d)' }}>
+              <CheckCircle2 className="w-4 h-4" /> Approve & Publish Store
+            </button>
+          )}
+          {status === 'approved' && (
+            <button onClick={() => { onSuspend(); onClose(); }}
+              className="w-full py-3 rounded-xl font-black text-sm text-white flex items-center justify-center gap-2 transition"
+              style={{ background: 'linear-gradient(135deg,#ea580c,#c2410c)' }}>
+              <AlertTriangle className="w-4 h-4" /> Suspend Store
+            </button>
+          )}
+          {status !== 'approved' && (
+            <button onClick={() => setShowRejectModal(true)}
+              className="w-full py-3 rounded-xl font-black text-sm text-red-400 flex items-center justify-center gap-2 transition"
+              style={{ background: 'rgba(220,38,38,0.1)', border: '1px solid rgba(220,38,38,0.25)' }}>
+              <XCircle className="w-4 h-4" /> Reject Application
+            </button>
+          )}
+        </div>
+      </div>
+
+      {showRejectModal && (
+        <RejectModal
+          store={store}
+          onConfirm={reason => onReject(reason)}
+          onClose={() => setShowRejectModal(false)}
+        />
+      )}
+    </>
+  );
+}
+
+// ─── Restaurants Tab ──────────────────────────────────────────────────────────
+
+function RestaurantsTab({ stores, pending, approveStore, rejectStore, suspendStore }: any) {
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'suspended'>('pending');
+  const [selected, setSelected] = useState<any | null>(null);
+
+  const shown = filter === 'all' ? stores : stores.filter((s: any) => {
+    const status = s.application_status || (s.is_approved ? 'approved' : 'pending');
+    return status === filter;
+  });
+
+  const statusColor = (status: string) => {
+    if (status === 'approved')  return 'bg-green-500/15 text-green-400 border-green-500/25';
+    if (status === 'rejected')  return 'bg-red-500/15 text-red-400 border-red-500/25';
+    if (status === 'suspended') return 'bg-orange-500/15 text-orange-400 border-orange-500/25';
+    return 'bg-yellow-500/15 text-yellow-400 border-yellow-500/25';
+  };
+
+  return (
+    <>
+      <div>
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h1 className="text-2xl font-black text-white">Restaurants</h1>
+            <p className="text-sm text-stone-500">{stores.length} total · {pending.length} awaiting review</p>
+          </div>
+        </div>
+
+        {/* Filter tabs */}
+        <div className="flex gap-2 mb-5 flex-wrap">
+          {(['pending', 'approved', 'rejected', 'suspended', 'all'] as const).map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all flex items-center gap-1.5 ${filter === f ? 'bg-red-600 text-white' : 'text-stone-500 hover:text-white'}`}
+              style={filter !== f ? { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}}>
+              {f}
+              {f === 'pending' && pending.length > 0 && (
+                <span className="bg-orange-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">{pending.length}</span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* Store list */}
+        <div className="space-y-3">
+          {shown.length === 0 && (
+            <div className="py-16 text-center text-stone-500 text-sm rounded-2xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              {filter === 'pending' ? 'No pending applications — you\'re all caught up! 🎉' : `No ${filter} stores.`}
+            </div>
+          )}
+
+          {shown.map((s: any) => {
+            const status = s.application_status || (s.is_approved ? 'approved' : 'draft');
+            const setupDone = !!s.store_name && !!s.address && !!s.phone;
+
+            return (
+              <button key={s.id} onClick={() => setSelected(s)} className="w-full text-left rounded-2xl p-4 transition-all hover:scale-[1.01]"
+                style={{ background: status === 'pending' || status === 'submitted' || status === 'under_review' ? 'rgba(245,158,11,0.05)' : 'rgba(255,255,255,0.04)', border: `1px solid ${status === 'pending' || status === 'submitted' || status === 'under_review' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.08)'}` }}>
+                <div className="flex items-center gap-4">
+                  {/* Avatar */}
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-xl font-black text-white"
+                    style={{ background: 'rgba(220,38,38,0.2)', border: '1px solid rgba(220,38,38,0.3)' }}>
+                    {(s.store_name || '?')[0].toUpperCase()}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-black text-white">{s.store_name || 'Unnamed Store'}</p>
+                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border ${statusColor(status)}`}>
+                        {status.replace(/_/g, ' ').toUpperCase()}
+                      </span>
+                      {!setupDone && <span className="text-[8px] font-black px-2 py-0.5 rounded-full border border-stone-700 text-stone-500">INCOMPLETE</span>}
+                    </div>
+                    <p className="text-[11px] text-stone-500 mt-0.5 truncate">
+                      {s.address ? `${s.address}, ` : ''}{s.city || 'Detroit'}, {s.state || 'MI'}
+                      {s.phone && ` · ${s.phone}`}
+                    </p>
+                  </div>
+
+                  {/* Quick approve for pending */}
+                  {(status === 'submitted' || status === 'under_review' || status === 'pending' || status === 'draft') && (
+                    <div className="flex gap-2 shrink-0" onClick={e => e.stopPropagation()}>
+                      <button onClick={() => approveStore(s.id)}
+                        className="text-[10px] font-black text-green-400 px-3 py-1.5 rounded-xl transition hover:scale-105"
+                        style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.25)' }}>
+                        ✓ Approve
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Suspend for approved */}
+                  {status === 'approved' && (
+                    <div className="flex gap-2 shrink-0" onClick={e => e.stopPropagation()}>
+                      <button onClick={() => suspendStore(s.id)}
+                        className="text-[10px] font-black text-orange-400 px-3 py-1.5 rounded-xl transition hover:scale-105"
+                        style={{ background: 'rgba(234,88,12,0.1)', border: '1px solid rgba(234,88,12,0.2)' }}>
+                        Suspend
+                      </button>
+                    </div>
+                  )}
+
+                  <ChevronRight className="w-4 h-4 text-stone-600 shrink-0" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Detail drawer */}
+      {selected && (
+        <StoreDetailDrawer
+          store={selected}
+          onApprove={() => { approveStore(selected.id); setSelected(null); }}
+          onReject={(reason) => { rejectStore(selected.id, reason); setSelected(null); }}
+          onSuspend={() => { suspendStore(selected.id); setSelected(null); }}
+          onClose={() => setSelected(null)}
+        />
+      )}
+    </>
   );
 }
 

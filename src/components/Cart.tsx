@@ -98,14 +98,8 @@ export function Cart({ items, onUpdateQuantity, onRemoveItem, onCheckout, onCont
                    <div className="text-xs font-bold text-stone-900 flex justify-between">
                      <span>Fulfillment:</span>
                      <span className="capitalize">{(item.delivery_type || '').replace('-', ' ')}</span>
-                   </div>
-                   {item.delivery_type !== 'store-delivery' && item.delivery_type !== 'pickup' && (
-                     <div className="text-[10px] text-stone-500 font-medium">
-                        {item.delivery_type === 'third-party' && "This store does not offer direct delivery. Third-party delivery fees may apply."}
-                        {(item.delivery_type === 'uber-direct' || item.delivery_type === 'doordash-drive') && "White-label delivery powered by a third-party driver at a fixed price per mile."}
-                     </div>
-                   )}
-                 </div>
+                    </div>
+                  </div>
                </div>
                                <div className="flex sm:flex-col items-center justify-between border-t sm:border-t-0 sm:border-l border-stone-100 pt-4 sm:pt-0 sm:pl-4">
                  <div className="flex items-center gap-3 bg-stone-100 rounded-xl p-1">

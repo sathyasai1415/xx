@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Bell, BellOff, Tag, Zap, TrendingDown, Star, Clock,
   Check, Trash2, ChevronRight, Settings, Toggle,
   ShoppingBag, Gift, MapPin, X, Plus,
 } from 'lucide-react';
+import {
+  collection, query, where, onSnapshot, orderBy,
+  doc, updateDoc, deleteDoc, writeBatch, serverTimestamp
+} from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
+import { useApp } from '../store/AppContext';
+import { useAuth } from '../store/AuthContext';
+import { registerFcmToken, disableFcmToken } from '../lib/fcm';
 
 interface Notification {
   id: string;
@@ -67,19 +75,146 @@ function ToggleSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 export function NotificationsView({ onNavigate }: NotificationsViewProps) {
+  const { showToast } = useApp();
+  const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState<'inbox' | 'settings'>('inbox');
-  const [notifs, setNotifs] = useState<Notification[]>(MOCK_NOTIFS);
+  const [notifs, setNotifs] = useState<Notification[]>([]);
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     priceDrops: true, flashDeals: true, weeklyDeals: false,
     orderUpdates: true, rewardPoints: true, newStores: false, weeklyRecap: true,
   });
 
+  const [notifOn, setNotifOn] = useState<boolean>(() => {
+    const pref = typeof localStorage !== 'undefined' ? localStorage.getItem('miSliceNotifOn') : null;
+    if (pref !== null) return pref === '1';
+    return typeof Notification !== 'undefined' && Notification.permission === 'granted';
+  });
+  const [notifBusy, setNotifBusy] = useState(false);
+
+  const toggleNotifications = useCallback(async () => {
+    if (notifBusy) return;
+    if (typeof Notification === 'undefined') {
+      showToast('This browser does not support notifications.');
+      return;
+    }
+    setNotifBusy(true);
+    try {
+      if (notifOn) {
+        // Turn OFF
+        await disableFcmToken();
+        setNotifOn(false);
+        localStorage.setItem('miSliceNotifOn', '0');
+        showToast('🔕 Notifications turned off.');
+      } else {
+        // Turn ON
+        if (Notification.permission === 'denied') {
+          showToast('Notifications are blocked — allow them in your browser settings.');
+          return;
+        }
+        await registerFcmToken();
+        const ok = Notification.permission === 'granted';
+        setNotifOn(ok);
+        localStorage.setItem('miSliceNotifOn', ok ? '1' : '0');
+        showToast(ok ? '🔔 Notifications turned on!' : 'Notifications not enabled.');
+      }
+    } finally {
+      setNotifBusy(false);
+    }
+  }, [notifOn, notifBusy, showToast]);
+
+  useEffect(() => {
+    if (!profile) {
+      setNotifs(MOCK_NOTIFS);
+      return;
+    }
+
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', profile.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const loadedNotifs = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          type: data.type || 'deal',
+          emoji: data.emoji || '🍕',
+          title: data.title || 'Notification',
+          body: data.message || data.body || '',
+          time: data.createdAt ? new Date(data.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+          read: data.read || false,
+        } as Notification;
+      });
+      setNotifs(loadedNotifs);
+    }, (err) => {
+      console.warn("Failed to subscribe to notifications in Firestore:", err);
+      setNotifs(MOCK_NOTIFS);
+    });
+
+    return () => unsubscribe();
+  }, [profile]);
+
   const unreadCount = notifs.filter(n => !n.read).length;
 
-  const markRead = (id: string) => setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-  const markAllRead = () => setNotifs(prev => prev.map(n => ({ ...n, read: true })));
-  const dismiss = (id: string) => setNotifs(prev => prev.filter(n => n.id !== id));
-  const clearAll = () => setNotifs([]);
+  const markRead = async (id: string) => {
+    if (!profile) {
+      setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      return;
+    }
+    try {
+      await updateDoc(doc(db, 'notifications', id), { read: true });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const markAllRead = async () => {
+    if (!profile) {
+      setNotifs(prev => prev.map(n => ({ ...n, read: true })));
+      return;
+    }
+    try {
+      const batch = writeBatch(db);
+      for (const notif of notifs) {
+        if (!notif.read) {
+          batch.update(doc(db, 'notifications', notif.id), { read: true });
+        }
+      }
+      await batch.commit();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const dismiss = async (id: string) => {
+    if (!profile) {
+      setNotifs(prev => prev.filter(n => n.id !== id));
+      return;
+    }
+    try {
+      await deleteDoc(doc(db, 'notifications', id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const clearAll = async () => {
+    if (!profile) {
+      setNotifs([]);
+      return;
+    }
+    try {
+      const batch = writeBatch(db);
+      for (const notif of notifs) {
+        batch.delete(doc(db, 'notifications', notif.id));
+      }
+      await batch.commit();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const togglePref = (key: string) => setPrefs(p => ({ ...p, [key]: !p[key] }));
 
   const TYPE_ICON: Record<Notification['type'], { icon: React.FC<any>; color: string }> = {
@@ -104,7 +239,35 @@ export function NotificationsView({ onNavigate }: NotificationsViewProps) {
             )}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          {/* Notifications on/off toggle */}
+          <button
+            onClick={toggleNotifications}
+            disabled={notifBusy}
+            aria-label={notifOn ? 'Notifications on — tap to turn off' : 'Notifications off — tap to turn on'}
+            className="relative flex items-center gap-2 h-9 px-3 rounded-full transition-all disabled:opacity-60"
+            style={{
+              background: notifOn ? 'rgba(16,185,129,0.18)' : 'rgba(124,58,237,0.18)',
+              border: `1px solid ${notifOn ? 'rgba(16,185,129,0.5)' : 'rgba(139,92,246,0.35)'}`,
+              color: notifOn ? '#6EE7B7' : '#C4B5FD',
+            }}
+          >
+            {notifOn
+              ? <Bell className="w-3.5 h-3.5 shrink-0" />
+              : <BellOff className="w-3.5 h-3.5 shrink-0" />}
+            <span className="hidden sm:inline text-xs font-bold">{notifOn ? 'On' : 'Off'}</span>
+            {/* mini switch track */}
+            <span
+              className="relative w-7 h-4 rounded-full transition-colors shrink-0"
+              style={{ background: notifOn ? 'rgba(16,185,129,0.55)' : 'rgba(255,255,255,0.18)' }}
+            >
+              <span
+                className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all"
+                style={{ left: notifOn ? '14px' : '2px' }}
+              />
+            </span>
+          </button>
+
           {unreadCount > 0 && (
             <button onClick={markAllRead} className="text-xs font-bold text-stone-400 hover:text-white bg-white/5 border border-white/10 px-3 py-1.5 rounded-xl transition-colors">
               Mark all read

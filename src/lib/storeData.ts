@@ -121,5 +121,38 @@ export const STORES: StoreData[] = [
       { id: "bp-detroit", name: "Detroit Deep Dish", image: "/images/pizzas/meat-lovers.jpg", price: 19.99, description: "Thick crust, brick cheese, pepperoni, tangy tomato stripe." },
       { id: "bp-pep", name: "Pepperoni Blaze", image: "/images/pizzas/pepperoni.jpg", price: 14.99, description: "Triple pepperoni, hot honey drizzle, mozzarella." }
     ]
+  },
+  {
+    id: "rambos-pizza",
+    name: "Rambo's Pizza",
+    logoUrl: "/images/stores/rambos-pizza.png",
+    brandColor: "red",
+    backgroundColor: "red",
+    address: "777 Action Way, Detroit, MI 48201",
+    distance: "0.5 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 4.8,
+    openNow: true,
+    menuItems: [
+      { id: "rambos-pepperoni", name: "Classic Pepperoni", image: "/images/pizzas/pepperoni.jpg", price: 15.99, description: "Action-packed pepperoni with bold tomato sauce." },
+      { id: "rambos-cheese", name: "Classic Cheese", image: "/images/pizzas/cheese.jpg", price: 12.99, description: "Rich layers of premium mozzarella on a golden crust." }
+    ]
+  },
+  {
+    id: "zumbos-pizza",
+    name: "Zumbo's Pizza",
+    logoUrl: "/images/stores/zumbos-pizza.png",
+    brandColor: "red",
+    backgroundColor: "red",
+    address: "999 Zumbo Way, Detroit, MI 48201",
+    distance: "0.6 miles",
+    deliveryAvailable: true,
+    deliveryProvider: "store",
+    rating: 4.9,
+    openNow: true,
+    menuItems: [
+      { id: "zumbo-chicken-parm", name: "Chicken Parmesan Pizza", image: "/images/pizzas/chicken.jpg", price: 18.99, description: "Crispy chicken, rich marinara, loaded with mozzarella and grated parmesan cheese." }
+    ]
   }
 ];

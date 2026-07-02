@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sun, Moon, ShoppingCart, Heart, Pizza, Check, Star } from 'lucide-react';
+import { Sun, Moon, ShoppingCart, Heart, Pizza, Check, Star, ShoppingBag } from 'lucide-react';
 import { gsap } from 'gsap';
 import { useApp } from '../store/AppContext';
 
@@ -12,6 +12,7 @@ interface TopNavProps {
   onFavoritesClick: () => void;
   onFavoriteStoresClick: () => void;
   onLogoClick: () => void;
+  onOrdersClick: () => void;
 }
 
 function NavBadge({ count }: { count: number }) {
@@ -170,11 +171,13 @@ function PillButton({
   );
 }
 
-export function TopNav({ isLight, onThemeChange, cartItemCount, onCartClick, onFavoritesClick, onFavoriteStoresClick, onLogoClick }: TopNavProps) {
-  const { state } = useApp();
+export function TopNav({ isLight, onThemeChange, cartItemCount, onCartClick, onFavoritesClick, onFavoriteStoresClick, onLogoClick, onOrdersClick }: TopNavProps) {
+  const { state, showToast } = useApp();
   const favoriteCount = state.favoriteStoreIds.size;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+
 
   useEffect(() => {
     if (!dropdownOpen) return;
@@ -230,6 +233,12 @@ export function TopNav({ isLight, onThemeChange, cartItemCount, onCartClick, onF
             </span>
           </PillButton>
 
+          {/* Orders pill */}
+          <PillButton onClick={onOrdersClick} label="Orders" className="h-9 px-3.5 text-xs">
+            <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden sm:inline text-xs font-bold">Orders</span>
+          </PillButton>
+
           {/* Cart pill */}
           <div className="relative">
             <PillButton onClick={onCartClick} label="Cart" className="h-9 px-3.5 text-xs">
@@ -250,6 +259,7 @@ export function TopNav({ isLight, onThemeChange, cartItemCount, onCartClick, onF
             </PillButton>
             <NavBadge count={cartItemCount} />
           </div>
+
 
           {/* Theme pill */}
           <div className="relative" ref={dropdownRef}>

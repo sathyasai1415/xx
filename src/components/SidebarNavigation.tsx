@@ -20,6 +20,7 @@ interface SidebarProps {
   onStoreOwnerLogout?: () => void;
   customerName?: string;
   onCustomerLogout?: () => void;
+  isDemo?: boolean;
 }
 
 const DEALS_HUB_VIEWS = new Set(['deals-hub', 'local-deals', 'rewards', 'notifications']);
@@ -41,7 +42,7 @@ const STORE_NAV = [
 export function SidebarNavigation({
   currentView, onNavigate, isOpen, setIsOpen,
   isStoreOwner, storeOwnerName, onStoreOwnerLogout,
-  customerName, onCustomerLogout,
+  customerName, onCustomerLogout, isDemo,
 }: SidebarProps) {
   const [logoHover, setLogoHover] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -272,7 +273,7 @@ export function SidebarNavigation({
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#fca5a5'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(255,255,255,0.3)'; }}
               >
-                <LogOut className="w-3.5 h-3.5" /> Sign Out
+                <LogOut className="w-3.5 h-3.5" /> {isDemo ? 'Exit Demo' : 'Sign Out'}
               </button>
             </>
           )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, Smartphone, CreditCard, Truck, ShoppingBag, AlertCircle } from 'lucide-react';
+import { Globe, CreditCard, Truck, ShoppingBag } from 'lucide-react';
 
 export function OnlineOrderingTab() {
   const [settings, setSettings] = useState({
@@ -108,20 +108,6 @@ export function OnlineOrderingTab() {
           ))}
         </div>
 
-        {/* 3rd party platforms */}
-        <div className="bg-black/40 border border-white/10 rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-3">
-            <Smartphone className="w-4 h-4 text-stone-500" />
-            <p className="text-xs font-black uppercase tracking-widest text-stone-500">3rd Party Platforms</p>
-          </div>
-          <Toggle k="uberEats" label="Uber Eats"  desc="Sync orders from Uber Eats" />
-          <Toggle k="doordash" label="DoorDash"   desc="Sync orders from DoorDash" />
-          <Toggle k="grubhub"  label="GrubHub"    desc="Sync orders from GrubHub" />
-          <div className="mt-3 flex items-start gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3">
-            <AlertCircle className="w-3.5 h-3.5 text-yellow-400 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-yellow-300/70">3rd party orders are subject to their platform fee in addition to MiSlice's fee.</p>
-          </div>
-        </div>
 
         {/* Payments */}
         <div className="bg-black/40 border border-white/10 rounded-2xl p-5">

@@ -32,6 +32,8 @@ interface AuthCtxValue {
     fullName: string,
     storeName?: string,
   ) => Promise<void>;
+  /** Sign-in only (no auto-register). Verifies the account is a platform admin. */
+  loginAsAdmin: (email: string, password: string) => Promise<void>;
   /** @deprecated use loginOrRegister */
   loginLocal: (profile: UserProfile) => Promise<void>;
   logout: () => Promise<void>;
@@ -41,10 +43,20 @@ interface AuthCtxValue {
 
 const AuthCtx = createContext<AuthCtxValue | null>(null);
 
+// Normalize a raw role string from Firestore into one of our canonical roles.
+// Handles manual edits like "Admin", "ADMIN", "Store Owner", etc.
+function normalizeRole(raw: unknown): UserProfile['role'] {
+  const r = String(raw ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+  if (r === 'admin') return 'admin';
+  if (r === 'store_owner' || r === 'storeowner' || r === 'owner') return 'store_owner';
+  return 'customer';
+}
+
 async function readProfile(uid: string): Promise<UserProfile | null> {
   const snap = await getDoc(doc(db, 'users', uid));
   if (!snap.exists()) return null;
-  return snap.data() as UserProfile;
+  const data = snap.data() as UserProfile;
+  return { ...data, role: normalizeRole(data.role) };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -76,6 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     storeName?: string,
   ) => {
     let firebaseUser;
+    let isNewUser = false;
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       firebaseUser = cred.user;
@@ -94,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const cred = await createUserWithEmailAndPassword(auth, email, password);
           firebaseUser = cred.user;
+          isNewUser = true;
           await fbUpdateProfile(firebaseUser, { displayName: fullName });
         } catch (regErr: any) {
           if (regErr.code === 'auth/email-already-in-use') {
@@ -108,9 +122,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const uid = firebaseUser.uid;
-    const slug = (role === 'store_owner' && storeName ? storeName : fullName)
-      .trim().toLowerCase().replace(/\s+/g, '-');
-    const storeId = role === 'store_owner' ? slug : undefined;
+
+    // If the account already has a profile, HONOR it — never downgrade an
+    // existing admin/store_owner back to the role picked on the login form.
+    if (!isNewUser) {
+      const existing = await readProfile(uid);
+      if (existing) {
+        setProfile(existing);
+        return;
+      }
+    }
+
+    // Brand-new account — create profile with the requested role.
+    // storeId always equals the owner's uid — consistent with security rules.
+    const storeId = role === 'store_owner' ? uid : undefined;
 
     const profileDoc: UserProfile = {
       uid,
@@ -120,12 +145,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ...(storeId && { storeId, storeName }),
     };
 
-    // Write user profile doc (merge so existing fields survive)
-    await setDoc(doc(db, 'users', uid), { ...profileDoc, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(doc(db, 'users', uid), { ...profileDoc, createdAt: serverTimestamp() }, { merge: true });
 
-    // Create store document for new store owners
-    if (role === 'store_owner' && storeId) {
-      const storeRef = doc(db, 'stores', storeId);
+    // Create store document for new store owners (keyed by uid)
+    if (role === 'store_owner') {
+      const storeRef = doc(db, 'stores', uid);
       const storeSnap = await getDoc(storeRef);
       if (!storeSnap.exists()) {
         await setDoc(storeRef, {
@@ -137,13 +161,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           accepting_orders: false,
           createdAt: serverTimestamp(),
         });
-      } else if (!storeSnap.data().ownerUid) {
-        // Backfill ownerUid if missing
-        await setDoc(storeRef, { ownerUid: uid }, { merge: true });
       }
     }
 
     setProfile(profileDoc);
+  }, []);
+
+  // ── Admin sign-in (no auto-register) ────────────────────────────────────────
+  const loginAsAdmin = useCallback(async (email: string, password: string) => {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const p = await readProfile(cred.user.uid);
+    if (!p || p.role !== 'admin') {
+      await signOut(auth);
+      const e: any = new Error('This account is not an administrator.');
+      e.code = 'auth/not-admin';
+      throw e;
+    }
+    setProfile(p);
   }, []);
 
   // Legacy shim — some components may still call loginLocal directly
@@ -171,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isStoreOwner: profile?.role === 'store_owner',
       isAdmin: profile?.role === 'admin',
       loginOrRegister,
+      loginAsAdmin,
       loginLocal,
       logout,
       refreshProfile,

@@ -1,5 +1,5 @@
 import { getApp } from 'firebase/app';
-import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { getMessaging, getToken, onMessage, deleteToken } from 'firebase/messaging';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
@@ -31,9 +31,39 @@ export async function registerFcmToken(): Promise<void> {
     const messaging = getMessagingInstance();
     const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: sw });
     if (!token) return;
-    await setDoc(doc(db, 'users', uid), { fcmToken: token, updatedAt: serverTimestamp() }, { merge: true });
+    await setDoc(
+      doc(db, 'users', uid),
+      { fcmToken: token, notificationsEnabled: true, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
   } catch (err) {
     console.warn('FCM token registration failed:', err);
+  }
+}
+
+/**
+ * Turn notifications OFF: clears the saved token so broadcasts/order pushes skip
+ * this user, and best-effort deletes the browser token. Browser permission
+ * itself can only be revoked by the user in site settings, but with no token
+ * stored the app will not send to them.
+ */
+export async function disableFcmToken(): Promise<void> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  try {
+    await setDoc(
+      doc(db, 'users', uid),
+      { fcmToken: '', notificationsEnabled: false, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
+    try {
+      const messaging = getMessagingInstance();
+      await deleteToken(messaging);
+    } catch {
+      /* token may already be gone — non-fatal */
+    }
+  } catch (err) {
+    console.warn('Disabling FCM failed:', err);
   }
 }
 

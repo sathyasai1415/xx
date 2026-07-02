@@ -108,6 +108,7 @@ export async function signUpStoreOwner(params: {
     // Provision the store document the owner will manage.
     await setDoc(doc(db, 'stores', uid), {
       ownerId: uid,
+      ownerUid: uid,   // matches Firestore security rules
       store_name: params.storeName.trim(),
       city: 'Detroit',
       state: 'MI',

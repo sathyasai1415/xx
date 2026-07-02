@@ -7,3 +7,5 @@ coverage/
 .env*
 !.env.example
 serviceAccountKey.json
+.firebase/
+functions/lib/

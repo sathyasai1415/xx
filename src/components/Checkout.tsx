@@ -15,7 +15,7 @@ export function Checkout({ cart, totalToCharge, onCancel, onConfirmOrder }: Chec
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
-  const isDelivery = cart.some(item => ['store-delivery', 'third-party', 'doordash-drive', 'uber-direct'].includes(item.delivery_type));
+  const isDelivery = cart.some(item => ['store-delivery', 'store'].includes(item.delivery_type));
 
   const handlePay = async () => {
     if (isDelivery && !address.trim()) {

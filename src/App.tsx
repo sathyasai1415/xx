@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import './utils/debug';
 import { AppProvider } from './store/AppContext';
 import { PremiumPizzaBuilder } from './components/PremiumPizzaBuilder';
@@ -34,9 +34,11 @@ import { useAuth } from './store/AuthContext';
 import { Loader2 } from 'lucide-react';
 import {
   getUserData, saveUserCart, saveUserSavedPizzas,
-  saveCustomerOrder, getCustomerOrders,
+  saveCustomerOrder, watchCustomerOrders,
 } from './lib/db';
 import { registerFcmToken, listenForMessages } from './lib/fcm';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from './lib/firebase';
 import Lightfall from './components/Lightfall';
 import DotField from './components/DotField';
 import TextCursor from './components/TextCursor';
@@ -213,6 +215,18 @@ export default function App() {
     setTimeout(() => setToast(''), 3000);
   };
 
+  // Big, bright in-app push popup (shown when an FCM message arrives while the
+  // tab is focused — the browser suppresses the OS notification in that case).
+  const [pushPopup, setPushPopup] = useState<{ title: string; body: string } | null>(null);
+  const pushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showPushPopup = (title: string, body: string) => {
+    setPushPopup({ title, body });
+    if (pushTimer.current) clearTimeout(pushTimer.current);
+    pushTimer.current = setTimeout(() => setPushPopup(null), 7000);
+    // buzz the device if supported
+    try { navigator.vibrate?.([120, 60, 120]); } catch { /* no-op */ }
+  };
+
   // Cart — all local/localStorage, no auth needed
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -262,22 +276,29 @@ export default function App() {
     showToast('Signed out.');
   };
 
-  // On login, hydrate cart, saved pizzas and order history from Firestore.
+  // On login, hydrate cart + saved pizzas from Firestore (one-time read).
   useEffect(() => {
     if (!uid) return;
     let active = true;
     (async () => {
       try {
-        const [data, orders] = await Promise.all([getUserData(uid), getCustomerOrders(uid)]);
+        const data = await getUserData(uid);
         if (!active) return;
         if (Array.isArray(data.cart)) setCart(data.cart as CartItem[]);
         if (Array.isArray(data.savedPizzas)) setFavorites(data.savedPizzas as typeof favorites);
-        setPastOrders(orders as Order[]);
       } catch (e) {
         console.error('Failed to load user data from Firestore', e);
       }
     })();
     return () => { active = false; };
+  }, [uid]);
+
+  // Live order history — fires instantly from the local cache, then pushes
+  // real-time updates as the store advances each order's status.
+  useEffect(() => {
+    if (!uid) return;
+    const unsub = watchCustomerOrders(uid, (orders) => setPastOrders(orders as Order[]));
+    return unsub;
   }, [uid]);
 
   // Show video intro once per customer login session (real or demo).
@@ -303,7 +324,38 @@ export default function App() {
   useEffect(() => {
     if (!uid) return;
     registerFcmToken().catch(() => {});
-    const unsub = listenForMessages((title, body) => showToast(`${title}: ${body}`));
+    const unsub = listenForMessages((title, body) => showPushPopup(title, body));
+    return unsub;
+  }, [uid]);
+
+  // Real-time Firestore notifications listener for home-screen popups
+  const shownNotifIds = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!uid) return;
+
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', uid)
+    );
+
+    const unsub = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added' || change.type === 'modified') {
+          const data = change.doc.data();
+          const notifId = change.doc.id;
+
+          // Trigger popup if the notification is unread and has not been shown in this session
+          if (data.read === false && !shownNotifIds.current.has(notifId)) {
+            shownNotifIds.current.add(notifId);
+            showPushPopup(data.title || 'New Alert', data.message || data.body || '');
+          }
+        }
+      });
+    }, (err) => {
+      console.warn('Firestore notifications listener failed in App.tsx', err);
+    });
+
     return unsub;
   }, [uid]);
 
@@ -549,6 +601,56 @@ export default function App() {
           />
         </div>
       )}
+      {/* Bright in-app push popup (foreground FCM message) */}
+      <AnimatePresence>
+        {pushPopup && (
+          <motion.button
+            key="push-popup"
+            initial={{ opacity: 0, y: -80, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -60, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+            onClick={() => setPushPopup(null)}
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] w-[92%] max-w-md text-left rounded-3xl overflow-hidden"
+            style={{
+              background: 'linear-gradient(135deg, #ff2d55, #ff6b00 55%, #ffb300)',
+              boxShadow: '0 20px 60px -10px rgba(255,45,85,0.7), 0 0 0 3px rgba(255,255,255,0.25) inset, 0 0 40px rgba(255,107,0,0.6)',
+            }}
+          >
+            {/* animated shine sweep */}
+            <motion.span
+              aria-hidden
+              initial={{ x: '-120%' }}
+              animate={{ x: '120%' }}
+              transition={{ duration: 1.1, repeat: Infinity, repeatDelay: 0.6, ease: 'easeInOut' }}
+              className="absolute inset-y-0 w-1/3 pointer-events-none"
+              style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)' }}
+            />
+            <div className="relative flex items-center gap-4 px-5 py-4">
+              <motion.div
+                animate={{ rotate: [0, -12, 12, -8, 0], scale: [1, 1.15, 1] }}
+                transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 0.8 }}
+                className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
+                style={{ background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(4px)' }}
+              >
+                🍕
+              </motion.div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-black text-lg leading-tight drop-shadow"
+                   style={{ textShadow: '0 2px 8px rgba(0,0,0,0.35)' }}>
+                  {pushPopup.title}
+                </p>
+                <p className="text-white/95 text-sm font-semibold leading-snug mt-0.5"
+                   style={{ textShadow: '0 1px 6px rgba(0,0,0,0.3)' }}>
+                  {pushPopup.body}
+                </p>
+              </div>
+              <span className="text-white/80 text-2xl font-black leading-none shrink-0">×</span>
+            </div>
+          </motion.button>
+        )}
+      </AnimatePresence>
+
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] clay bg-white text-stone-800 text-sm font-bold px-6 py-3 rounded-2xl animate-in fade-in slide-in-from-bottom-2 duration-300 whitespace-nowrap">
@@ -564,6 +666,7 @@ export default function App() {
         onFavoritesClick={() => setView('saved-pizzas')}
         onFavoriteStoresClick={() => setView('favorite-stores')}
         onLogoClick={() => setView('home')}
+        onOrdersClick={() => setView('orders')}
       />
 
 
@@ -577,7 +680,8 @@ export default function App() {
         storeOwnerName={storeOwnerName}
         onStoreOwnerLogout={handleSignOut}
         customerName={customerName}
-        onCustomerLogout={handleSignOut}
+        onCustomerLogout={customerDemoMode ? () => setCustomerDemoMode(false) : handleSignOut}
+        isDemo={customerDemoMode}
       />
 
       <main className={`flex-1 lg:pl-64 flex flex-col min-h-screen transition-all duration-300 relative z-10 ${view === 'profile' ? 'bg-white' : ''}`}>
@@ -842,7 +946,7 @@ export default function App() {
                         onClick={() => setDeliveryType(type)}
                         className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${deliveryType === type ? 'bg-white/20 text-white shadow-sm' : 'text-white/40 hover:text-white'}`}
                       >
-                        {type === 'auto' ? 'Best Match' : type === 'store-delivery' ? 'Store Delivery' : 'Pickup'}
+                        {type === 'auto' ? 'Best Option' : type === 'store-delivery' ? 'Store Delivery' : 'In-Store Pickup'}
                       </button>
                     ))}
                   </div>

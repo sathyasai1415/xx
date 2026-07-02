@@ -11,6 +11,7 @@ import BorderGlow from './BorderGlow';
 
 // ── Mock deals shown when Firebase has no data ────────────────────────────────
 const MOCK_DEALS: LocalDeal[] = [
+  { id: 'm-rambo', store_id: 'rambos-pizza',  store_name: "Rambo's Pizza",      title: '4 Pizzas for $3',                     description: 'Action-packed flavor! Get 4 large pizzas with your choice of toppings for just $3.', original_price: 60.00, discounted_price: 3.00, image_url: '', start_date: '', end_date: '', is_active: true, delivery_type: 'pickup',         updated_at: '', distance: 0.5, brand_color: '#FF3B30' },
   { id: 'm1', store_id: 'buntys-pizza',      store_name: "Bunty's Pizza",      title: '2 Large Pizzas for $26',              description: 'Any 2 large pizzas with up to 3 toppings each. Mix and match!',                 original_price: 31.98, discounted_price: 26.00, image_url: '', start_date: '', end_date: '', is_active: true, delivery_type: 'store-delivery', updated_at: '', distance: 0.4, brand_color: '#EA580C' },
   { id: 'm2', store_id: 'shamz-pizza',        store_name: 'Shamz Pizza',        title: 'Free Delivery Fridays',               description: 'Every Friday — free store delivery on orders over $20.',                         original_price: 2.99,  discounted_price: 0.00,  image_url: '', start_date: '', end_date: '', is_active: true, delivery_type: 'store-delivery', updated_at: '', distance: 1.2, brand_color: '#E63946' },
   { id: 'm3', store_id: 'motor-city-slice',   store_name: 'Motor City Slice',   title: 'Student Deal — Large Pizza $12',      description: 'Show your Michigan ID and get any large pizza for $12. Any toppings.',            original_price: 14.99, discounted_price: 12.00, image_url: '', start_date: '', end_date: '', is_active: true, delivery_type: 'pickup',         updated_at: '', distance: 2.5, brand_color: '#F4A261' },
@@ -114,7 +115,6 @@ function AlertPreferences() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function LocalDeals({ onAddToCart }: { onAddToCart: (item: Omit<CartItem, 'id'>, redirect: boolean) => void }) {
-  const [activeTab, setActiveTab] = useState<'deals' | 'preferences'>('deals');
   const [deals, setDeals] = useState<LocalDeal[]>([]);
   const [locationError, setLocationError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -159,56 +159,25 @@ export function LocalDeals({ onAddToCart }: { onAddToCart: (item: Omit<CartItem,
   }, []);
 
   return (
-    <div className="w-full max-w-5xl mx-auto z-10 relative pt-6 pb-16">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            <Tag className="w-6 h-6 text-red-400" />
-            Deals & Alerts
-          </h2>
-          <p className="text-stone-500 text-xs mt-0.5">Michigan · Real-time discounts + your price alert preferences</p>
+    <div className="w-full max-w-5xl mx-auto z-10 relative pt-2 pb-16">
+      {locationError && (
+        <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-4 py-3 rounded-xl mb-5 text-xs font-bold">
+          {locationError}
         </div>
-      </div>
+      )}
 
-      {/* Tabs */}
-      <div className="flex gap-1 bg-white/5 border border-white/8 p-1 rounded-2xl mb-6 max-w-xs">
-        <button
-          onClick={() => setActiveTab('deals')}
-          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeTab === 'deals' ? 'bg-white/12 text-white' : 'text-stone-500 hover:text-stone-300'}`}
-        >
-          <Tag className="w-3.5 h-3.5" /> Local Deals
-        </button>
-        <button
-          onClick={() => setActiveTab('preferences')}
-          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all flex items-center justify-center gap-1.5 ${activeTab === 'preferences' ? 'bg-white/12 text-white' : 'text-stone-500 hover:text-stone-300'}`}
-        >
-          <Bell className="w-3.5 h-3.5" /> My Alerts
-        </button>
-      </div>
-
-      {activeTab === 'preferences' && <AlertPreferences />}
-
-      {activeTab === 'deals' && (
-        <>
-          {locationError && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-4 py-3 rounded-xl mb-5 text-xs font-bold">
-              {locationError}
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex justify-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
-            </div>
-          ) : deals.length === 0 ? (
-            <div className="text-center py-20 bg-white/4 rounded-3xl border border-white/8 border-dashed">
-              <Tag className="w-8 h-8 mx-auto text-stone-600 mb-3" />
-              <p className="text-stone-500 font-bold text-sm mb-1">No active deals right now.</p>
-              <p className="text-stone-600 text-xs">Store owners in Michigan haven't posted discounts today — check back soon.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+        </div>
+      ) : deals.length === 0 ? (
+        <div className="text-center py-20 bg-white/4 rounded-3xl border border-white/8 border-dashed">
+          <Tag className="w-8 h-8 mx-auto text-stone-600 mb-3" />
+          <p className="text-stone-500 font-bold text-sm mb-1">No active deals right now.</p>
+          <p className="text-stone-600 text-xs">Store owners in Michigan haven't posted discounts today — check back soon.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <AnimatePresence>
                 {deals.map((deal, i) => (
                   i === 0 ? (
@@ -226,8 +195,6 @@ export function LocalDeals({ onAddToCart }: { onAddToCart: (item: Omit<CartItem,
               </AnimatePresence>
             </div>
           )}
-        </>
-      )}
     </div>
   );
 }

@@ -116,6 +116,88 @@ app.post('/api/parse-pizza', async (req, res) => {
   }
 });
 
+app.post('/api/ocr-menu', async (req, res) => {
+  const { imageBase64 } = req.body;
+  if (!imageBase64) {
+    return res.status(400).json({ error: 'Missing imageBase64 parameter' });
+  }
+
+  const aiClient = getAI();
+  if (!aiClient) {
+    console.warn("GEMINI_API_KEY is not set. Falling back to mock OCR.");
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    return res.json([
+      { name: 'Large Pepperoni Pizza', price: 16.99, category: 'Pizza', description: '8 slices, classic pepperoni' },
+      { name: 'Medium Cheese Pizza', price: 12.99, category: 'Pizza', description: '6 slices, mozzarella blend' },
+      { name: 'Small BBQ Chicken Pizza', price: 10.99, category: 'Pizza', description: '4 slices, BBQ sauce base' },
+      { name: 'Garlic Bread', price: 4.99, category: 'Sides', description: 'Toasted with garlic butter' },
+      { name: 'Chicken Wings (8pc)', price: 11.99, category: 'Sides', description: 'Choice of sauce' },
+      { name: 'Coca-Cola (2L)', price: 3.49, category: 'Drinks', description: 'Chilled bottle' },
+      { name: 'Pepsi (2L)', price: 3.49, category: 'Drinks', description: 'Chilled bottle' },
+      { name: 'Chocolate Fudge Brownie', price: 3.99, category: 'Desserts', description: 'Warm fudge brownie' }
+    ]);
+  }
+
+  try {
+    const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+
+    const response = await aiClient.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: cleanBase64
+              }
+            },
+            {
+              text: `You are an expert OCR and menu parsing assistant. Analyze this image, photo, screenshot, or document and extract all food/beverage items, pizzas, toppings, sides, or products, along with their prices.
+              For each item you find:
+              - Name: Extract the clean, full title of the item.
+              - Price: Extract the numeric price. If multiple sizes/prices exist, list them as separate items (e.g., "Pepperoni Pizza (Small)" and "Pepperoni Pizza (Large)").
+              - Category: Classify the item into exactly one of: "Pizza", "Sides", "Drinks", "Desserts", or "Other".
+              - Description: Extract any description, toppings list, or details. If none, leave empty.
+              
+              Return ONLY a valid JSON array matching this schema:
+              [
+                {
+                  "name": string,
+                  "price": number,
+                  "category": "Pizza" | "Sides" | "Drinks" | "Desserts" | "Other",
+                  "description": string
+                }
+              ]`
+            }
+          ]
+        }
+      ],
+      config: {
+        temperature: 0.1
+      }
+    });
+
+    const outputText = response.text || '';
+    const cleanJsonString = outputText.replace(/^```json/g, '').replace(/```$/g, '').trim();
+    
+    let parsedMenu;
+    try {
+      parsedMenu = JSON.parse(cleanJsonString);
+    } catch(e) {
+      console.error("Failed to parse Gemini OCR output as JSON", outputText);
+      return res.status(500).json({ error: 'Failed to parse extracted menu' });
+    }
+
+    res.json(parsedMenu);
+  } catch (error: any) {
+    console.error('Error calling Gemini OCR:', error);
+    res.status(500).json({ error: 'Failed to extract menu from image' });
+  }
+});
+
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

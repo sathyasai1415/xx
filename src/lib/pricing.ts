@@ -189,14 +189,10 @@ export function calculateQuotes(config: PizzaConfig, deliveryPreference: Deliver
 
     const deliveryOptions: DeliveryProviderOption[] = [];
 
-    // Add explicitly filtered options based on deliveryPreference if applicable
     if (deliveryPreference === 'pickup' && chain.deliveryOptions.pickup) {
       deliveryOptions.push(createOption('pickup', 'Pickup', false));
     } else {
       if (chain.deliveryOptions.store) deliveryOptions.push(createOption('store', 'Store Delivery', false));
-      if (chain.deliveryOptions.ubereats) deliveryOptions.push(createOption('ubereats', 'Uber Eats', true));
-      if (chain.deliveryOptions.doordash) deliveryOptions.push(createOption('doordash', 'DoorDash', true));
-      if (chain.deliveryOptions.grubhub) deliveryOptions.push(createOption('grubhub', 'Grubhub', true));
     }
 
     // Evaluate options to find cheapest/fastest
