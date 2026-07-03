@@ -39,7 +39,7 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
     setError('');
     setLoading(true);
     try {
-      await loginOrRegister('sathya@gmail.com', '123456', 'customer', 'Sathya');
+      await loginOrRegister('sathyasai1415@gmail.com', '123456', 'customer', 'Sathyasai1415');
       switchSimulatedRole(role);
     } catch (err: any) {
       setError(err?.message || 'Developer demo login failed.');

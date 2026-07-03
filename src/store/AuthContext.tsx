@@ -101,19 +101,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (isLocalhost) {
         // Attempt automatic demo sign in
         try {
-          const cred = await signInWithEmailAndPassword(auth, 'sathya@gmail.com', '123456');
+          const cred = await signInWithEmailAndPassword(auth, 'sathyasai1415@gmail.com', '123456');
           const p = await readProfile(cred.user.uid);
           setProfile(p);
         } catch (err: any) {
           // If user doesn't exist, create it!
           if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-email') {
             try {
-              const cred = await createUserWithEmailAndPassword(auth, 'sathya@gmail.com', '123456');
-              await fbUpdateProfile(cred.user, { displayName: 'Sathya' });
+              const cred = await createUserWithEmailAndPassword(auth, 'sathyasai1415@gmail.com', '123456');
+              await fbUpdateProfile(cred.user, { displayName: 'Sathyasai1415' });
               const profileDoc: UserProfile = {
                 uid: cred.user.uid,
-                email: 'sathya@gmail.com',
-                fullName: 'Sathya',
+                email: 'sathyasai1415@gmail.com',
+                fullName: 'Sathyasai1415',
                 role: 'customer',
               };
               await setDoc(doc(db, 'users', cred.user.uid), { ...profileDoc, createdAt: serverTimestamp() }, { merge: true });
