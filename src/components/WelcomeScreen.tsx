@@ -305,6 +305,62 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
                     </motion.button>
                   </form>
 
+                  {mode === 'store' && (
+                    <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-xl space-y-2">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-orange-400">Dev Demo Logins (ID: 1234567)</p>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setName('Store Admin');
+                            setEmail('admin@zumbo.com');
+                            setStoreName('Zumbo Pizza');
+                            setPassword('123456');
+                          }}
+                          className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white font-bold transition-all border border-white/5"
+                        >
+                          👑 Store Admin
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setName('Jane Manager');
+                            setEmail('manager@zumbo.com');
+                            setStoreName('Zumbo Pizza');
+                            setPassword('123456');
+                          }}
+                          className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white font-bold transition-all border border-white/5"
+                        >
+                          📋 Manager
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setName('Bob Cook');
+                            setEmail('kitchen@zumbo.com');
+                            setStoreName('Zumbo Pizza');
+                            setPassword('123456');
+                          }}
+                          className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white font-bold transition-all border border-white/5"
+                        >
+                          🍳 Kitchen Staff
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setName('Alice Register');
+                            setEmail('cashier@zumbo.com');
+                            setStoreName('Zumbo Pizza');
+                            setPassword('123456');
+                          }}
+                          className="px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] text-white font-bold transition-all border border-white/5"
+                        >
+                          💵 Cashier
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                   <p className="text-center text-[11px] text-white/25 mt-4">
                     New? We'll create your account automatically.
                   </p>

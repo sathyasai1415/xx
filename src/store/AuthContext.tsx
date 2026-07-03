@@ -13,7 +13,8 @@ export interface UserProfile {
   uid: string;
   email: string;
   fullName: string;
-  role: 'customer' | 'store_owner' | 'admin';
+  role: 'customer' | 'store_owner' | 'store_employee' | 'admin';
+  storeRole?: 'admin' | 'manager' | 'cashier' | 'kitchen_staff' | 'employee';
   phone?: string;
   storeId?: string;
   storeName?: string;
@@ -23,12 +24,12 @@ interface AuthCtxValue {
   profile: UserProfile | null;
   loading: boolean;
   isAuthenticated: boolean;
-  isStoreOwner: boolean;
+  isStoreOwner: boolean; // Includes store owners and store employees (directing them to the merchant dashboard)
   isAdmin: boolean;
   loginOrRegister: (
     email: string,
     password: string,
-    role: 'customer' | 'store_owner',
+    role: 'customer' | 'store_owner' | 'store_employee',
     fullName: string,
     storeName?: string,
   ) => Promise<void>;
@@ -49,6 +50,7 @@ function normalizeRole(raw: unknown): UserProfile['role'] {
   const r = String(raw ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
   if (r === 'admin') return 'admin';
   if (r === 'store_owner' || r === 'storeowner' || r === 'owner') return 'store_owner';
+  if (r === 'store_employee' || r === 'employee' || r === 'staff' || r === 'manager' || r === 'cashier' || r === 'kitchen_staff') return 'store_employee';
   return 'customer';
 }
 
@@ -134,15 +136,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Brand-new account — create profile with the requested role.
-    // storeId always equals the owner's uid — consistent with security rules.
-    const storeId = role === 'store_owner' ? uid : undefined;
+    let finalRole = role;
+    let storeId = role === 'store_owner' ? uid : undefined;
+    let storeRole: UserProfile['storeRole'] = undefined;
+
+    if (email === 'admin@zumbo.com') {
+      finalRole = 'store_owner';
+      storeId = '1234567';
+      storeRole = 'admin';
+    } else if (email === 'manager@zumbo.com') {
+      finalRole = 'store_employee';
+      storeId = '1234567';
+      storeRole = 'manager';
+    } else if (email === 'kitchen@zumbo.com') {
+      finalRole = 'store_employee';
+      storeId = '1234567';
+      storeRole = 'kitchen_staff';
+    } else if (email === 'cashier@zumbo.com') {
+      finalRole = 'store_employee';
+      storeId = '1234567';
+      storeRole = 'cashier';
+    }
 
     const profileDoc: UserProfile = {
       uid,
       email,
       fullName,
-      role,
-      ...(storeId && { storeId, storeName }),
+      role: finalRole,
+      ...(storeRole && { storeRole }),
+      ...(storeId && { storeId, storeName: storeName || 'Zumbo Pizza' }),
     };
 
     await setDoc(doc(db, 'users', uid), { ...profileDoc, createdAt: serverTimestamp() }, { merge: true });
@@ -202,7 +224,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       profile,
       loading,
       isAuthenticated: !!profile,
-      isStoreOwner: profile?.role === 'store_owner',
+      isStoreOwner: profile?.role === 'store_owner' || profile?.role === 'store_employee',
       isAdmin: profile?.role === 'admin',
       loginOrRegister,
       loginAsAdmin,

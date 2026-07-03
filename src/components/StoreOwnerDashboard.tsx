@@ -8,6 +8,7 @@ import {
   ShieldCheck, ArrowRight, Navigation, User, Bike, PhoneCall, ChevronRight,
   Settings2, BarChart2, Globe, AlarmClock, Users, Star,
 } from 'lucide-react';
+import { useAuth } from '../store/AuthContext';
 import {
   StoreDoc, MenuItemDoc, DealDoc,
   getStore, updateStore, getStoreMenu, upsertMenuItem, updateMenuItemPrice,
@@ -26,24 +27,14 @@ const ORDER_STAGES = ['placed', 'confirmed', 'preparing', 'ready_for_pickup', 'o
 const PLATFORM_FEE = 0.20;
 const money = (n: number) => `$${(Number(n) || 0).toFixed(2)}`;
 
-const NAV: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'overview',  label: 'Home',             icon: LayoutDashboard },
-  { id: 'insights',  label: 'Insights',          icon: TrendingUp      },
-  { id: 'reports',   label: 'Reports',           icon: BarChart2       },
-  { id: 'orders',    label: 'Orders',            icon: ShoppingBag     },
-  { id: 'menu',      label: 'Menu & Prices',     icon: Pizza           },
-  { id: 'deals',     label: 'Deals',             icon: Tag             },
-  { id: 'marketing', label: 'Marketing',         icon: Zap             },
-  { id: 'ratings',   label: 'Ratings & Reviews', icon: Star            },
-  { id: 'earnings',  label: 'Financials',        icon: Wallet          },
-  { id: 'online',    label: 'Online Ordering',   icon: Globe           },
-  { id: 'hours',     label: 'Store Hours',       icon: AlarmClock      },
-  { id: 'team',      label: 'Team',              icon: Users           },
-];
-
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
+  const { profile } = useAuth();
+  const role = profile?.storeRole || (profile?.role === 'store_owner' ? 'admin' : 'employee');
+  const canAccessFinancials = role === 'admin';
+  const canManageEmployees = role === 'admin';
+
   const [tab, setTab]           = useState<Tab>('overview');
   const [store, setStore]       = useState<StoreDoc | null>(null);
   const [menu, setMenu]         = useState<MenuItemDoc[]>([]);
@@ -95,6 +86,21 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
 
   const goTab = (t: Tab) => { setTab(t); setSidebarOpen(false); };
   const liveCount = orders.filter(o => ['placed','confirmed','preparing'].includes(o.orderStatus ?? o.status ?? '')).length;
+
+  const NAV = [
+    { id: 'overview',  label: 'Dashboard',         icon: LayoutDashboard },
+    { id: 'orders',    label: 'Orders',            icon: ShoppingBag },
+    { id: 'menu',      label: 'Menu Manager',      icon: Pizza },
+    { id: 'deals',     label: 'Deals & Promos',    icon: Tag },
+    { id: 'ratings',   label: 'Reviews & Ratings', icon: Star },
+    { id: 'hours',     label: 'Store Hours',       icon: AlarmClock },
+    // Admin only tabs
+    ...(canAccessFinancials ? [
+      { id: 'insights',  label: 'Insights & Sales',  icon: TrendingUp },
+      { id: 'earnings',  label: 'Financials Billing',icon: Wallet },
+      { id: 'team',      label: 'Team Members',      icon: Users },
+    ] : []),
+  ] as const;
 
   return (
     <div className="min-h-screen w-full bg-white text-gray-900 lg:flex">
@@ -164,7 +170,7 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
       {/* Main */}
       <main className="flex-1 overflow-y-auto min-h-screen bg-gray-50/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
-          {tab === 'overview'  && <Overview store={store} menu={menu} orders={orders} onGoTab={goTab} />}
+          {tab === 'overview'  && <Overview store={store} menu={menu} orders={orders} onGoTab={goTab} canAccessFinancials={canAccessFinancials} />}
           {tab === 'orders'    && <Orders orders={orders} flash={flash} />}
           {tab === 'menu'      && <MenuManager storeId={storeId} menu={menu} reload={reloadMenu} flash={flash} setMenu={setMenu} />}
           {tab === 'deals'     && <DealsManager storeId={storeId} deals={deals} reload={reloadDeals} flash={flash} />}
@@ -194,12 +200,21 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
 
 // ─── Overview ─────────────────────────────────────────────────────────────────
 
-function Overview({ store, menu, orders, onGoTab }: { store: StoreDoc | null; menu: MenuItemDoc[]; orders: any[]; onGoTab: (t: Tab) => void }) {
+function Overview({ store, menu, orders, onGoTab, canAccessFinancials }: { store: StoreDoc | null; menu: MenuItemDoc[]; orders: any[]; onGoTab: (t: Tab) => void; canAccessFinancials: boolean }) {
   const today    = new Date().toDateString();
   const todayOrders = orders.filter(o => o.createdAt && new Date(o.createdAt).toDateString() === today);
   const gross    = orders.filter(o => o.orderStatus !== 'cancelled').reduce((s, o) => s + (Number(o.finalTotal ?? o.total) || 0), 0);
   const net      = gross * (1 - PLATFORM_FEE);
   const pending  = orders.filter(o => (o.orderStatus ?? o.status ?? 'placed') === 'placed');
+
+  const stats = [
+    { label: "Today's Orders", value: todayOrders.length,     icon: ShoppingBag, color: 'text-red-500'   },
+    { label: 'Total Orders',   value: orders.length,           icon: ShoppingBag, color: 'text-blue-500'  },
+    ...(canAccessFinancials ? [
+      { label: 'Net Earnings',   value: money(net),              icon: DollarSign,  color: 'text-green-500' },
+    ] : []),
+    { label: 'Menu Items',     value: menu.length,             icon: Pizza,       color: 'text-orange-500'},
+  ];
 
   return (
     <div>
@@ -220,12 +235,7 @@ function Overview({ store, menu, orders, onGoTab }: { store: StoreDoc | null; me
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        {[
-          { label: "Today's Orders", value: todayOrders.length,     icon: ShoppingBag, color: 'text-red-500'   },
-          { label: 'Total Orders',   value: orders.length,           icon: ShoppingBag, color: 'text-blue-500'  },
-          { label: 'Net Earnings',   value: money(net),              icon: DollarSign,  color: 'text-green-500' },
-          { label: 'Menu Items',     value: menu.length,             icon: Pizza,       color: 'text-orange-500'},
-        ].map(s => (
+        {stats.map(s => (
           <div key={s.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
             <s.icon className={`w-5 h-5 ${s.color} mb-3`} />
             <p className="text-2xl font-black text-gray-900">{s.value}</p>
@@ -235,18 +245,20 @@ function Overview({ store, menu, orders, onGoTab }: { store: StoreDoc | null; me
       </div>
 
       {/* Fee breakdown */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
-        <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
-        <div className="flex h-8 rounded-xl overflow-hidden mb-3">
-          <div className="flex items-center justify-center bg-green-500 text-[10px] font-black text-white" style={{ width: '80%' }}>Your 80% — {money(net)}</div>
-          <div className="flex items-center justify-center bg-red-500 text-[10px] font-black text-white" style={{ width: '20%' }}>20%</div>
+      {canAccessFinancials && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
+          <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
+          <div className="flex h-8 rounded-xl overflow-hidden mb-3">
+            <div className="flex items-center justify-center bg-green-500 text-[10px] font-black text-white" style={{ width: '80%' }}>Your 80% — {money(net)}</div>
+            <div className="flex items-center justify-center bg-red-500 text-[10px] font-black text-white" style={{ width: '20%' }}>20%</div>
+          </div>
+          <div className="flex gap-6 text-xs font-bold">
+            <span className="text-gray-700">Gross: <span className="text-gray-900">{money(gross)}</span></span>
+            <span className="text-gray-700">MiSlice fee: <span className="text-red-500">−{money(gross * PLATFORM_FEE)}</span></span>
+            <span className="text-gray-700">Your payout: <span className="text-green-600">{money(net)}</span></span>
+          </div>
         </div>
-        <div className="flex gap-6 text-xs font-bold">
-          <span className="text-gray-700">Gross: <span className="text-gray-900">{money(gross)}</span></span>
-          <span className="text-gray-700">MiSlice fee: <span className="text-red-500">−{money(gross * PLATFORM_FEE)}</span></span>
-          <span className="text-gray-700">Your payout: <span className="text-green-600">{money(net)}</span></span>
-        </div>
-      </div>
+      )}
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
@@ -254,7 +266,9 @@ function Overview({ store, menu, orders, onGoTab }: { store: StoreDoc | null; me
           { emoji: '📦', label: 'View Orders',   tab: 'orders'   as Tab },
           { emoji: '🍕', label: 'Edit Menu',      tab: 'menu'     as Tab },
           { emoji: '🏷️', label: 'Create Deal',   tab: 'deals'    as Tab },
-          { emoji: '📊', label: 'AI Insights',   tab: 'insights' as Tab },
+          ...(canAccessFinancials ? [
+            { emoji: '📊', label: 'AI Insights',   tab: 'insights' as Tab },
+          ] : []),
         ].map(q => (
           <button key={q.label} onClick={() => onGoTab(q.tab)} className="bg-white border border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-2xl p-4 text-left transition-all group shadow-sm">
             <span className="text-2xl mb-2 block">{q.emoji}</span>
@@ -1020,7 +1034,7 @@ function TrackingModal({ order, onClose }: { order: any; onClose: () => void }) 
   );
 }
 
-function Orders({ orders, flash }: { orders: any[]; flash: (m: string) => void }) {
+function Orders({ orders, flash, canUpdateOrders, canAccessFinancials }: { orders: any[]; flash: (m: string) => void; canUpdateOrders: boolean; canAccessFinancials: boolean }) {
   const [view, setView] = useState<'active' | 'past' | 'receipts'>('active');
   const [trackingOrder, setTrackingOrder] = useState<any>(null);
   const ACTIVE = ['placed', 'confirmed', 'preparing', 'ready_for_pickup', 'out_for_delivery'];
@@ -1029,11 +1043,19 @@ function Orders({ orders, flash }: { orders: any[]; flash: (m: string) => void }
   const past   = [...orders].filter(o => ['delivered','cancelled'].includes(o.orderStatus ?? o.status ?? '')).sort((a,b) => String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? '')));
 
   const advance = async (o: any, status: string) => {
+    if (!canUpdateOrders) {
+      flash('🔒 Permissions restricted: View-only access.');
+      return;
+    }
     try { await setOrderStatus(o.id, status); flash(`Marked: ${status.replace(/_/g, ' ')}`); }
     catch { flash('Could not update order'); }
   };
 
   const accept = async (o: any, prepMins: number) => {
+    if (!canUpdateOrders) {
+      flash('🔒 Permissions restricted: View-only access.');
+      return;
+    }
     try { await updateOrderFields(o.id, { orderStatus: 'confirmed', prepMinutes: prepMins }); flash(`Accepted · ${prepMins} min prep`); }
     catch { flash('Could not accept order'); }
   };
@@ -1050,7 +1072,11 @@ function Orders({ orders, flash }: { orders: any[]; flash: (m: string) => void }
           <p className="text-sm text-gray-500">{active.length} active · {past.length} past</p>
         </div>
         <div className="flex gap-1 bg-gray-100 border border-gray-250 p-1 rounded-xl">
-          {([['active','Active'], ['past','Past'], ['receipts','Receipts']] as const).map(([v,l]) => (
+          {([
+            ['active','Active'],
+            ['past','Past'],
+            ...(canAccessFinancials ? [['receipts','Receipts'] as const] : [])
+          ] as const).map(([v,l]) => (
             <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${view === v ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-950'}`}>
               {l}{v === 'active' && active.length > 0 && <span className="ml-1.5 w-4 h-4 inline-flex items-center justify-center bg-red-500 rounded-full text-[9px] font-black text-white">{active.length}</span>}
             </button>
@@ -1080,7 +1106,12 @@ function Orders({ orders, flash }: { orders: any[]; flash: (m: string) => void }
                   {(o.items || []).map((it: any, i: number) => <p key={i}>{(it.quantity ?? it.qty)}× {(it.pizzaName ?? it.name)}</p>)}
                 </div>
                 {o.deliveryAddress && <p className="text-[11px] text-gray-500 flex items-center gap-1 mb-3"><MapPin className="w-3 h-3 text-gray-400" /> {o.deliveryAddress}</p>}
-                {isNew ? (
+                
+                {!canUpdateOrders ? (
+                  <div className="text-[10px] text-orange-600 font-bold bg-orange-50 border border-orange-200 px-3 py-2 rounded-lg inline-block">
+                    🔒 View-Only: You do not have permissions to modify order status.
+                  </div>
+                ) : isNew ? (
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 flex items-center gap-1"><Timer className="w-3 h-3 text-gray-400" /> Prep:</span>
                     {PREP_OPTIONS.map(p => (

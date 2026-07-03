@@ -268,7 +268,7 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
 
 // ─── Overview ─────────────────────────────────────────────────────────────────
 
-function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; menu: MenuItem[]; orders: Order[]; onGoTab: (t: Tab) => void }) {
+function DemoOverview({ store, menu, orders, onGoTab, role }: { store: typeof STORE; menu: MenuItem[]; orders: Order[]; onGoTab: (t: Tab) => void; role: MerchantRole }) {
   const today = new Date().toDateString();
   const todayOrders  = orders.filter(o => new Date(o.createdAt).toDateString() === today);
   const completed    = orders.filter(o => o.orderStatus !== 'cancelled');
@@ -301,7 +301,11 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
         {[
           { label: "Today's Orders", value: todayOrders.length,  icon: ShoppingBag, color: 'text-red-500'    },
           { label: 'Total Orders',   value: orders.length,        icon: ShoppingBag, color: 'text-blue-500'   },
-          { label: 'Net Earnings',   value: money(net),           icon: DollarSign,  color: 'text-green-500'  },
+          ...(role === 'admin' ? [
+            { label: 'Net Earnings',   value: money(net),           icon: DollarSign,  color: 'text-green-500'  }
+          ] : [
+            { label: 'Active Menu Items', value: menu.filter(m => m.available).length, icon: Pizza, color: 'text-green-500' }
+          ]),
           { label: 'Menu Items',     value: menu.length,          icon: Pizza,       color: 'text-orange-500' },
         ].map(s => (
           <div key={s.label} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -313,18 +317,20 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
       </div>
 
       {/* Fee breakdown */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
-        <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
-        <div className="flex h-8 rounded-xl overflow-hidden mb-3">
-          <div className="flex items-center justify-center bg-green-500 text-[10px] font-black text-white" style={{ width: '80%' }}>Your 80% — {money(net)}</div>
-          <div className="flex items-center justify-center bg-red-500 text-[10px] font-black text-white" style={{ width: '20%' }}>20%</div>
+      {role === 'admin' && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 shadow-sm">
+          <p className="text-xs font-black text-gray-700 uppercase tracking-widest mb-3">MiSlice Fee Breakdown (All-Time)</p>
+          <div className="flex h-8 rounded-xl overflow-hidden mb-3">
+            <div className="flex items-center justify-center bg-green-500 text-[10px] font-black text-white" style={{ width: '80%' }}>Your 80% — {money(net)}</div>
+            <div className="flex items-center justify-center bg-red-500 text-[10px] font-black text-white" style={{ width: '20%' }}>20%</div>
+          </div>
+          <div className="flex gap-6 text-xs font-bold">
+            <span className="text-gray-700">Gross: <span className="text-gray-900">{money(gross)}</span></span>
+            <span className="text-gray-700">MiSlice fee: <span className="text-red-500">−{money(gross * PLATFORM_FEE)}</span></span>
+            <span className="text-gray-700">Your payout: <span className="text-green-600">{money(net)}</span></span>
+          </div>
         </div>
-        <div className="flex gap-6 text-xs font-bold">
-          <span className="text-gray-700">Gross: <span className="text-gray-900">{money(gross)}</span></span>
-          <span className="text-gray-700">MiSlice fee: <span className="text-red-500">−{money(gross * PLATFORM_FEE)}</span></span>
-          <span className="text-gray-700">Your payout: <span className="text-green-600">{money(net)}</span></span>
-        </div>
-      </div>
+      )}
 
       {/* Quick actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
@@ -332,9 +338,11 @@ function DemoOverview({ store, menu, orders, onGoTab }: { store: typeof STORE; m
           { emoji:'📦', label:'View Orders',  tab:'orders'   as Tab },
           { emoji:'🍕', label:'Edit Menu',     tab:'menu'     as Tab },
           { emoji:'🏷️', label:'Create Deal',  tab:'deals'    as Tab },
-          { emoji:'📊', label:'AI Insights',  tab:'insights' as Tab },
+          ...(role === 'admin' ? [
+            { emoji:'📊', label:'AI Insights',  tab:'insights' as Tab }
+          ] : []),
         ].map(q => (
-          <button key={q.label} onClick={() => onGoTab(q.tab)} className="bg-white border border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-2xl p-4 text-left transition-all group shadow-sm">
+          <button key={q.label} onClick={() => onGoTab(q.tab)} className="bg-white border border-gray-200 hover:border-red-300 hover:bg-red-55 rounded-2xl p-4 text-left transition-all group shadow-sm">
             <span className="text-2xl mb-2 block">{q.emoji}</span>
             <p className="text-sm font-black text-gray-900 group-hover:text-red-600 transition-colors">{q.label}</p>
           </button>
@@ -469,7 +477,7 @@ function StatusPill({ status }: { status: string }) {
   return <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${m.bg} ${m.color}`}>{m.label}</span>;
 }
 
-function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: React.Dispatch<React.SetStateAction<Order[]>>; flash: (m: string) => void }) {
+function DemoOrders({ orders, setOrders, flash, role }: { orders: Order[]; setOrders: React.Dispatch<React.SetStateAction<Order[]>>; flash: (m: string) => void; role: MerchantRole }) {
   const [view, setView]             = useState<'active'|'scheduled'|'history'>('active');
   const [search, setSearch]         = useState('');
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
@@ -490,10 +498,22 @@ function DemoOrders({ orders, setOrders, flash }: { orders: Order[]; setOrders: 
   const outOrders      = activeOrders.filter(o => ['ready_for_pickup','out_for_delivery'].includes(o.orderStatus));
 
   const advance = (id: string, status: string) => {
+    if (role === 'employee') {
+      flash('🔒 Floor employees cannot modify order status.');
+      return;
+    }
+    if (status === 'cancelled' && ['cashier', 'kitchen_staff'].includes(role)) {
+      flash('🔒 Order cancellations require Manager or Admin approval.');
+      return;
+    }
     setOrders(os => os.map(o => o.id === id ? { ...o, orderStatus: status } : o));
     flash(`Marked: ${status.replace(/_/g,' ')}`);
   };
   const accept = (id: string, mins: number) => {
+    if (role === 'employee') {
+      flash('🔒 Floor employees cannot accept incoming orders.');
+      return;
+    }
     setOrders(os => os.map(o => o.id === id ? { ...o, orderStatus: 'confirmed', prepMinutes: mins } : o));
     flash(`Accepted · ${mins} min prep`);
   };

@@ -470,25 +470,46 @@ export function AdminOnboarding({ storeData, onComplete, onLogout }: Props) {
 
               {/* Commission & Store Agreement */}
               <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-4 text-left space-y-3">
-                <p className="text-xs font-black uppercase tracking-widest text-red-400">Commission & Agreement</p>
+                <p className="text-xs font-black uppercase tracking-widest text-red-400">Commission & Legal Agreements</p>
                 <div className="text-xs text-stone-400 space-y-1.5">
                   <p>• <strong>MiSlice Commission:</strong> 20% platform fee on completed orders.</p>
-                  <p>• <strong>Registration:</strong> Free onboarding of store into the MiSlice marketplace.</p>
+                  <p>• <strong>Policies:</strong> Free onboarding of store, subject to MiSlice Terms of Service & Privacy Policy.</p>
                 </div>
-                <label className="flex items-start gap-2.5 cursor-pointer group mt-2">
-                  <input type="checkbox" checked={agreeCommission} onChange={e => setAgreeCommission(e.target.checked)}
-                    className="mt-0.5 rounded border-white/20 bg-white/5 focus:ring-red-500" />
-                  <span className="text-[11px] font-bold text-stone-300 group-hover:text-white transition-colors">
-                    I agree to the MiSlice Store Merchant Agreement, including the 20% platform commission on orders.
-                  </span>
-                </label>
+                
+                <div className="space-y-2.5 mt-2">
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input type="checkbox" checked={agreeCommission} onChange={e => setAgreeCommission(e.target.checked)}
+                      className="mt-0.5 rounded border-white/20 bg-white/5 focus:ring-red-500 accent-red-600" />
+                    <span className="text-[11px] font-bold text-stone-300 group-hover:text-white transition-colors">
+                      I agree to the MiSlice Store Merchant Agreement, including the 20% platform commission on orders.
+                    </span>
+                  </label>
+
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input type="checkbox" id="agree-tos" defaultChecked className="mt-0.5 rounded border-white/20 bg-white/5 focus:ring-red-500 accent-red-600" />
+                    <span className="text-[11px] font-bold text-stone-300 group-hover:text-white transition-colors">
+                      I agree to the Terms of Service & Privacy Policy.
+                    </span>
+                  </label>
+                </div>
+
+                <div className="pt-2">
+                  <label className="text-[10px] font-black uppercase text-stone-500 block mb-1">Digital Signature Confirmation</label>
+                  <input
+                    type="text"
+                    placeholder="Type your full legal name to sign"
+                    id="digital-signature"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-red-500"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="flex gap-3">
                 <button onClick={() => setStep(4)} className="px-5 py-3 text-stone-400 hover:text-white font-bold text-sm transition-colors">Back</button>
                 <button onClick={handleSubmit} disabled={submitting || !agreeCommission}
                   className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-black py-3 rounded-xl transition-colors shadow-[0_0_24px_rgba(220,38,38,0.35)]">
-                  {submitting ? 'Submitting…' : 'Submit for Review'}
+                  {submitting ? 'Submitting…' : 'Sign & Submit Agreement'}
                 </button>
               </div>
             </div>
