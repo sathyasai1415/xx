@@ -559,7 +559,15 @@ export default function App() {
 
   // ── Demo mode: full store owner experience with mock data ─────────────────
   if (demoMode) {
-    return <DemoStoreDashboard onExit={() => setDemoMode(false)} />;
+    return (
+      <AppProvider>
+        <DevRoleSwitcher onSwitch={(role) => {
+          setDemoMode(false);
+          setCustomerDemoMode(true);
+        }} />
+        <DemoStoreDashboard onExit={() => setDemoMode(false)} />
+      </AppProvider>
+    );
   }
 
   // ── Not signed in: Firebase login/signup gate ─────────────────────────────
@@ -575,7 +583,7 @@ export default function App() {
   if (isAdmin) {
     return (
       <AppProvider>
-        <DevRoleSwitcher />
+        <DevRoleSwitcher onSwitch={(role) => { if (!role) setCustomerDemoMode(true); }} />
         <PlatformAdminDashboard />
       </AppProvider>
     );
@@ -585,7 +593,7 @@ export default function App() {
   if (isStoreOwner) {
     return (
       <AppProvider>
-        <DevRoleSwitcher />
+        <DevRoleSwitcher onSwitch={(role) => { if (!role) setCustomerDemoMode(true); }} />
         <StoreOwnerDashboard storeId={profile?.storeId || profile?.uid || ''} storeName={storeOwnerName} onLogout={handleSignOut} />
       </AppProvider>
     );
@@ -595,7 +603,7 @@ export default function App() {
   if (simulatedRole === 'delivery_driver') {
     return (
       <AppProvider>
-        <DevRoleSwitcher />
+        <DevRoleSwitcher onSwitch={(role) => { if (!role) setCustomerDemoMode(true); }} />
         <DeliveryDriverDashboard />
       </AppProvider>
     );
@@ -605,7 +613,7 @@ export default function App() {
   if (simulatedRole === 'towing_driver' || simulatedRole === 'towing_company') {
     return (
       <AppProvider>
-        <DevRoleSwitcher />
+        <DevRoleSwitcher onSwitch={(role) => { if (!role) setCustomerDemoMode(true); }} />
         <TowingDashboard />
       </AppProvider>
     );
@@ -615,7 +623,7 @@ export default function App() {
   if (simulatedRole === 'support_agent') {
     return (
       <AppProvider>
-        <DevRoleSwitcher />
+        <DevRoleSwitcher onSwitch={(role) => { if (!role) setCustomerDemoMode(true); }} />
         <SupportAgentDashboard />
       </AppProvider>
     );
@@ -623,7 +631,7 @@ export default function App() {
 
   return (
     <AppProvider>
-    <DevRoleSwitcher />
+    <DevRoleSwitcher onSwitch={(role) => { if (!role) setCustomerDemoMode(true); }} />
     {showVideoIntro && <VideoIntro onDismiss={() => setShowVideoIntro(false)} />}
     <TextCursor spacing={75} followMouseDirection randomFloat exitDuration={0.35} removalInterval={22} maxPoints={8} />
     <div className={`relative min-h-screen font-sans flex overflow-x-hidden transition-colors duration-300 ${isLight ? 'light-theme bg-white' : 'bg-[#0A0D18]'}`}>

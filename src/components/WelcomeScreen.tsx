@@ -158,10 +158,64 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
                     ← Back
                   </button>
                   <p className="text-center text-white/40 text-xs font-bold uppercase tracking-widest mb-4">Try without signing in</p>
-                  <DemoCard icon={Store} title="Store Owner Demo" desc="Full dashboard with mock data" color="from-orange-600 to-orange-500" onClick={onDemo} />
-                  <DemoCard icon={User} title="Customer Demo" desc="Browse & compare pizzas" color="from-red-600 to-pink-500" onClick={onCustomerDemo} />
-                  <DemoCard icon={Bike} title="Delivery Partner" desc="Coming soon" color="from-emerald-600 to-emerald-500" onClick={() => { setMode('login'); setShowDriverModal(true); }} />
-                  <DemoCard icon={ShieldCheck} title="Platform Admin" desc="Approve stores & manage platform" color="from-red-700 to-red-900" onClick={() => { setMode('admin'); clearForm(); }} />
+                  <DemoCard
+                    icon={Store}
+                    title="Store Owner Demo"
+                    desc="Full dashboard with mock data"
+                    color="from-orange-600 to-orange-500"
+                    onClick={() => {
+                      if (window.location.hostname === 'localhost' && import.meta.env.DEV) {
+                        switchSimulatedRole('store_admin');
+                        onCustomerDemo();
+                      } else {
+                        onDemo();
+                      }
+                    }}
+                  />
+                  <DemoCard
+                    icon={User}
+                    title="Customer Demo"
+                    desc="Browse & compare pizzas"
+                    color="from-red-600 to-pink-500"
+                    onClick={() => {
+                      if (window.location.hostname === 'localhost' && import.meta.env.DEV) {
+                        switchSimulatedRole(null);
+                        onCustomerDemo();
+                      } else {
+                        onCustomerDemo();
+                      }
+                    }}
+                  />
+                  <DemoCard
+                    icon={Bike}
+                    title="Delivery Partner"
+                    desc={window.location.hostname === 'localhost' && import.meta.env.DEV ? "Simulate delivery runs" : "Coming soon"}
+                    color="from-emerald-600 to-emerald-500"
+                    onClick={() => {
+                      if (window.location.hostname === 'localhost' && import.meta.env.DEV) {
+                        switchSimulatedRole('delivery_driver');
+                        onCustomerDemo();
+                      } else {
+                        setMode('login');
+                        setShowDriverModal(true);
+                      }
+                    }}
+                  />
+                  <DemoCard
+                    icon={ShieldCheck}
+                    title="Platform Admin"
+                    desc="Approve stores & manage platform"
+                    color="from-red-700 to-red-900"
+                    onClick={() => {
+                      if (window.location.hostname === 'localhost' && import.meta.env.DEV) {
+                        switchSimulatedRole('platform_admin');
+                        onCustomerDemo();
+                      } else {
+                        setMode('admin');
+                        clearForm();
+                      }
+                    }}
+                  />
                 </motion.div>
               )}
 
