@@ -164,7 +164,7 @@ function PizzaShowcase() {
   );
 }
 
-export function DevRoleSwitcher() {
+export function DevRoleSwitcher({ onSwitch }: { onSwitch?: (role: string | null) => void }) {
   const { simulatedRole, switchSimulatedRole } = useAuth();
 
   if (window.location.hostname !== 'localhost' || !import.meta.env.DEV) return null;
@@ -176,7 +176,9 @@ export function DevRoleSwitcher() {
         value={simulatedRole || 'customer'}
         onChange={(e) => {
           const val = e.target.value;
-          switchSimulatedRole(val === 'customer' ? null : val);
+          const role = val === 'customer' ? null : val;
+          switchSimulatedRole(role);
+          if (onSwitch) onSwitch(role);
         }}
         className="bg-transparent border-0 text-white text-xs font-extrabold outline-none cursor-pointer"
         style={{ colorScheme: 'dark' }}
@@ -769,7 +771,7 @@ export default function App() {
                 setView('compare');
                 setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
               }}
-              onNavigate={setView}
+              onNavigate={(v) => setView(v as ViewState)}
               currentConfig={pizzaConfig}
               quotes={quotes}
               favoriteStores={favoriteStores}

@@ -34,6 +34,7 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
   const role = profile?.storeRole || (profile?.role === 'store_owner' ? 'admin' : 'employee');
   const canAccessFinancials = role === 'admin';
   const canManageEmployees = role === 'admin';
+  const canUpdateOrders = ['admin', 'manager', 'cashier', 'kitchen_staff', 'employee'].includes(role);
 
   const [tab, setTab]           = useState<Tab>('overview');
   const [store, setStore]       = useState<StoreDoc | null>(null);
@@ -138,7 +139,7 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
 
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto mt-2">
           {NAV.map(({ id, label, icon: Icon }) => (
-            <button key={id} onClick={() => goTab(id)}
+            <button key={id} onClick={() => goTab(id as Tab)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${tab === id ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white' : 'text-gray-800 hover:bg-gray-100 hover:text-black'}`}>
               <Icon className="w-4 h-4 shrink-0" />
               <span className="flex-1 text-left">{label}</span>
@@ -171,7 +172,7 @@ export function StoreOwnerDashboard({ storeId, storeName, onLogout }: Props) {
       <main className="flex-1 overflow-y-auto min-h-screen bg-gray-50/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 lg:py-8">
           {tab === 'overview'  && <Overview store={store} menu={menu} orders={orders} onGoTab={goTab} canAccessFinancials={canAccessFinancials} />}
-          {tab === 'orders'    && <Orders orders={orders} flash={flash} />}
+          {tab === 'orders'    && <Orders orders={orders} flash={flash} canUpdateOrders={canUpdateOrders} canAccessFinancials={canAccessFinancials} />}
           {tab === 'menu'      && <MenuManager storeId={storeId} menu={menu} reload={reloadMenu} flash={flash} setMenu={setMenu} />}
           {tab === 'deals'     && <DealsManager storeId={storeId} deals={deals} reload={reloadDeals} flash={flash} />}
           {tab === 'insights'  && <AIInsights orders={orders} />}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Bell, BellOff, Tag, Zap, TrendingDown, Star, Clock,
-  Check, Trash2, ChevronRight, Settings, Toggle,
+  Check, Trash2, ChevronRight, Settings,
   ShoppingBag, Gift, MapPin, X, Plus,
 } from 'lucide-react';
 import {

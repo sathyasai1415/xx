@@ -264,7 +264,7 @@ export function GridScan({
       const renderPass = new RenderPass(scene, camera);
       composer.addPass(renderPass);
       const bloom = new BloomEffect({ intensity: bloomIntensity, luminanceThreshold: bloomThreshold, luminanceSmoothing: bloomSmoothing });
-      const chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(chromaticAberration, chromaticAberration) });
+      const chroma = new ChromaticAberrationEffect({ offset: new THREE.Vector2(chromaticAberration, chromaticAberration), radialModulation: false, modulationOffset: 0 });
       const effectPass = new EffectPass(camera, bloom, chroma);
       effectPass.renderToScreen = true;
       composer.addPass(effectPass);

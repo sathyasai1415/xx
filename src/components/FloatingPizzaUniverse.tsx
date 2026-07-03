@@ -38,7 +38,7 @@ export function FloatingPizzaUniverse() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const objectsRef = useRef<FloatingObject[]>([]);
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number | undefined>(undefined);
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const scrollRef = useRef({ y: 0, targetY: 0 });
 

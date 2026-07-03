@@ -18,6 +18,7 @@ import {
 interface MenuItem { id: string; name: string; description: string; price: number; category: string; available: boolean; }
 interface Deal     { id: string; title: string; description: string; original_price: number; discounted_price: number; is_active: boolean; coupon_code: string; }
 interface Order    { id: string; createdAt: string; orderStatus: string; items: { name: string; qty: number; itemTotal: number }[]; finalTotal: number; deliveryAddress: string; deliveryType: string; prepMinutes?: number; }
+type MerchantRole = 'admin' | 'employee' | 'cashier' | 'kitchen_staff';
 
 type Tab = 'overview' | 'orders' | 'menu' | 'deals' | 'insights' | 'earnings' | 'reports' | 'marketing' | 'ratings' | 'online' | 'hours' | 'team';
 type EarningsPeriod = 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -268,7 +269,7 @@ export function DemoStoreDashboard({ onExit }: { onExit: () => void }) {
 
 // ─── Overview ─────────────────────────────────────────────────────────────────
 
-function DemoOverview({ store, menu, orders, onGoTab, role }: { store: typeof STORE; menu: MenuItem[]; orders: Order[]; onGoTab: (t: Tab) => void; role: MerchantRole }) {
+function DemoOverview({ store, menu, orders, onGoTab, role = 'admin' }: { store: typeof STORE; menu: MenuItem[]; orders: Order[]; onGoTab: (t: Tab) => void; role?: MerchantRole }) {
   const today = new Date().toDateString();
   const todayOrders  = orders.filter(o => new Date(o.createdAt).toDateString() === today);
   const completed    = orders.filter(o => o.orderStatus !== 'cancelled');
@@ -477,7 +478,7 @@ function StatusPill({ status }: { status: string }) {
   return <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${m.bg} ${m.color}`}>{m.label}</span>;
 }
 
-function DemoOrders({ orders, setOrders, flash, role }: { orders: Order[]; setOrders: React.Dispatch<React.SetStateAction<Order[]>>; flash: (m: string) => void; role: MerchantRole }) {
+function DemoOrders({ orders, setOrders, flash, role = 'admin' }: { orders: Order[]; setOrders: React.Dispatch<React.SetStateAction<Order[]>>; flash: (m: string) => void; role?: MerchantRole }) {
   const [view, setView]             = useState<'active'|'scheduled'|'history'>('active');
   const [search, setSearch]         = useState('');
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);

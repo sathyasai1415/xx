@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -186,7 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Brand-new account — create profile with the requested role.
-    let finalRole = role;
+    let finalRole: UserProfile['role'] = role;
     let storeId = role === 'store_owner' ? uid : undefined;
     let storeRole: UserProfile['storeRole'] = undefined;
 

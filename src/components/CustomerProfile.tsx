@@ -306,7 +306,7 @@ export function CustomerProfile({ onNavigate, orders = [], meatPreferences = [],
                       <label className={LABEL}>{f.label}</label>
                       <input
                         type={f.type}
-                        value={(profile as Record<string, unknown>)[f.key] as string}
+                        value={(profile as unknown as Record<string, unknown>)[f.key] as string}
                         onChange={e => update({ [f.key]: e.target.value } as Partial<CustomerProfileData>)}
                         placeholder={f.placeholder}
                         className={INPUT}
