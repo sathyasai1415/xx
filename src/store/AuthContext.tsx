@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
+import { checkAndSeedDatabase } from '../lib/seeding';
 
 export interface UserProfile {
   uid: string;
@@ -26,6 +27,8 @@ interface AuthCtxValue {
   isAuthenticated: boolean;
   isStoreOwner: boolean; // Includes store owners and store employees (directing them to the merchant dashboard)
   isAdmin: boolean;
+  simulatedRole: string | null;
+  switchSimulatedRole: (role: string | null) => void;
   loginOrRegister: (
     email: string,
     password: string,
@@ -64,8 +67,28 @@ async function readProfile(uid: string): Promise<UserProfile | null> {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [simulatedRole, setSimulatedRole] = useState<string | null>(() => {
+    if (window.location.hostname === 'localhost' && import.meta.env.DEV) {
+      return localStorage.getItem('mis_simulated_role') || null;
+    }
+    return null;
+  });
+
+  const switchSimulatedRole = useCallback((role: string | null) => {
+    if (window.location.hostname !== 'localhost' || !import.meta.env.DEV) return;
+    setSimulatedRole(role);
+    if (role) {
+      localStorage.setItem('mis_simulated_role', role);
+    } else {
+      localStorage.removeItem('mis_simulated_role');
+    }
+  }, []);
 
   useEffect(() => {
+    const isLocalhost = window.location.hostname === 'localhost' && import.meta.env.DEV;
+    if (isLocalhost) {
+      checkAndSeedDatabase();
+    }
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
@@ -74,10 +97,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } catch {
           setProfile(null);
         }
+        setLoading(false);
+      } else if (isLocalhost) {
+        // Attempt automatic demo sign in
+        try {
+          const cred = await signInWithEmailAndPassword(auth, 'sathya@gmail.com', '123456');
+          const p = await readProfile(cred.user.uid);
+          setProfile(p);
+        } catch (err: any) {
+          // If user doesn't exist, create it!
+          if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-email') {
+            try {
+              const cred = await createUserWithEmailAndPassword(auth, 'sathya@gmail.com', '123456');
+              await fbUpdateProfile(cred.user, { displayName: 'Sathya' });
+              const profileDoc: UserProfile = {
+                uid: cred.user.uid,
+                email: 'sathya@gmail.com',
+                fullName: 'Sathya',
+                role: 'customer',
+              };
+              await setDoc(doc(db, 'users', cred.user.uid), { ...profileDoc, createdAt: serverTimestamp() }, { merge: true });
+              setProfile(profileDoc);
+            } catch (createErr) {
+              console.error('Failed to auto-create demo user:', createErr);
+            }
+          }
+        }
+        setLoading(false);
       } else {
         setProfile(null);
+        setLoading(false);
       }
-      setLoading(false);
     });
     return unsub;
   }, []);
@@ -219,13 +269,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(p);
   }, []);
 
+  const computedIsAdmin = useMemo(() => {
+    if (window.location.hostname === 'localhost' && import.meta.env.DEV && simulatedRole) {
+      return simulatedRole === 'platform_admin';
+    }
+    return profile?.role === 'admin';
+  }, [profile, simulatedRole]);
+
+  const computedIsStoreOwner = useMemo(() => {
+    if (window.location.hostname === 'localhost' && import.meta.env.DEV && simulatedRole) {
+      return ['store_admin', 'store_employee', 'merchant'].includes(simulatedRole);
+    }
+    return profile?.role === 'store_owner' || profile?.role === 'store_employee';
+  }, [profile, simulatedRole]);
+
   return (
     <AuthCtx.Provider value={{
       profile,
       loading,
       isAuthenticated: !!profile,
-      isStoreOwner: profile?.role === 'store_owner' || profile?.role === 'store_employee',
-      isAdmin: profile?.role === 'admin',
+      isStoreOwner: computedIsStoreOwner,
+      isAdmin: computedIsAdmin,
+      simulatedRole,
+      switchSimulatedRole,
       loginOrRegister,
       loginAsAdmin,
       loginLocal,

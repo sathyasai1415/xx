@@ -1167,8 +1167,14 @@
       "storeId": "zumbos-pizza",
       "name": "Chicken Parmesan Pizza",
       "category": "specialty",
-      "description": "Crispy chicken, rich marinara, loaded with mozzarella and grated parmesan cheese.", price: 18.99, available: true, tags: ['popular', 'specialty'
-      ], photo: ''
+      "description": "Crispy chicken, rich marinara, loaded with mozzarella and grated parmesan cheese.",
+      "price": 18.99,
+      "available": true,
+      "tags": [
+        "popular",
+        "specialty"
+      ],
+      "photo": ""
     }
   ],
   "deals": [

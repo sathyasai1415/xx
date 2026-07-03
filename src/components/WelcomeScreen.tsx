@@ -24,7 +24,7 @@ const LIGHTFALL_COLORS = ['#ff6b6b', '#dc2626', '#f97316', '#fbbf24', '#ff4444']
 type Mode = 'login' | 'store' | 'demo' | 'admin';
 
 export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; onCustomerDemo: () => void }) {
-  const { loginOrRegister, loginAsAdmin } = useAuth();
+  const { loginOrRegister, loginAsAdmin, switchSimulatedRole } = useAuth();
   const [mode, setMode] = useState<Mode>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -34,6 +34,19 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDriverModal, setShowDriverModal] = useState(false);
+
+  const devLogin = async (role: string) => {
+    setError('');
+    setLoading(true);
+    try {
+      await loginOrRegister('sathya@gmail.com', '123456', 'customer', 'Sathya');
+      switchSimulatedRole(role);
+    } catch (err: any) {
+      setError(err?.message || 'Developer demo login failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearForm = () => { setError(''); setName(''); setEmail(''); setStoreName(''); setPassword(''); };
 
@@ -387,6 +400,82 @@ export function WelcomeScreen({ onDemo, onCustomerDemo }: { onDemo: () => void; 
           >
             <ShieldCheck className="w-3.5 h-3.5" /> Admin sign in
           </button>
+        )}
+
+        {window.location.hostname === 'localhost' && import.meta.env.DEV && (
+          <div className="mt-8 p-5 rounded-[2rem] bg-white/[0.03] border border-white/10 max-w-sm mx-auto space-y-3 backdrop-blur-md">
+            <p className="text-[10px] font-black uppercase tracking-widest text-center text-orange-400">
+              🛠️ Local Development Quick Auth
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => devLogin('customer')}
+                className="col-span-2 py-2.5 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white text-xs font-black transition-all hover:brightness-110 shadow-lg"
+              >
+                Continue as Customer
+              </button>
+              <button
+                type="button"
+                onClick={() => devLogin('store_employee')}
+                className="py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold transition-all border border-white/5"
+              >
+                Store Employee
+              </button>
+              <button
+                type="button"
+                onClick={() => devLogin('store_admin')}
+                className="py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold transition-all border border-white/5"
+              >
+                Store Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => devLogin('delivery_driver')}
+                className="py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold transition-all border border-white/5"
+              >
+                Delivery Driver
+              </button>
+              <button
+                type="button"
+                onClick={() => devLogin('towing_driver')}
+                className="py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold transition-all border border-white/5"
+              >
+                Towing Driver
+              </button>
+              <button
+                type="button"
+                onClick={() => devLogin('merchant')}
+                className="py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold transition-all border border-white/5"
+              >
+                Merchant
+              </button>
+              <button
+                type="button"
+                onClick={() => devLogin('support_agent')}
+                className="py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold transition-all border border-white/5"
+              >
+                Support Agent
+              </button>
+              <button
+                type="button"
+                onClick={() => devLogin('platform_admin')}
+                className="col-span-2 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-white text-[11px] font-bold transition-all border border-white/5"
+              >
+                Platform Admin
+              </button>
+            </div>
+            
+            <div className="pt-2 border-t border-white/10">
+              <button
+                type="button"
+                onClick={() => devLogin('platform_admin')}
+                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition-all shadow-md"
+              >
+                Platform Admin Demo
+              </button>
+            </div>
+          </div>
         )}
 
         <p className="text-center text-white/15 text-[10px] font-bold mt-4">MiSlice © 2026 · Michigan</p>
